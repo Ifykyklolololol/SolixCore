@@ -64,3 +64,36 @@ Tasks.addTask(task.spawn(function()
     end
 end))
 ```
+
+#Reload Safely Example
+```lua
+Tasks.addConnection(
+    game.Players.PlayerAdded:Connect(function(plr)
+        print("Player joined:", plr.Name)
+    end)
+)
+```
+
+# Cache Force Recompute
+-- Forces the next Cache.get to recompute instantly.
+```lua
+Cache.force("playerCount")
+```
+
+# Manual Invalidation
+```lua
+Cache.invalidate("playerCount")  -- remove one key
+Cache.invalidateAll()            -- wipe the entire cache
+```
+
+# Cache Stats 
+```lua
+print(Cache.stats())
+```
+
+
+
+❤️ Credits
+
+Developed by RelixEnd
+For the Solix Team
