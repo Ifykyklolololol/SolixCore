@@ -1,8 +1,3 @@
-<p align="center">
-  <img src="https://cdn.discordapp.com/attachments/1366553826584428667/1366754033909628979/standard_1.gif" width="100%" alt="SolixCore Banner">
-</p>
-
-
 # Cache & Connection System
 
 ### A high-performance, reload-safe runtime framework designed for scripting.
