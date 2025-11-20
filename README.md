@@ -23,3 +23,10 @@ Reload-safe execution
 Running your script multiple times no longer creates duplicates or conflicts.
 
 **SolixCore.Cache** – test
+
+```lua
+local SolixCore = loadstring(game:HttpGet("https://raw.githubusercontent.com/Ifykyklolololol/SolixCore/refs/heads/main/CacheNetLib.lua"))()
+
+local Cache = SolixCore.Cache
+local Tasks = SolixCore.Tasks
+```
