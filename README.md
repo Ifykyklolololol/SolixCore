@@ -46,3 +46,21 @@ local SolixCore = loadstring(game:HttpGet("https://raw.githubusercontent.com/Ify
 local Cache = SolixCore.Cache
 local Tasks = SolixCore.Tasks
 ```
+
+# Example Use
+```lua
+-- This loop NEVER duplicates on reload.
+Tasks.addTask(task.spawn(function()
+    while true do
+        
+        -- Cached for 1 second
+        local playerCount = Cache.get("playerCount", function()
+            return #game.Players:GetPlayers()
+        end, 1)
+
+        print("Players:", playerCount)
+
+        task.wait(0.2)
+    end
+end))
+```
