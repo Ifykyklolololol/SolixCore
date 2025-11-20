@@ -292,4 +292,4 @@ function Cache.stats()
     }
 end
 
-return Core
+
