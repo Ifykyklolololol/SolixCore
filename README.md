@@ -65,7 +65,7 @@ Tasks.addTask(task.spawn(function()
 end))
 ```
 
-#Reload Safely Example
+# Reload Safely Example
 ```lua
 Tasks.addConnection(
     game.Players.PlayerAdded:Connect(function(plr)
