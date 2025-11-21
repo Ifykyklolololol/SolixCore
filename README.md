@@ -48,7 +48,14 @@ local Tasks = SolixCore.Tasks
 local game = SolixCore.Services
 
 ```
+# Example use for Services
+```lua
+local s = SolixCore.Services
 
+print(S.Players.LocalPlayer)
+print(S.RunService.Heartbeat)
+print(S.HttpService:GenerateGUID())
+```
 # Example Use
 ```lua
 -- This loop NEVER duplicates on reload.
