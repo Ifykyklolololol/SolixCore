@@ -4,13 +4,24 @@
 --// - SolixCore.Tasks  : task + connection lifecycle manager (no overlaps)
 
 local genv = getgenv()
-
+local cloneref = cloneref or newcclosure(function(...) return (...) end)
 genv.SolixCore = genv.SolixCore or {}
 local Core = genv.SolixCore
 
 -- Prevent double-definition, but allow Tasks to reset on reload
-Core.__VERSION = "1.0.0"
-
+Core.__VERSION = "1.0.1"
+---------------------------------------------------------------------
+-- SERVICES HELPER
+-- SolixCore.Services.ServiceName -> game:GetService("ServiceName")
+---------------------------------------------------------------------
+Core.Services = Core.Services or setmetatable({}, {
+    __index = function(self, key)
+        local service = cloneref(game:GetService(key))
+        rawset(self, key, service) -- cache for next access
+        return service
+    end
+})
+Core.game = Core.Services
 ---------------------------------------------------------------------
 -- TASK / CONNECTION MANAGER
 ---------------------------------------------------------------------
@@ -291,5 +302,4 @@ function Cache.stats()
         errors = Cache._stats.errors
     }
 end
-
 
