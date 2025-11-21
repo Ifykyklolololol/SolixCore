@@ -41,10 +41,12 @@ Running your script multiple times **never creates duplicated loops or connectio
 # Load
 
 ```lua
-local SolixCore = loadstring(game:HttpGet("https://raw.githubusercontent.com/Ifykyklololololol/SolixCore/refs/heads/main/CacheNetLib.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Ifykyklololololol/SolixCore/refs/heads/main/CacheNetLib.lua"))()
 
 local Cache = SolixCore.Cache
 local Tasks = SolixCore.Tasks
+local game = SolixCore.Services
+
 ```
 
 # Example Use
