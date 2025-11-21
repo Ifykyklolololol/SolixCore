@@ -50,7 +50,7 @@ local game = SolixCore.Services
 ```
 # Example use for Services
 ```lua
-local s = SolixCore.Services
+local S = SolixCore.Services
 
 print(S.Players.LocalPlayer)
 print(S.RunService.Heartbeat)
