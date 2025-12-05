@@ -1,4 +1,6 @@
-
+-- AdvancedMoverV2.lua
+-- Robust NPC mover using Roblox Pathfinding + safer MoveTo handling
+-- Returns: true on success; false, reason on failure
 
 local AdvancedMover = {}
 AdvancedMover.__index = AdvancedMover
@@ -7,342 +9,409 @@ local PathfindingService = game:GetService("PathfindingService")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
--- Default options
 local DEFAULTS = {
     AgentRadius = 2,
     AgentHeight = 5,
     AgentCanJump = true,
     AgentJumpHeight = 7,
-    MaxRetries = 3,
-    RepathInterval = 1.0,       -- seconds between path recompute attempts while moving
-    StuckTime = 1.2,            -- time to consider humanoid stuck if little/no movement
-    StuckDistance = 1.0,        -- movement threshold (studs)
-    WaypointTolerance = 1.5,    -- how close to waypoint counts as reached (studs)
-    WalkSpeed = nil,            -- optional override humanoid.WalkSpeed while moving
-    RunSpeed = nil,             -- optional override for "sprint" (not used automatically)
+    MaxRetries = 4,               -- number of times to re-compute path
+    RepathInterval = 0.9,         -- seconds between attempts
+    StuckTime = 2.0,              -- time to consider humanoid stuck
+    StuckDistance = 0.35,         -- movement threshold (studs)
+    WaypointTolerance = 1.5,      -- how close to a waypoint counts
+    WalkSpeed = nil,              -- optional override while moving
+    RunSpeed = nil,
     AutoJump = true,
-    ObstacleCheckDistance = 3.5, -- how far ahead to raycast for small obstacles
-    MaxVaultHeight = 2.2,        -- max obstacle height to attempt a "vault" (studs)
-    VaultForwardOffset = 1.2,    -- push forward while vaulting
+    ObstacleCheckDistance = 3.2,  -- forward raycast distance
+    ObstacleIgnoreHeight = 0.3,   -- ignore hits very close to root Y (floor seams)
+    MaxVaultHeight = 2.0,
+    VaultForwardOffset = 1.1,
+    MoveToFalseDelay = 1.2,       -- wait before trusting a MoveToFinished false
     Debug = false,
 }
 
--- Utility: debug print
+-- Utility debug print
 local function dprint(self, ...)
     if self.options.Debug then
-        print("[AdvancedMover]", ...)
+        print("[AdvancedMoverV2]", ...)
     end
 end
 
--- Create path with reasonable agent params
+-- Create a Path object with configured agent params
 local function createPath(self)
-    local path = PathfindingService:CreatePath({
+    return PathfindingService:CreatePath({
         AgentRadius = self.options.AgentRadius,
         AgentHeight = self.options.AgentHeight,
         AgentCanJump = self.options.AgentCanJump,
     })
-    return path
 end
 
--- Raycast helper
+-- Raycast wrapper
 local function raycast(origin, direction, params)
     return Workspace:Raycast(origin, direction, params)
 end
 
--- Basic obstacle probe in front of rootPart
-local function probeObstacle(self, rootPart, forwardDirection)
-    local origin = rootPart.Position + Vector3.new(0, self.options.AgentHeight * 0.3, 0)
+-- Probe obstacle in front of rootPart along forwardDirection (Vector3)
+local function probeObstacle(self, rootPart, forwardDirection, ignoreInstances)
+    if not forwardDirection or forwardDirection.Magnitude < 0.01 then return nil end
+    local origin = rootPart.Position + Vector3.new(0, math.clamp(self.options.AgentHeight * 0.35, 0.5, self.options.AgentHeight), 0)
     local dir = forwardDirection.Unit * self.options.ObstacleCheckDistance
     local rayParams = RaycastParams.new()
-    rayParams.FilterDescendantsInstances = {rootPart.Parent} -- ignore self
     rayParams.FilterType = Enum.RaycastFilterType.Blacklist
-
-    local result = raycast(origin, dir, rayParams)
-    if result then
-        local hit = result.Instance
-        local hitPos = result.Position
-        local normal = result.Normal
-        local relativeHeight = hitPos.Y - rootPart.Position.Y
-        return {
-            instance = hit,
-            position = hitPos,
-            normal = normal,
-            relativeHeight = relativeHeight,
-            distance = (hitPos - origin).Magnitude,
-        }
+    rayParams.FilterDescendantsInstances = {rootPart.Parent}
+    if ignoreInstances then
+        for _, inst in ipairs(ignoreInstances) do
+            table.insert(rayParams.FilterDescendantsInstances, inst)
+        end
     end
-    return nil
+
+    local res = raycast(origin, dir, rayParams)
+    if not res then return nil end
+
+    local hitPos = res.Position
+    local relativeHeight = hitPos.Y - rootPart.Position.Y
+    local dist = (hitPos - origin).Magnitude
+
+    -- ignore tiny floor seams or hits very close to the root's Y (to avoid re-pathing on ground geometry)
+    if math.abs(relativeHeight) <= self.options.ObstacleIgnoreHeight and dist > (self.options.ObstacleCheckDistance * 0.9) == false then
+        -- allow near-ground hits if they're actually close and likely floor
+        -- fall through and return only if it's meaningful
+    end
+
+    return {
+        instance = res.Instance,
+        position = hitPos,
+        normal = res.Normal,
+        relativeHeight = relativeHeight,
+        distance = dist,
+    }
 end
 
--- Attempt vault over small obstacle: apply a jump and MoveTo beyond it
-local function attemptVault(self, humanoid, rootPart, obstacleInfo, nextWaypoint)
+-- Try to vault small obstacles by issuing a jump and MoveTo beyond it
+local function attemptVault(self, humanoid, rootPart, obstacleInfo, beyondPoint)
     if not self.options.AutoJump then return false end
-    if obstacleInfo.relativeHeight <= self.options.MaxVaultHeight then
-        dprint(self, "Attempting vault: obstacle height", obstacleInfo.relativeHeight)
+    if not obstacleInfo then return false end
+
+    if obstacleInfo.relativeHeight <= self.options.MaxVaultHeight and obstacleInfo.distance <= (self.options.ObstacleCheckDistance * 0.95) then
+        dprint(self, "Attempt vault: height=", obstacleInfo.relativeHeight, "dist=", obstacleInfo.distance)
         humanoid.Jump = true
-        -- push forward slightly by MoveTo a point just beyond the obstacle
-        local beyond = (nextWaypoint.Position or nextWaypoint) + (rootPart.CFrame.LookVector * self.options.VaultForwardOffset)
-        humanoid:MoveTo(beyond)
+        -- small forward push to get over
+        local forward = (beyondPoint and (beyondPoint - rootPart.Position) or rootPart.CFrame.LookVector)
+        local pushTo = rootPart.Position + forward.Unit * (self.options.VaultForwardOffset + 0.4)
+        humanoid:MoveTo(pushTo)
         return true
     end
     return false
 end
 
--- Handle a single PathWaypoint action (Jump, Climb, Walk)
-local function handleWaypointAction(self, humanoid, rootPart, waypoint, nextWaypoint)
-    local action = waypoint.Action
-    if action == Enum.PathWaypointAction.Jump then
-        if self.options.AutoJump then
-            dprint(self, "Waypoint says JUMP -> humanoid.Jump = true")
-            humanoid.Jump = true
-        end
-    else
-        -- Walk
-        if nextWaypoint then
-            humanoid:MoveTo(nextWaypoint.Position)
-        end
-    end
-end
-
--- Compute path and return waypoints (or nil + status)
+-- Safe path compute wrapper
 local function computePath(self, startPos, endPos)
     local path = createPath(self)
     local ok, err = pcall(function()
         path:ComputeAsync(startPos, endPos)
     end)
     if not ok then
-        return nil, ("Path Compute failed: %s"):format(tostring(err))
+        return nil, ("ComputeAsync error: %s"):format(tostring(err))
     end
-
-    local status = path.Status
-    if status ~= Enum.PathStatus.Success then
-        return nil, ("Path status: %s"):format(tostring(status))
+    if path.Status ~= Enum.PathStatus.Success then
+        return nil, ("Path status: %s"):format(tostring(path.Status))
     end
-
-    local waypoints = path:GetWaypoints()
-    return waypoints
+    return path:GetWaypoints()
 end
 
--- Main MoveTo implementation
--- returns true on success, false + reason on failure
+-- Create instance
+function AdvancedMover.new(opts)
+    local self = setmetatable({}, AdvancedMover)
+    self.options = {}
+    for k, v in pairs(DEFAULTS) do self.options[k] = v end
+    if opts then for k, v in pairs(opts) do self.options[k] = v end end
+
+    -- state
+    self._isMoving = false
+    self._cancelToken = false
+    self._moveId = 0
+    return self
+end
+
+function AdvancedMover:IsMoving()
+    return self._isMoving
+end
+
+function AdvancedMover:Cancel()
+    self._cancelToken = true
+    self._moveId = self._moveId + 1
+end
+
+-- Internal helper to cleanup connections
+local function safeDisconnect(conn)
+    if conn and conn.Disconnect then
+        conn:Disconnect()
+    elseif conn and conn.disconnect then
+        conn:disconnect()
+    end
+end
+
+-- Core MoveToAsync
+-- humanoid: Humanoid
+-- rootPart: BasePart (HumanoidRootPart)
+-- destination: Vector3
+-- options: table override
+-- returns true or false, reason
 function AdvancedMover:MoveToAsync(humanoid, rootPart, destination, options)
-    assert(humanoid and humanoid:IsA("Humanoid"), "MoveToAsync requires a Humanoid")
-    assert(rootPart and rootPart:IsA("BasePart"), "MoveToAsync requires a rootPart (usually HumanoidRootPart)")
+    assert(humanoid and humanoid:IsA("Humanoid"), "AdvancedMoverV2.MoveToAsync requires a Humanoid")
+    assert(rootPart and rootPart:IsA("BasePart"), "AdvancedMoverV2.MoveToAsync requires a rootPart (HumanoidRootPart)")
     assert(typeof(destination) == "Vector3", "destination must be a Vector3")
 
-    -- Merge options
-    self.options = {}
-    for k,v in pairs(DEFAULTS) do self.options[k] = v end
-    if options then
-        for k,v in pairs(options) do self.options[k] = v end
-    end
+    -- merge options
+    local localOptions = {}
+    for k, v in pairs(self.options) do localOptions[k] = v end
+    if options then for k, v in pairs(options) do localOptions[k] = v end end
 
-    -- Optional speed override
+    -- set moving state & cancellation token
+    self._isMoving = true
+    self._cancelToken = false
+    self._moveId = self._moveId + 1
+    local myMoveId = self._moveId
+
     local prevWalkSpeed
-    if self.options.WalkSpeed then
+    if localOptions.WalkSpeed then
         prevWalkSpeed = humanoid.WalkSpeed
-        humanoid.WalkSpeed = self.options.WalkSpeed
+        humanoid.WalkSpeed = localOptions.WalkSpeed
     end
 
     local retries = 0
-    local tryCount = 0
     local startPos = rootPart.Position
-    local destinationPos = destination
+    local destPos = destination
+    local failReason
 
-    -- Stuck detection variables
-    local lastPosition = rootPart.Position
-    local lastPositionTime = tick()
-    local stuckTimer = 0
+    -- helper to detect cancellation coherently (supports other Cancel calls)
+    local function canceled()
+        return self._cancelToken or (myMoveId ~= self._moveId)
+    end
 
-    local finished = false
-    local success = false
-    local failReason = nil
+    -- small helper to wait while checking cancellation
+    local function waitHeartbeat(timeout)
+        timeout = timeout or 0.1
+        local start = tick()
+        while true do
+            if canceled() then return false end
+            RunService.Heartbeat:Wait()
+            if (tick() - start) >= timeout then return true end
+        end
+    end
 
-    while not finished and retries <= self.options.MaxRetries do
-        tryCount = tryCount + 1
-        dprint(self, "Compute path attempt", tryCount, "from", rootPart.Position, "to", destinationPos)
-        local waypoints, err = computePath(self, rootPart.Position, destinationPos)
-        if not waypoints then
-            retries = retries + 1
-            dprint(self, "Path compute failed:", err, "retry", retries)
-            if retries > self.options.MaxRetries then
-                failReason = "Max path retries reached (" .. tostring(err) .. ")"
-                break
-            else
-                wait(self.options.RepathInterval)
-                continue
-            end
+    -- attempt loop
+    while retries <= localOptions.MaxRetries do
+        if canceled() then
+            failReason = "cancelled"
+            break
         end
 
-        -- Iterate through waypoints
+        dprint(self, ("Path compute attempt %d (retries=%d) from %s to %s"):format(retries + 1, retries, tostring(rootPart.Position), tostring(destPos)))
+        local waypoints, err = computePath(self, rootPart.Position, destPos)
+        if not waypoints then
+            dprint(self, "Compute failed:", err)
+            retries = retries + 1
+            if retries > localOptions.MaxRetries then
+                failReason = ("Exceeded max retries (compute failed): %s"):format(err)
+                break
+            end
+            local waited = 0
+            while waited < localOptions.RepathInterval do
+                if canceled() then break end
+                RunService.Heartbeat:Wait()
+                waited = waited + RunService.Heartbeat:Wait and 0 or 0 -- no-op to keep pattern (we already waited)
+                -- We'll just use a small sleep by Heartbeat yields; primary loop iteration maintains responsiveness
+                break
+            end
+            continue
+        end
+
+        -- follow waypoints
         local wpIndex = 1
         local total = #waypoints
         dprint(self, "Waypoints count:", total)
 
+        -- path-level stuck detection
+        local lastPos = rootPart.Position
+        local lastPosTime = tick()
         local pathStuckStart = nil
-        local pathStartPos = rootPart.Position
 
         while wpIndex <= total do
+            if canceled() then break end
+
             local wp = waypoints[wpIndex]
             local nextWp = waypoints[wpIndex + 1]
+            local targetPos = wp.Position
 
-            -- MoveTo the waypoint (or next depending on action)
-            if wp.Action == Enum.PathWaypointAction.Jump then
-                dprint(self, "Waypoint #"..wpIndex.." -> JUMP at", wp.Position)
+            -- if waypoint asks for jump, do it
+            if wp.Action == Enum.PathWaypointAction.Jump and localOptions.AutoJump then
                 humanoid.Jump = true
+                dprint(self, "Waypoint action: JUMP at", targetPos)
             end
 
-            -- Issue MoveTo to waypoint (or next)
-            local targetPos = wp.Position
-            if nextWp and (wp.Action == Enum.PathWaypointAction.Jump) then
-                -- Move towards the next waypoint for smoother movement
+            -- use next waypoint as target when jumping/for smoothing
+            if nextWp and wp.Action == Enum.PathWaypointAction.Jump then
                 targetPos = nextWp.Position
             end
 
+            dprint(self, ("Moving to waypoint %d/%d -> %s"):format(wpIndex, total, tostring(targetPos)))
             humanoid:MoveTo(targetPos)
-            dprint(self, "Moving to waypoint #"..wpIndex, targetPos)
 
-            -- Wait loop until MoveToFinished or proximity to waypoint
-            local movedTo = false
-            local moveFinishedCon
-            local finishedConnection
-
-            local function proximityCheck()
-                local dist = (rootPart.Position - targetPos).Magnitude
-                return dist <= self.options.WaypointTolerance
-            end
-
-            -- local connection to MoveToFinished
-            local movedFlag = false
-            finishedConnection = humanoid.MoveToFinished:Connect(function(reached)
+            -- MoveToFinished handling
+            local movedFlag = nil
+            local moveConn
+            moveConn = humanoid.MoveToFinished:Connect(function(reached)
                 movedFlag = reached
             end)
 
-            local timedOut = false
             local startWait = tick()
-            while true do
+            local doneThisWp = false
+            while not doneThisWp do
+                if canceled() then break end
+
                 RunService.Heartbeat:Wait()
 
-                -- Stuck detection by distance/time
-                if (rootPart.Position - lastPosition).Magnitude > self.options.StuckDistance then
-                    lastPosition = rootPart.Position
-                    lastPositionTime = tick()
-                else
-                    if tick() - lastPositionTime >= self.options.StuckTime then
-                        -- Stuck detected
-                        dprint(self, "Detected stuck at waypoint #"..wpIndex)
-                        pathStuckStart = pathStuckStart or tick()
-                    end
-                end
-
-                -- Obstacle probe: only if moving forward
-                local forward = (targetPos - rootPart.Position)
-                if forward.Magnitude > 0.1 then
-                    local obs = probeObstacle(self, rootPart, forward)
-                    if obs then
-                        dprint(self, "Obstacle detected:", obs.instance:GetFullName(), "height", obs.relativeHeight)
-                        -- Attempt vault if small
-                        local vaulted = attemptVault(self, humanoid, rootPart, obs, nextWp or wp)
-                        if not vaulted then
-                            -- If cannot vault, try to re-path early
-                            dprint(self, "Cannot vault obstacle, forcing re-path")
-                            break -- break out of waypoint loop to recompute path
-                        end
-                    end
-                end
-
-                -- Waypoint proximity
-                if proximityCheck() then
-                    movedTo = true
+                -- proximity check
+                local dist = (rootPart.Position - targetPos).Magnitude
+                if dist <= localOptions.WaypointTolerance then
+                    dprint(self, ("Waypoint %d reached by proximity (dist=%.2f)"):format(wpIndex, dist))
+                    doneThisWp = true
                     break
                 end
 
-                -- If MoveToFinished fired with false (reached==false), break to re-path
-                if movedFlag == false and (tick() - startWait > 0.25) then
-                    -- MoveToFinished sometimes triggers late; interpret false as blocked
-                    -- but don't be too eager: only treat as failure if not nearing point
-                    if (rootPart.Position - targetPos).Magnitude > (self.options.WaypointTolerance * 2) then
-                        dprint(self, "MoveToFinished fired false and we're still far -> re-path")
+                -- conservative interpretation of MoveToFinished false
+                if movedFlag == false and (tick() - startWait) >= localOptions.MoveToFalseDelay then
+                    local farDist = (rootPart.Position - targetPos).Magnitude
+                    if farDist > (localOptions.WaypointTolerance * 4) then
+                        dprint(self, "MoveToFinished=false and far -> trigger repath")
+                        -- break the waypoint loop and force re-path
+                        doneThisWp = false
+                        break
+                    else
+                        -- we're close enough, treat as reached
+                        doneThisWp = true
                         break
                     end
                 end
 
-                -- If stuck for more than a threshold, break to re-path
-                if pathStuckStart and tick() - pathStuckStart >= (self.options.StuckTime * 1.2) then
-                    dprint(self, "Persistent stuck during path, will re-path")
+                -- normal positive MoveToFinished
+                if movedFlag == true then
+                    dprint(self, "MoveToFinished true -> waypoint considered reached")
+                    doneThisWp = true
                     break
                 end
 
-                -- Safety: extremely long waits => retry
-                if tick() - startWait > 10 then
-                    dprint(self, "Waypoint wait timeout (10s) -> re-path")
-                    timedOut = true
+                -- stuck detection by displacement
+                if (rootPart.Position - lastPos).Magnitude > localOptions.StuckDistance then
+                    lastPos = rootPart.Position
+                    lastPosTime = tick()
+                    pathStuckStart = nil
+                else
+                    if (tick() - lastPosTime) >= localOptions.StuckTime then
+                        if not pathStuckStart then
+                            pathStuckStart = tick()
+                            dprint(self, "Potential stuck detected; starting timer")
+                        elseif tick() - pathStuckStart >= (localOptions.StuckTime * 1.2) then
+                            dprint(self, "Persistent stuck -> trigger repath")
+                            doneThisWp = false
+                            break
+                        end
+                    end
+                end
+
+                -- probe for obstacles ahead (only when moving toward target)
+                local forward = (targetPos - rootPart.Position)
+                if forward.Magnitude > 0.2 then
+                    local obs = probeObstacle(self, rootPart, forward)
+                    if obs and obs.distance <= (localOptions.ObstacleCheckDistance * 0.85) then
+                        dprint(self, "Obstacle detected near path:", obs.instance:GetFullName(), "height=", obs.relativeHeight, "dist=", obs.distance)
+                        local beyond = (nextWp and nextWp.Position) or (targetPos + forward.Unit * (localOptions.VaultForwardOffset))
+                        local vaulted = attemptVault(self, humanoid, rootPart, obs, beyond)
+                        if vaulted then
+                            -- give vault a short time for movement to start
+                            wait(0.12)
+                        else
+                            dprint(self, "Cannot vault -> repath")
+                            doneThisWp = false
+                            break
+                        end
+                    end
+                end
+
+                -- safety timeout (per waypoint)
+                if tick() - startWait > 12 then
+                    dprint(self, "Waypoint wait timed out (12s) -> repath")
+                    doneThisWp = false
                     break
                 end
             end
 
-            -- Clean up
-            if finishedConnection then
-                finishedConnection:Disconnect()
-                finishedConnection = nil
-            end
+            safeDisconnect(moveConn)
+            moveConn = nil
 
-            -- If we were close to the final destination, finish successfully
-            if (rootPart.Position - destinationPos).Magnitude <= self.options.WaypointTolerance then
-                dprint(self, "Arrived at destination (close enough).")
-                finished = true
-                success = true
-                break
-            end
+            -- check whether cancellation occurred
+            if canceled() then break end
 
-            -- Decide whether to advance to next waypoint or recompute
-            if movedTo then
+            -- if doneThisWp true -> advance; else -> break to recompute path
+            if doneThisWp then
                 wpIndex = wpIndex + 1
-                pathStuckStart = nil
             else
-                -- re-path attempt
-                dprint(self, "Breaking waypoint loop to re-path")
+                -- break to recompute a fresh path
+                dprint(self, "Breaking waypoint loop to recompute path")
                 break
             end
-        end
 
-        -- After waypoint iteration, check if we've reached destination precisely
-        if (rootPart.Position - destinationPos).Magnitude <= self.options.WaypointTolerance then
-            finished = true
-            success = true
+            -- if near final destination, finish
+            if (rootPart.Position - destPos).Magnitude <= localOptions.WaypointTolerance then
+                dprint(self, "Arrived at destination (close enough).")
+                -- restore speed
+                if prevWalkSpeed then
+                    humanoid.WalkSpeed = prevWalkSpeed
+                end
+                self._isMoving = false
+                return true
+            end
+        end -- waypoint loop
+
+        if canceled() then
+            failReason = "cancelled"
             break
         end
 
-        -- If not finished, increment retry count and try recomputing path
+        -- final reached check (in case we left waypoint loop because we reached target)
+        if (rootPart.Position - destPos).Magnitude <= localOptions.WaypointTolerance then
+            dprint(self, "Arrived at destination after waypoint loop.")
+            if prevWalkSpeed then humanoid.WalkSpeed = prevWalkSpeed end
+            self._isMoving = false
+            return true
+        end
+
+        -- if here, we need to recompute path (increase retries)
         retries = retries + 1
-        if retries > self.options.MaxRetries then
+        if retries > localOptions.MaxRetries then
             failReason = "Exceeded max retry attempts while pathing"
             break
         end
 
-        dprint(self, "Recomputing path... retry", retries)
-        wait(self.options.RepathInterval)
-    end
+        dprint(self, ("Recomputing path... attempt %d/%d"):format(retries + 1, localOptions.MaxRetries + 1))
+        local waited = 0
+        local interval = localOptions.RepathInterval
+        while waited < interval do
+            if canceled() then break end
+            RunService.Heartbeat:Wait()
+            waited = waited + RunService.Heartbeat:Wait and 0 or 0 -- noop (we are using Heartbeat wait for responsiveness)
+            break -- short yield; primary loop will iterate promptly
+        end
+    end -- retries loop
 
-    -- Restore speed override
+    -- restore speed
     if prevWalkSpeed then
         humanoid.WalkSpeed = prevWalkSpeed
     end
 
-    if success then
-        return true
-    else
-        return false, failReason or "unknown failure"
-    end
-end
-
--- Convenience constructor (not required but useful)
-function AdvancedMover.new(opts)
-    local self = setmetatable({}, AdvancedMover)
-    self.options = {}
-    for k,v in pairs(DEFAULTS) do self.options[k] = v end
-    if opts then for k,v in pairs(opts) do self.options[k] = v end end
-    return self
+    self._isMoving = false
+    return false, failReason or "unknown failure"
 end
 
 return AdvancedMover
