@@ -96,13 +96,6 @@ local function handleWaypointAction(self, humanoid, rootPart, waypoint, nextWayp
             dprint(self, "Waypoint says JUMP -> humanoid.Jump = true")
             humanoid.Jump = true
         end
-    elseif action == Enum.PathWaypointAction.Climb then
-        -- Climb handling: set Humanoid state to Climbing and MoveTo the waypoint
-        dprint(self, "Waypoint says CLIMB -> switching to climbing state")
-        pcall(function() humanoid:ChangeState(Enum.HumanoidStateType.Climbing) end)
-        if nextWaypoint then
-            humanoid:MoveTo(nextWaypoint.Position)
-        end
     else
         -- Walk
         if nextWaypoint then
@@ -201,7 +194,7 @@ function AdvancedMover:MoveToAsync(humanoid, rootPart, destination, options)
 
             -- Issue MoveTo to waypoint (or next)
             local targetPos = wp.Position
-            if nextWp and (wp.Action == Enum.PathWaypointAction.Jump or wp.Action == Enum.PathWaypointAction.Climb) then
+            if nextWp and (wp.Action == Enum.PathWaypointAction.Jump) then
                 -- Move towards the next waypoint for smoother movement
                 targetPos = nextWp.Position
             end
