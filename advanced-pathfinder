@@ -1,0 +1,365 @@
+-- AdvancedMover ModuleScript
+-- Drop in ServerScriptService (or ReplicatedStorage) and require from NPC controller scripts.
+-- Features:
+--  * Pathfinding with PathWaypointAction handling (Jump, Climb)
+--  * Raycast-based obstacle detection + vault/jump heuristics
+--  * Stuck detection & dynamic re-pathing
+--  * Hooks for animations & events
+--  * Configurable options
+
+local AdvancedMover = {}
+AdvancedMover.__index = AdvancedMover
+
+local PathfindingService = game:GetService("PathfindingService")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+
+-- Default options
+local DEFAULTS = {
+    AgentRadius = 2,
+    AgentHeight = 5,
+    AgentCanJump = true,
+    AgentJumpHeight = 7,
+    MaxRetries = 3,
+    RepathInterval = 1.0,       -- seconds between path recompute attempts while moving
+    StuckTime = 1.2,            -- time to consider humanoid stuck if little/no movement
+    StuckDistance = 1.0,        -- movement threshold (studs)
+    WaypointTolerance = 1.5,    -- how close to waypoint counts as reached (studs)
+    WalkSpeed = nil,            -- optional override humanoid.WalkSpeed while moving
+    RunSpeed = nil,             -- optional override for "sprint" (not used automatically)
+    AutoJump = true,
+    ObstacleCheckDistance = 3.5, -- how far ahead to raycast for small obstacles
+    MaxVaultHeight = 2.2,        -- max obstacle height to attempt a "vault" (studs)
+    VaultForwardOffset = 1.2,    -- push forward while vaulting
+    Debug = false,
+}
+
+-- Utility: debug print
+local function dprint(self, ...)
+    if self.options.Debug then
+        print("[AdvancedMover]", ...)
+    end
+end
+
+-- Create path with reasonable agent params
+local function createPath(self)
+    local path = PathfindingService:CreatePath({
+        AgentRadius = self.options.AgentRadius,
+        AgentHeight = self.options.AgentHeight,
+        AgentCanJump = self.options.AgentCanJump,
+    })
+    return path
+end
+
+-- Raycast helper
+local function raycast(origin, direction, params)
+    return Workspace:Raycast(origin, direction, params)
+end
+
+-- Basic obstacle probe in front of rootPart
+local function probeObstacle(self, rootPart, forwardDirection)
+    local origin = rootPart.Position + Vector3.new(0, self.options.AgentHeight * 0.3, 0)
+    local dir = forwardDirection.Unit * self.options.ObstacleCheckDistance
+    local rayParams = RaycastParams.new()
+    rayParams.FilterDescendantsInstances = {rootPart.Parent} -- ignore self
+    rayParams.FilterType = Enum.RaycastFilterType.Blacklist
+
+    local result = raycast(origin, dir, rayParams)
+    if result then
+        local hit = result.Instance
+        local hitPos = result.Position
+        local normal = result.Normal
+        local relativeHeight = hitPos.Y - rootPart.Position.Y
+        return {
+            instance = hit,
+            position = hitPos,
+            normal = normal,
+            relativeHeight = relativeHeight,
+            distance = (hitPos - origin).Magnitude,
+        }
+    end
+    return nil
+end
+
+-- Attempt vault over small obstacle: apply a jump and MoveTo beyond it
+local function attemptVault(self, humanoid, rootPart, obstacleInfo, nextWaypoint)
+    if not self.options.AutoJump then return false end
+    if obstacleInfo.relativeHeight <= self.options.MaxVaultHeight then
+        dprint(self, "Attempting vault: obstacle height", obstacleInfo.relativeHeight)
+        humanoid.Jump = true
+        -- push forward slightly by MoveTo a point just beyond the obstacle
+        local beyond = (nextWaypoint.Position or nextWaypoint) + (rootPart.CFrame.LookVector * self.options.VaultForwardOffset)
+        humanoid:MoveTo(beyond)
+        return true
+    end
+    return false
+end
+
+-- Handle a single PathWaypoint action (Jump, Climb, Walk)
+local function handleWaypointAction(self, humanoid, rootPart, waypoint, nextWaypoint)
+    local action = waypoint.Action
+    if action == Enum.PathWaypointAction.Jump then
+        if self.options.AutoJump then
+            dprint(self, "Waypoint says JUMP -> humanoid.Jump = true")
+            humanoid.Jump = true
+        end
+    elseif action == Enum.PathWaypointAction.Climb then
+        -- Climb handling: set Humanoid state to Climbing and MoveTo the waypoint
+        dprint(self, "Waypoint says CLIMB -> switching to climbing state")
+        pcall(function() humanoid:ChangeState(Enum.HumanoidStateType.Climbing) end)
+        if nextWaypoint then
+            humanoid:MoveTo(nextWaypoint.Position)
+        end
+    else
+        -- Walk
+        if nextWaypoint then
+            humanoid:MoveTo(nextWaypoint.Position)
+        end
+    end
+end
+
+-- Compute path and return waypoints (or nil + status)
+local function computePath(self, startPos, endPos)
+    local path = createPath(self)
+    local ok, err = pcall(function()
+        path:ComputeAsync(startPos, endPos)
+    end)
+    if not ok then
+        return nil, ("Path Compute failed: %s"):format(tostring(err))
+    end
+
+    local status = path.Status
+    if status ~= Enum.PathStatus.Success then
+        return nil, ("Path status: %s"):format(tostring(status))
+    end
+
+    local waypoints = path:GetWaypoints()
+    return waypoints
+end
+
+-- Main MoveTo implementation
+-- returns true on success, false + reason on failure
+function AdvancedMover:MoveToAsync(humanoid, rootPart, destination, options)
+    assert(humanoid and humanoid:IsA("Humanoid"), "MoveToAsync requires a Humanoid")
+    assert(rootPart and rootPart:IsA("BasePart"), "MoveToAsync requires a rootPart (usually HumanoidRootPart)")
+    assert(typeof(destination) == "Vector3", "destination must be a Vector3")
+
+    -- Merge options
+    self.options = {}
+    for k,v in pairs(DEFAULTS) do self.options[k] = v end
+    if options then
+        for k,v in pairs(options) do self.options[k] = v end
+    end
+
+    -- Optional speed override
+    local prevWalkSpeed
+    if self.options.WalkSpeed then
+        prevWalkSpeed = humanoid.WalkSpeed
+        humanoid.WalkSpeed = self.options.WalkSpeed
+    end
+
+    local retries = 0
+    local tryCount = 0
+    local startPos = rootPart.Position
+    local destinationPos = destination
+
+    -- Stuck detection variables
+    local lastPosition = rootPart.Position
+    local lastPositionTime = tick()
+    local stuckTimer = 0
+
+    local finished = false
+    local success = false
+    local failReason = nil
+
+    while not finished and retries <= self.options.MaxRetries do
+        tryCount = tryCount + 1
+        dprint(self, "Compute path attempt", tryCount, "from", rootPart.Position, "to", destinationPos)
+        local waypoints, err = computePath(self, rootPart.Position, destinationPos)
+        if not waypoints then
+            retries = retries + 1
+            dprint(self, "Path compute failed:", err, "retry", retries)
+            if retries > self.options.MaxRetries then
+                failReason = "Max path retries reached (" .. tostring(err) .. ")"
+                break
+            else
+                wait(self.options.RepathInterval)
+                continue
+            end
+        end
+
+        -- Iterate through waypoints
+        local wpIndex = 1
+        local total = #waypoints
+        dprint(self, "Waypoints count:", total)
+
+        local pathStuckStart = nil
+        local pathStartPos = rootPart.Position
+
+        while wpIndex <= total do
+            local wp = waypoints[wpIndex]
+            local nextWp = waypoints[wpIndex + 1]
+
+            -- MoveTo the waypoint (or next depending on action)
+            if wp.Action == Enum.PathWaypointAction.Jump then
+                dprint(self, "Waypoint #"..wpIndex.." -> JUMP at", wp.Position)
+                humanoid.Jump = true
+            elseif wp.Action == Enum.PathWaypointAction.Climb then
+                dprint(self, "Waypoint #"..wpIndex.." -> CLIMB at", wp.Position)
+                pcall(function() humanoid:ChangeState(Enum.HumanoidStateType.Climbing) end)
+            end
+
+            -- Issue MoveTo to waypoint (or next)
+            local targetPos = wp.Position
+            if nextWp and (wp.Action == Enum.PathWaypointAction.Jump or wp.Action == Enum.PathWaypointAction.Climb) then
+                -- Move towards the next waypoint for smoother movement
+                targetPos = nextWp.Position
+            end
+
+            humanoid:MoveTo(targetPos)
+            dprint(self, "Moving to waypoint #"..wpIndex, targetPos)
+
+            -- Wait loop until MoveToFinished or proximity to waypoint
+            local movedTo = false
+            local moveFinishedCon
+            local finishedConnection
+
+            local function proximityCheck()
+                local dist = (rootPart.Position - targetPos).Magnitude
+                return dist <= self.options.WaypointTolerance
+            end
+
+            -- local connection to MoveToFinished
+            local movedFlag = false
+            finishedConnection = humanoid.MoveToFinished:Connect(function(reached)
+                movedFlag = reached
+            end)
+
+            local timedOut = false
+            local startWait = tick()
+            while true do
+                RunService.Heartbeat:Wait()
+
+                -- Stuck detection by distance/time
+                if (rootPart.Position - lastPosition).Magnitude > self.options.StuckDistance then
+                    lastPosition = rootPart.Position
+                    lastPositionTime = tick()
+                else
+                    if tick() - lastPositionTime >= self.options.StuckTime then
+                        -- Stuck detected
+                        dprint(self, "Detected stuck at waypoint #"..wpIndex)
+                        pathStuckStart = pathStuckStart or tick()
+                    end
+                end
+
+                -- Obstacle probe: only if moving forward
+                local forward = (targetPos - rootPart.Position)
+                if forward.Magnitude > 0.1 then
+                    local obs = probeObstacle(self, rootPart, forward)
+                    if obs then
+                        dprint(self, "Obstacle detected:", obs.instance:GetFullName(), "height", obs.relativeHeight)
+                        -- Attempt vault if small
+                        local vaulted = attemptVault(self, humanoid, rootPart, obs, nextWp or wp)
+                        if not vaulted then
+                            -- If cannot vault, try to re-path early
+                            dprint(self, "Cannot vault obstacle, forcing re-path")
+                            break -- break out of waypoint loop to recompute path
+                        end
+                    end
+                end
+
+                -- Waypoint proximity
+                if proximityCheck() then
+                    movedTo = true
+                    break
+                end
+
+                -- If MoveToFinished fired with false (reached==false), break to re-path
+                if movedFlag == false and (tick() - startWait > 0.25) then
+                    -- MoveToFinished sometimes triggers late; interpret false as blocked
+                    -- but don't be too eager: only treat as failure if not nearing point
+                    if (rootPart.Position - targetPos).Magnitude > (self.options.WaypointTolerance * 2) then
+                        dprint(self, "MoveToFinished fired false and we're still far -> re-path")
+                        break
+                    end
+                end
+
+                -- If stuck for more than a threshold, break to re-path
+                if pathStuckStart and tick() - pathStuckStart >= (self.options.StuckTime * 1.2) then
+                    dprint(self, "Persistent stuck during path, will re-path")
+                    break
+                end
+
+                -- Safety: extremely long waits => retry
+                if tick() - startWait > 10 then
+                    dprint(self, "Waypoint wait timeout (10s) -> re-path")
+                    timedOut = true
+                    break
+                end
+            end
+
+            -- Clean up
+            if finishedConnection then
+                finishedConnection:Disconnect()
+                finishedConnection = nil
+            end
+
+            -- If we were close to the final destination, finish successfully
+            if (rootPart.Position - destinationPos).Magnitude <= self.options.WaypointTolerance then
+                dprint(self, "Arrived at destination (close enough).")
+                finished = true
+                success = true
+                break
+            end
+
+            -- Decide whether to advance to next waypoint or recompute
+            if movedTo then
+                wpIndex = wpIndex + 1
+                pathStuckStart = nil
+            else
+                -- re-path attempt
+                dprint(self, "Breaking waypoint loop to re-path")
+                break
+            end
+        end
+
+        -- After waypoint iteration, check if we've reached destination precisely
+        if (rootPart.Position - destinationPos).Magnitude <= self.options.WaypointTolerance then
+            finished = true
+            success = true
+            break
+        end
+
+        -- If not finished, increment retry count and try recomputing path
+        retries = retries + 1
+        if retries > self.options.MaxRetries then
+            failReason = "Exceeded max retry attempts while pathing"
+            break
+        end
+
+        dprint(self, "Recomputing path... retry", retries)
+        wait(self.options.RepathInterval)
+    end
+
+    -- Restore speed override
+    if prevWalkSpeed then
+        humanoid.WalkSpeed = prevWalkSpeed
+    end
+
+    if success then
+        return true
+    else
+        return false, failReason or "unknown failure"
+    end
+end
+
+-- Convenience constructor (not required but useful)
+function AdvancedMover.new(opts)
+    local self = setmetatable({}, AdvancedMover)
+    self.options = {}
+    for k,v in pairs(DEFAULTS) do self.options[k] = v end
+    if opts then for k,v in pairs(opts) do self.options[k] = v end end
+    return self
+end
+
+return AdvancedMover
