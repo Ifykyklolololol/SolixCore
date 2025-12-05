@@ -1,11 +1,4 @@
--- AdvancedMover ModuleScript
--- Drop in ServerScriptService (or ReplicatedStorage) and require from NPC controller scripts.
--- Features:
---  * Pathfinding with PathWaypointAction handling (Jump, Climb)
---  * Raycast-based obstacle detection + vault/jump heuristics
---  * Stuck detection & dynamic re-pathing
---  * Hooks for animations & events
---  * Configurable options
+
 
 local AdvancedMover = {}
 AdvancedMover.__index = AdvancedMover
