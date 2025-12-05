@@ -197,9 +197,6 @@ function AdvancedMover:MoveToAsync(humanoid, rootPart, destination, options)
             if wp.Action == Enum.PathWaypointAction.Jump then
                 dprint(self, "Waypoint #"..wpIndex.." -> JUMP at", wp.Position)
                 humanoid.Jump = true
-            elseif wp.Action == Enum.PathWaypointAction.Climb then
-                dprint(self, "Waypoint #"..wpIndex.." -> CLIMB at", wp.Position)
-                pcall(function() humanoid:ChangeState(Enum.HumanoidStateType.Climbing) end)
             end
 
             -- Issue MoveTo to waypoint (or next)
