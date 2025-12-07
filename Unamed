@@ -1,0 +1,78 @@
+
+return {
+    Items = {
+        {
+            Name = "Tiny Essence", 
+            Rarity = "Common", 
+            Description = "The faint remnant of a creature\226\128\153s life force. Though weak, it still holds enough energy to slightly empower your gear.", 
+            Value = 1, 
+            Price = 2.5, 
+            EnhancementPrice = 2.5, 
+        }, 
+        {
+            Name = "Small Essence", 
+            Rarity = "Common", 
+            Description = "A modest fragment of raw spirit, harvested from lesser foes. Used to gently refine your equipment\226\128\153s latent potential.", 
+            Value = 3, 
+            Price = 5, 
+            EnhancementPrice = 5, 
+        }, 
+        {
+            Name = "Medium Essence", 
+            Rarity = "Uncommon", 
+            Description = "A solid core of condensed vitality. Often found in the remains of stronger creatures. Useful for notable upgrades.", 
+            Value = 15, 
+            Price = 15, 
+            EnhancementPrice = 15, 
+        }, 
+        {
+            Name = "Large Essence", 
+            Rarity = "Uncommon", 
+            Description = "A pulsating mass of spiritual energy, brimming with power. Can significantly strengthen weapons and armor.", 
+            Value = 75, 
+            Price = 35, 
+            EnhancementPrice = 50, 
+        }, 
+        {
+            Name = "Greater Essence", 
+            Rarity = "Rare", 
+            Description = "A refined and potent concentration of life force, claimed from powerful adversaries. Essential for unlocking advanced enhancements.", 
+            Value = 375, 
+            Price = 50, 
+            EnhancementPrice = 100, 
+        }, 
+        {
+            Name = "Superior Essence", 
+            Rarity = "Epic", 
+            Description = "A gleaming reservoir of pure essence. Only the mightiest foes leave behind such a treasure. Enables remarkable upgrades and new rune slots.", 
+            Value = 1875, 
+            Price = 75, 
+            EnhancementPrice = 250, 
+        }, 
+        {
+            Name = "Epic Essence", 
+            Rarity = "Epic", 
+            Description = "An extraordinary crystal of swirling energy. Fused with the memories of countless fallen enemies. Used for the most demanding equipment evolutions.", 
+            Value = 9375, 
+            Price = 100, 
+            EnhancementPrice = 500, 
+        }, 
+        {
+            Name = "Legendary Essence", 
+            Rarity = "Legendary", 
+            Description = "A legendary font of power, radiant with golden light. Sought by masters of the forge to achieve unmatched strength and unlock hidden rune paths.", 
+            Value = 46875, 
+            Price = 150, 
+            EnhancementPrice = 1000, 
+        }, 
+        {
+            Name = "Mythical Essence", 
+            Rarity = "Mythic", 
+            Description = "A mythical relic of pure creation. Soaked in the essence of ancient bosses and creatures beyond legend. Transforms equipment into artifacts worthy of legend.", 
+            Value = 234375, 
+            Price = 200, 
+            EnhancementPrice = 2000, 
+        }
+    }, 
+
+};
