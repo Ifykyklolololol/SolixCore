@@ -162,7 +162,7 @@ If none -> shows "none"
 
 <a id="model-esp"></a>
 
-<img src="https://github.com/Ifykyklolololol/images/blob/main/ModelPreview.png?raw=true" width="150">
+<img src="https://github.com/Ifykyklolololol/images/blob/main/ModelPreview.png?raw=true" width="250">
 
 ```
 
