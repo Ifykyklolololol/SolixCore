@@ -6,7 +6,7 @@
 ## Features
 
 ### BoundingBox
-![BoundingBox Preview](https://github.com/Ifykyklolololol/images/blob/main/BoundingBoxPreview.png)
+![BoundingBox Preview](https://github.com/Ifykyklolololol/images/blob/main/BoundingBoxPreview.png?raw=true)
 
 ```
 
