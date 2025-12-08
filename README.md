@@ -1,7 +1,7 @@
 <!-- HEADER -->
 <div align="center">
 
-  <img src="https://github.com/Ifykyklolololol/images/blob/main/FullPreview.png?raw=true" width="350">
+  <img src="https://github.com/Ifykyklolololol/images/blob/main/FullPreview.png?raw=true" width="150">
 
   <h1>Solix ESP Library</h1>
 
@@ -37,7 +37,7 @@
 ## 🔲 BoundingBox
 <a id="boundingbox"></a>
 
-<img src="https://github.com/Ifykyklolololol/images/blob/main/BoundingBoxPreview.png?raw=true" width="450">
+<img src="https://github.com/Ifykyklolololol/images/blob/main/BoundingBoxPreview.png?raw=true" width="200">
 
 ```
 Enabled -> true / false
@@ -69,7 +69,7 @@ Rotation -> 0–360 degrees
 ## 📊 Bars
 <a id="bars"></a>
 
-<img src="https://github.com/Ifykyklolololol/images/blob/main/BarsPreview.png?raw=true" width="450">
+<img src="https://github.com/Ifykyklolololol/images/blob/main/BarsPreview.png?raw=true" width="150">
 
 ```
 Enabled -> true / false
@@ -103,7 +103,7 @@ Type(Player)
 ## 📏 Distance
 <a id="distance"></a>
 
-<img src="https://github.com/Ifykyklolololol/images/blob/main/DistancePreview.png?raw=true" width="450">
+<img src="https://github.com/Ifykyklolololol/images/blob/main/DistancePreview.png?raw=true" width="150">
 
 ```
 Enabled -> true / false
@@ -122,7 +122,7 @@ Transparency -> number (0–1)
 ## 🏷️ Name
 <a id="name"></a>
 
-<img src="https://github.com/Ifykyklolololol/images/blob/main/NamePreview.png?raw=true" width="450">
+<img src="https://github.com/Ifykyklolololol/images/blob/main/NamePreview.png?raw=true" width="150">
 
 ```
 Enabled -> true / false
@@ -142,7 +142,7 @@ Transparency -> number (0–1)
 ## 🔫 Weapon / Tool
 <a id="weapon--tool"></a>
 
-<img src="https://github.com/Ifykyklolololol/images/blob/main/ToolPreview.png?raw=true" width="450">
+<img src="https://github.com/Ifykyklolololol/images/blob/main/ToolPreview.png?raw=true" width="150">
 
 ```
 Enabled -> true / false
@@ -162,7 +162,7 @@ If none -> shows "none"
 
 <a id="model-esp"></a>
 
-<img src="https://github.com/Ifykyklolololol/images/blob/main/ModelPreview.png?raw=true" width="450">
+<img src="https://github.com/Ifykyklolololol/images/blob/main/ModelPreview.png?raw=true" width="150">
 
 ```
 
@@ -192,7 +192,7 @@ This enables ESP on:
 ## 🚩 Flags
 <a id="flags"></a>
 
-<img src="https://github.com/Ifykyklolololol/images/blob/main/FlagsPreview.png?raw=true" width="450">
+<img src="https://github.com/Ifykyklolololol/images/blob/main/FlagsPreview.png?raw=true" width="150">
 
 ```
 Enabled -> true / false
