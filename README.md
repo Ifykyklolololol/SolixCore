@@ -5,8 +5,10 @@
 
 ## Features
 
+### BoundingBox
+
 ```
-BoundingBox
+
     Enabled               -> true / false
     DynamicBox            -> true / false
     IncludeAccessories    -> true / false
@@ -26,61 +28,35 @@ BoundingBox
         Color             -> { Color3, Color3 }
         Transparency      -> { number, number }
         Rotation          -> 0–360 degrees
-```
-
-
-
-```
-# Example use for Services
-```lua
-local S = SolixCore.Services
-
-print(S.Players.LocalPlayer)
-print(S.RunService.Heartbeat)
-print(S.HttpService:GenerateGUID())
-```
-# Example Use
-```lua
--- This loop NEVER duplicates on reload.
-Tasks.addTask(task.spawn(function()
-    while true do
         
-        -- Cached for 1 second
-        local playerCount = Cache.get("playerCount", function()
-            return #game.Players:GetPlayers()
-        end, 1)
-
-        print("Players:", playerCount)
-
-        task.wait(0.2)
-    end
-end))
 ```
 
-# Reload Safely Example
-```lua
-Tasks.addConnection(
-    game.Players.PlayerAdded:Connect(function(plr)
-        print("Player joined:", plr.Name)
-    end)
-)
+### Bars
+
 ```
 
-# Cache Force Recompute
--- Forces the next Cache.get to recompute instantly.
-```lua
-Cache.force("playerCount")
-```
+    Enabled               -> true / false
+    Position              -> "Left" / "Right" / "Top" / "Bottom"
 
-# Manual Invalidation
-```lua
-Cache.invalidate("playerCount")  -- remove one key
-Cache.invalidateAll()            -- wipe the entire cache
-```
+    Color                 -> { Color3, Color3, Color3 }
+                            (3-point gradient)
 
-# Cache Stats 
-```lua
-print(Cache.stats())
+    Type(Player)          -> returns 0–1 value (bar fill amount)
+
+    Text
+        Enabled           -> true / false
+        FollowBar         -> true / false
+        Ending            -> string ("" or "%", etc)
+        Position          -> "Left" / "Right" / "Top" / "Bottom"
+                              (ignored if FollowBar = true)
+        Color             -> Color3
+        Transparency      -> number (0–1)
+
+        Type(Player)
+            Returns:
+                value      -> number shown
+                visibility -> true/false (auto visibility)
+                
 ```
 
 
