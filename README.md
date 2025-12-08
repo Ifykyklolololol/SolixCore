@@ -5,7 +5,28 @@
 
 ## Features
 
-*BoundingBox*
+\`\`\`
+BoundingBox
+    Enabled               -> true / false
+    DynamicBox            -> true / false
+    IncludeAccessories    -> true / false
+    
+    Color                 -> { Color3, Color3 }
+    Transparency          -> { number, number }
+    Rotation              -> 0–360 degrees
+
+    Glow
+        Enabled           -> true / false
+        Color             -> { Color3, Color3 }
+        Transparency      -> { number, number }
+        Rotation          -> 0–360 degrees
+
+    Fill
+        Enabled           -> true / false
+        Color             -> { Color3, Color3 }
+        Transparency      -> { number, number }
+        Rotation          -> 0–360 degrees
+\`\`\`
 
 
 
