@@ -63,6 +63,73 @@
                 
 ```
 
+### Distance
+![BoundingBox Preview](https://github.com/Ifykyklolololol/images/blob/main/DistancePreview.png?raw=true)
+
+```
+
+    Enabled               -> true / false
+    Ending                -> "st" / "m" / custom string
+    Position              -> "Top" / "Bottom" / "Left" / "Right"
+
+    Color                 -> Color3
+    Transparency          -> number (0–1)
+
+                
+```
+
+### Name
+![BoundingBox Preview](https://github.com/Ifykyklolololol/images/blob/main/NamePreview.png?raw=true)
+
+```
+
+    Enabled               -> true / false
+    UseDisplay            -> true / false
+                             (DisplayName or Username)
+
+    Position              -> "Top" / "Bottom" / "Left" / "Right"
+    Color                 -> Color3
+    Transparency          -> number (0–1)
+                
+```
+
+### Weapon / Tool
+![BoundingBox Preview](https://github.com/Ifykyklolololol/images/blob/main/ToolPreview.png?raw=true)
+
+```
+
+    Enabled               -> true / false
+    UseDisplay            -> true / false
+                             (DisplayName or Username)
+
+    Position              -> "Top" / "Bottom" / "Left" / "Right"
+    Color                 -> Color3
+    Transparency          -> number (0–1)
+                
+```
+
+### Flags
+![BoundingBox Preview](https://github.com/Ifykyklolololol/images/blob/main/FlagsPreview.png?raw=true)
+
+```
+
+    Enabled               -> true / false
+    Position              -> "Left" / "Right"
+
+    Color                 -> Color3
+    Transparency          -> number (0–1)
+
+    Type(Player)
+        Returns a table of strings representing states:
+             Example defaults:
+                 "moving"    -> player is walking
+                 "jumping"   -> player is jumping
+
+    You can add ANY custom flags by inserting more strings into the returned table.
+                
+```
+
+
 
 
 ❤️ Credits
