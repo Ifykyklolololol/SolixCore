@@ -5,7 +5,7 @@
 
 ## Features
 
-\`\`\`
+```
 BoundingBox
     Enabled               -> true / false
     DynamicBox            -> true / false
@@ -26,7 +26,7 @@ BoundingBox
         Color             -> { Color3, Color3 }
         Transparency      -> { number, number }
         Rotation          -> 0–360 degrees
-\`\`\`
+```
 
 
 
