@@ -35,6 +35,7 @@
 ```
 
 ### Bars
+![BoundingBox Preview](https://github.com/Ifykyklolololol/images/blob/main/BarsPreview.png?raw=true)
 
 ```
 
