@@ -1916,13 +1916,15 @@ local DRAG_SLOP     = IsMobile and 5  or 0
     local Scale = (self.Value - Data.Min) / (Data.Max - Data.Min)
     Scale = MathClamp(Scale, 0, 1)
 
-    -- fill bar
-    Items["Accent"]:Tween(
-        TweenInfo.new(0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
-        {
-            Size = UDim2New(Scale, 0, 1, 0)
-        }
-    )
+    -- fill bar (NO tween while dragging)
+    if self.Sliding then
+        Items["Accent"].Instance.Size = UDim2New(Scale, 0, 1, 0)
+    else
+        Items["Accent"]:Tween(
+            TweenInfo.new(0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
+            { Size = UDim2New(Scale, 0, 1, 0) }
+        )
+    end
 
     -- drag knob MUST sit at the END of the fill
     if Items["Drag"] then
