@@ -2001,31 +2001,50 @@ end
 			TableInsert(PageSearchData, SearchData)
 
 			Items["RealSlider"]:Connect("InputBegan", function(Input)
-				if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
-					Slider.Sliding = true 
+    if Input.UserInputType == Enum.UserInputType.MouseButton1
+    or Input.UserInputType == Enum.UserInputType.Touch then
 
-					local SizeX = (Input.Position.X - Items["RealSlider"].Instance.AbsolutePosition.X) / Items["RealSlider"].Instance.AbsoluteSize.X
-					local Value = ((Data.Max - Data.Min) * SizeX) + Data.Min
+        Slider.Sliding = true
 
-					Slider:Set(Value)
+        local function UpdateFromInput(Input)
+            local BarX = Items["RealSlider"].Instance.AbsolutePosition.X
+            local BarW = Items["RealSlider"].Instance.AbsoluteSize.X
 
-					Input.Changed:Connect(function()
-						if Input.UserInputState == Enum.UserInputState.End then
-							Slider.Sliding = false
-						end
-					end)
-				end
-			end)
+            local ClampedX = MathClamp(
+                Input.Position.X,
+                BarX,
+                BarX + BarW
+            )
 
-			Library:Connect(UserInputService.InputChanged, function(Input)
-				if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
-					if Slider.Sliding then
-                    local SizeX = (Input.Position.X - Items["RealSlider"].Instance.AbsolutePosition.X) / Items["RealSlider"].Instance.AbsoluteSize.X
-                    local Value = ((Data.Max - Data.Min) * SizeX) + Data.Min
-                    Slider:Set(Value)
+            local SizeX = (ClampedX - BarX) / BarW
+            local Value = ((Data.Max - Data.Min) * SizeX) + Data.Min
+
+            Slider:Set(Value)
+        end
+
+        UpdateFromInput(Input)
+
+        local MoveConn, EndConn
+
+        MoveConn = UserInputService.InputChanged:Connect(function(Input)
+            if Input.UserInputType == Enum.UserInputType.MouseMovement
+            or Input.UserInputType == Enum.UserInputType.Touch then
+                if Slider.Sliding then
+                    UpdateFromInput(Input)
                 end
-				end
-			end)
+            end
+        end)
+
+        EndConn = UserInputService.InputEnded:Connect(function(Input)
+            if Input.UserInputType == Enum.UserInputType.MouseButton1
+            or Input.UserInputType == Enum.UserInputType.Touch then
+                Slider.Sliding = false
+                MoveConn:Disconnect()
+                EndConn:Disconnect()
+            end
+        end)
+    end
+end)
 
 			if Data.Disabled then 
 				Slider:SetDisabled(Data.Disabled)
