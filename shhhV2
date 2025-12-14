@@ -79,28 +79,13 @@ local Library do
 
 	local IsMobile = false
 
-    if UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled and not UserInputService.MouseEnabled then
+	if UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled and not UserInputService.MouseEnabled then
 		IsMobile = true
 	elseif not UserInputService.TouchEnabled and UserInputService.KeyboardEnabled and UserInputService.MouseEnabled then
 		IsMobile = false
 	elseif UserInputService.TouchEnabled and UserInputService.KeyboardEnabled and UserInputService.MouseEnabled then 
 		IsMobile = false
 	end
-
-    -- Mobile Shit So Easy Testing.
-local TOUCH_ROW     = IsMobile and 30 or 20
-local TOUCH_BTN     = IsMobile and 32 or 25
-local TOUCH_SLIDER  = IsMobile and 18 or 15
-local TOUCH_HANDLE  = IsMobile and 12 or 7
-local TOUCH_PAD     = IsMobile and 4  or 4
-local DRAG_SLOP     = IsMobile and 5  or 0
-
-
-
-
-
-
-	
 
 	Library = {
 		Theme =  { },
@@ -469,15 +454,11 @@ local DRAG_SLOP     = IsMobile and 5  or 0
 
 			return UIStroke
 		end
-       
+
 		Instances.Tooltip = function(self, Text)
 			if not self.Instance then 
 				return
 			end
-
-            if IsMobile then 
-                return 
-            end
 
 			if Text == nil then 
 				return
@@ -557,8 +538,7 @@ local DRAG_SLOP     = IsMobile and 5  or 0
 					RenderStepped = nil
 				end
 			end)
-		
-        end
+		end
 
 		Instances.FadeItem = function(self, Visibility, Speed)
 			local Item = self.Instance
@@ -665,9 +645,6 @@ local DRAG_SLOP     = IsMobile and 5  or 0
 
 			local Set = function(Input)
 				local DragDelta = Input.Position - DragStart
-                if DragDelta.Magnitude < DRAG_SLOP then 
-                    return 
-                end
 				self:Tween(TweenInfo.new(0.16, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2New(StartPosition.X.Scale, StartPosition.X.Offset + DragDelta.X, StartPosition.Y.Scale, StartPosition.Y.Offset + DragDelta.Y)})
 			end
 
@@ -818,6 +795,12 @@ local DRAG_SLOP     = IsMobile and 5  or 0
 		ResetOnSpawn = false
 	})
 
+    if IsMobile then 
+        Instances:Create("UIScale", {
+            Parent = Library.Holder.Instance,
+            Scale = 0.7
+        })
+    end
 
 	Library.UnusedHolder = Instances:Create("ScreenGui", {
 		Parent = gethui(),
@@ -1217,7 +1200,7 @@ local DRAG_SLOP     = IsMobile and 5  or 0
 					AutoButtonColor = false,
 					BackgroundTransparency = 1,
 					BorderSizePixel = 0,
-					Size = UDim2New(1, 0, 0, TOUCH_ROW),
+					Size = UDim2New(1, 0, 0, 20),
 					ZIndex = 2,
 					TextSize = 14,
 					BackgroundColor3 = FromRGB(255, 255, 255)
@@ -1248,7 +1231,7 @@ local DRAG_SLOP     = IsMobile and 5  or 0
 					BorderColor3 = FromRGB(0, 0, 0),
 					AnchorPoint = Vector2New(1, 0),
 					Position = UDim2New(1, 0, 0, 0),
-					Size = UDim2New(0, IsMobile and 52 or 40, 0, IsMobile and 28 or 20),
+					Size = UDim2New(0, 40, 0, 20),
 					ZIndex = 2,
 					BorderSizePixel = 0,
 					BackgroundColor3 = FromRGB(36, 32, 39)
@@ -1275,7 +1258,7 @@ local DRAG_SLOP     = IsMobile and 5  or 0
 					BorderColor3 = FromRGB(0, 0, 0),
 					BackgroundTransparency = 0.4000000059604645,
 					Position = UDim2New(0, 3, 0, 3),
-					Size = UDim2New(0, IsMobile and 22 or 14, 0, IsMobile and 22 or 14),
+					Size = UDim2New(0, 14, 0, 14),
 					ZIndex = 2,
 					BorderSizePixel = 0,
 					BackgroundColor3 = FromRGB(255, 255, 255)
@@ -1418,7 +1401,7 @@ local DRAG_SLOP     = IsMobile and 5  or 0
 					AutoButtonColor = false,
 					BackgroundTransparency = 1,
 					BorderSizePixel = 0,
-					Size = UDim2New(1, 0, 0, TOUCH_ROW),
+					Size = UDim2New(1, 0, 0, 20),
 					ZIndex = 2,
 					TextSize = 14,
 					BackgroundColor3 = FromRGB(255, 255, 255)
@@ -1449,7 +1432,7 @@ local DRAG_SLOP     = IsMobile and 5  or 0
 					BorderColor3 = FromRGB(0, 0, 0),
 					AnchorPoint = Vector2New(1, 0),
 					Position = UDim2New(1, 0, 0, 0),
-					Size = UDim2New(0, IsMobile and 28 or 20, 0, IsMobile and 28 or 20),
+					Size = UDim2New(0, 20, 0, 20),
 					ZIndex = 2,
 					BorderSizePixel = 0,
 					BackgroundColor3 = FromRGB(36, 32, 39)
@@ -1605,7 +1588,7 @@ local DRAG_SLOP     = IsMobile and 5  or 0
 					Parent = Data.Parent.Instance,
 					Name = "\0",
 					BackgroundTransparency = 1,
-					Size = UDim2New(1, 0, 0, TOUCH_ROW),
+					Size = UDim2New(1, 0, 0, 25),
 					BorderColor3 = FromRGB(0, 0, 0),
 					ZIndex = 2,
 					BorderSizePixel = 0,
@@ -1763,7 +1746,7 @@ local DRAG_SLOP     = IsMobile and 5  or 0
 					Parent = Data.Parent.Instance,
 					Name = "\0",
 					BackgroundTransparency = 1,
-					Size = UDim2New(1, 0, 0, IsMobile and 42 or 35),
+					Size = UDim2New(1, 0, 0, 35),
 					BorderColor3 = FromRGB(0, 0, 0),
 					ZIndex = 2,
 					BorderSizePixel = 0,
@@ -1794,15 +1777,11 @@ local DRAG_SLOP     = IsMobile and 5  or 0
 					BorderColor3 = FromRGB(0, 0, 0),
 					AnchorPoint = Vector2New(0, 1),
 					Position = UDim2New(0, 0, 1, 0),
-					Size = UDim2New(1, 0, 0, TOUCH_SLIDER),
+					Size = UDim2New(1, 0, 0, 15),
 					ZIndex = 2,
 					BorderSizePixel = 0,
 					BackgroundColor3 = FromRGB(36, 32, 39)
 				})  Items["RealSlider"]:AddToTheme({BackgroundColor3 = "Element"})
-
-                if IsMobile then
-                    Items["RealSlider"].Instance.Position = UDim2New(0, 0, 1, -4)
-                end
 
 				Instances:Create("UICorner", {
 					Parent = Items["RealSlider"].Instance,
@@ -1847,7 +1826,7 @@ local DRAG_SLOP     = IsMobile and 5  or 0
 					BorderColor3 = FromRGB(0, 0, 0),
 					AnchorPoint = Vector2New(1, 0.5),
 					Position = UDim2New(1, 0, 0.5, 0),
-					Size = UDim2New(0, TOUCH_HANDLE, 1, 0),
+					Size = UDim2New(0, 7, 1, 0),
 					ZIndex = 2,
 					BorderSizePixel = 0,
 					BackgroundColor3 = FromRGB(255, 255, 255)
@@ -1876,52 +1855,34 @@ local DRAG_SLOP     = IsMobile and 5  or 0
 					TextSize = 14,
 					BackgroundColor3 = FromRGB(255, 255, 255)
 				})  Items["Value"]:AddToTheme({TextColor3 = "Text"})
+			end
 
-                if IsMobile then
-                    Items["Value"].Instance.Position = UDim2New(1, 0, 0, 0)
+			function Slider:Set(Value)
+				if self.Disabled then 
+					return 
+				end
+
+				self.Value = MathClamp(Library:Round(Value, Data.Decimals), Data.Min, Data.Max)
+
+				Library.Flags[self.Flag] = self.Value
+
+				Items["Accent"]:Tween(TweenInfo.new(0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2New((self.Value - Data.Min) / (Data.Max - Data.Min), 0, 1, 0)})
+				Items["Value"].Instance.Text = StringFormat("%s%s", tostring(self.Value), Data.Suffix)
+
+                if self.Value <= (Data.Min + Data.Decimals) then
+                    Items["Drag"].Instance.Position = UDim2New(1, 5, 0.5, 0)
+                else
+                    Items["Drag"].Instance.Position = UDim2New(1, 0, 0.5, 0)
                 end
 
+				if Data.Callback then 
+					Library:SafeCall(Data.Callback, self.Value)
+				end
+
+				if self.OnChanged then 
+					self.OnChanged(self.Value)
+				end
 			end
-function Slider:Set(Value)
-    if self.Disabled then return end
-
-    self.Value = MathClamp(
-        Library:Round(Value, Data.Decimals),
-        Data.Min,
-        Data.Max
-    )
-
-    Library.Flags[self.Flag] = self.Value
-
-    local Scale = (self.Value - Data.Min) / (Data.Max - Data.Min)
-    Scale = MathClamp(Scale, 0, 1)
-
-    -- fill bar
-    if self.Sliding then
-        Items["Accent"].Instance.Size = UDim2New(Scale, 0, 1, 0)
-    else
-        Items["Accent"]:Tween(
-            TweenInfo.new(0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
-            { Size = UDim2New(Scale, 0, 1, 0) }
-        )
-    end
-
-    -- knob now auto-follows fill (NO POSITION CODE)
-
-    Items["Value"].Instance.Text =
-        StringFormat("%s%s", tostring(self.Value), Data.Suffix)
-
-    if Data.Callback then
-        Library:SafeCall(Data.Callback, self.Value)
-    end
-
-    if self.OnChanged then
-        self.OnChanged(self.Value)
-    end
-end
-
-
-
 
 			function Slider:SetText(Text)
 				Text = tostring(Text)
@@ -1982,65 +1943,34 @@ end
 
 			TableInsert(PageSearchData, SearchData)
 
-			
-Items["RealSlider"]:Connect("InputBegan", function(Input)
-    if Input.UserInputType ~= Enum.UserInputType.MouseButton1
-    and Input.UserInputType ~= Enum.UserInputType.Touch then
-        return
-    end
+			Items["RealSlider"]:Connect("InputBegan", function(Input)
+				if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+					Slider.Sliding = true 
 
-    Slider.Sliding = true
-    Slider._LastSizeX = nil
+					local SizeX = (Input.Position.X - Items["RealSlider"].Instance.AbsolutePosition.X) / Items["RealSlider"].Instance.AbsoluteSize.X
+					local Value = ((Data.Max - Data.Min) * SizeX) + Data.Min
 
-    local function UpdateFromInput(Input)
-        local BarX = Items["RealSlider"].Instance.AbsolutePosition.X
-        local BarW = Items["RealSlider"].Instance.AbsoluteSize.X
+					Slider:Set(Value)
 
-        local ClampedX = MathClamp(
-            Input.Position.X,
-            BarX,
-            BarX + BarW
-        )
+					Input.Changed:Connect(function()
+						if Input.UserInputState == Enum.UserInputState.End then
+							Slider.Sliding = false
+						end
+					end)
+				end
+			end)
 
-        local SizeX = (ClampedX - BarX) / BarW
+			Library:Connect(UserInputService.InputChanged, function(Input)
+				if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
+					if Slider.Sliding then
+						local SizeX = (Input.Position.X - Items["RealSlider"].Instance.AbsolutePosition.X) / Items["RealSlider"].Instance.AbsoluteSize.X
+						local Value = ((Data.Max - Data.Min) * SizeX) + Data.Min
 
-        -- MOBILE DAMPING (THIS IS THE FIX)
-        if IsMobile then
-            local Last = Slider._LastSizeX or SizeX
-            local Delta = SizeX - Last
-            SizeX = Last + (Delta * 0.15) -- tune: 0.25–0.45
-            Slider._LastSizeX = SizeX
-        end
+						Slider:Set(Value)
+					end
+				end
+			end)
 
-        local Value = ((Data.Max - Data.Min) * SizeX) + Data.Min
-        Slider:Set(Value)
-    end
-
-    -- initial set
-    UpdateFromInput(Input)
-
-    local MoveConn, EndConn
-
-    MoveConn = UserInputService.InputChanged:Connect(function(Input)
-        if Slider.Sliding
-        and (Input.UserInputType == Enum.UserInputType.MouseMovement
-        or Input.UserInputType == Enum.UserInputType.Touch) then
-            UpdateFromInput(Input)
-        end
-    end)
-
-    EndConn = UserInputService.InputEnded:Connect(function(Input)
-        if Input.UserInputType == Enum.UserInputType.MouseButton1
-        or Input.UserInputType == Enum.UserInputType.Touch then
-            Slider.Sliding = false
-            Slider._LastSizeX = nil
-            MoveConn:Disconnect()
-            EndConn:Disconnect()
-        end
-    end)
-end)
-
-			
 			if Data.Disabled then 
 				Slider:SetDisabled(Data.Disabled)
 			end
@@ -2071,7 +2001,7 @@ end)
 					Parent = Data.Parent.Instance,
 					Name = "\0",
 					BackgroundTransparency = 1,
-					Size = UDim2New(1, 0, 0, TOUCH_ROW),
+					Size = UDim2New(1, 0, 0, 25),
 					BorderColor3 = FromRGB(0, 0, 0),
 					ZIndex = 2,
 					BorderSizePixel = 0,
@@ -2104,7 +2034,7 @@ end)
 					BorderColor3 = FromRGB(0, 0, 0),
 					AnchorPoint = Vector2New(1, 0),
 					Position = UDim2New(1, 0, 0, 0),
-					Size = UDim2New(0, IsMobile and 160 or 135, 0, TOUCH_BTN),
+					Size = UDim2New(0, 135, 0, 25),
 					ZIndex = 2,
 					BorderSizePixel = 0,
 					BackgroundColor3 = FromRGB(36, 32, 39)
@@ -2272,7 +2202,7 @@ end)
 					Text = "",
 					BackgroundTransparency = 1,
 					BorderSizePixel = 0,
-					Size = UDim2New(1, 0, 0, TOUCH_ROW),
+					Size = UDim2New(1, 0, 0, 25),
 					ZIndex = 2,
 					TextSize = 14,
 					BackgroundColor3 = FromRGB(22, 20, 24)
@@ -2396,27 +2326,10 @@ end)
 				end
 
 				if not Data.IsLabelDropdown then
-                -- MOBILE: tap only
-                if IsMobile then
-                    OptionData.Button.Instance.Activated:Connect(function()
-                    OptionData:Set()
-                    if not Data.Multi then
-                    Dropdown.IsOpen = false
-                    Items["OptionHolder"].Instance.Visible = false
-                    end
-                    end)
-                else
-                -- DESKTOP
-                OptionData.Button:Connect("MouseButton1Down", function()
-                    OptionData:Set()
-                    if not Data.Multi then
-                    Dropdown.IsOpen = false
-                    Items["OptionHolder"].Instance.Visible = false
-                    end
-                end)
-                end
-            end
-
+					OptionData.Button:Connect("MouseButton1Down", function()
+						OptionData:Set()
+					end)
+				end
 
 				self.Options[Option] = OptionData
 				return OptionData
@@ -2625,7 +2538,7 @@ end)
 					Parent = Data.Parent.Instance,
 					Name = "\0",
 					BackgroundTransparency = 1,
-					Size = UDim2New(1, 0, 0, TOUCH_ROW),
+					Size = UDim2New(1, 0, 0, 25),
 					BorderColor3 = FromRGB(0, 0, 0),
 					ZIndex = 2,
 					BorderSizePixel = 0,
@@ -2658,7 +2571,7 @@ end)
 					BorderColor3 = FromRGB(0, 0, 0),
 					AnchorPoint = Vector2New(1, 0),
 					Position = UDim2New(1, 0, 0, 0),
-					Size = UDim2New(0, IsMobile and 160 or 135, 0, TOUCH_BTN),
+					Size = UDim2New(0, 135, 0, 25),
 					ZIndex = 2,
 					BorderSizePixel = 0,
 					BackgroundColor3 = FromRGB(36, 32, 39)
@@ -2827,7 +2740,7 @@ end)
 					AutoButtonColor = false,
 					BackgroundTransparency = 1,
 					BorderSizePixel = 0,
-					Size = UDim2New(1, 0, 0, TOUCH_ROW),
+					Size = UDim2New(1, 0, 0, 25),
 					ZIndex = 2,
 					TextSize = 14,
 					BackgroundColor3 = FromRGB(22, 20, 24)
@@ -4371,7 +4284,7 @@ end)
 					BorderColor3 = FromRGB(0, 0, 0),
 					AnchorPoint = Vector2New(0, 1),
 					Position = UDim2New(0, 0, 1, 0),
-					Size = UDim2New(1, 0, 0, TOUCH_ROW),
+					Size = UDim2New(1, 0, 0, 25),
 					ZIndex = 2,
 					BorderSizePixel = 0,
 					BackgroundColor3 = FromRGB(36, 32, 39)
@@ -4796,7 +4709,7 @@ end)
 
 		local Window = {
 			Name = Properties.Name or Properties.name or "solixhub",
-			Size = Properties.Size or Properties.size or (not IsMobile and UDim2New(0, 770, 0, 526) or UDim2New(0, 526, 0, 350)),
+			Size = Properties.Size or Properties.size or UDim2New(0, 770, 0, 526),
 			FadeSpeed = Properties.FadeSpeed or Properties.fadespeed or 0.25,
 			BackgroundIcon = Properties.BackgroundIcon or Properties.backgroundicon or "rbxassetid://",
 
@@ -4890,7 +4803,7 @@ end)
 				BorderColor3 = FromRGB(0, 0, 0),
 				BackgroundTransparency = 1,
 				Position = UDim2New(0, 0, 0, 30),
-				Size = not IsMobile and UDim2New(0, 224, 1, -30) or UDim2New(0, 150, 1, -30),
+				Size = UDim2New(0, 224, 1, -30),
 				ZIndex = 2,
 				BorderSizePixel = 0,
 				BackgroundColor3 = FromRGB(255, 255, 255)
@@ -4915,8 +4828,8 @@ end)
 				Name = "\0",
 				BorderColor3 = FromRGB(0, 0, 0),
 				BackgroundTransparency = 1,
-				Position = not IsMobile and UDim2New(0, 225, 0, 30) or UDim2New(0, 163, 0, 30),
-				Size = not IsMobile and UDim2New(1, -233, 1, -38) or UDim2New(1, -171, 1, -38),
+				Position = UDim2New(0, 225, 0, 30),
+				Size = UDim2New(1, -233, 1, -38),
 				ZIndex = 2,
 				BorderSizePixel = 0,
 				BackgroundColor3 = FromRGB(255, 255, 255)
@@ -4941,7 +4854,7 @@ end)
 				Parent = Items["MainFrame"].Instance,
 				Name = "\0",
 				Size = UDim2New(0, 1, 1, 0),
-				Position = not IsMobile and UDim2New(0, 220, 0, 0) or UDim2New(0, 152, 0, 0),
+				Position = UDim2New(0, 220, 0, 0),
 				BorderColor3 = FromRGB(0, 0, 0),
 				ZIndex = 2,
 				BorderSizePixel = 0,
@@ -5026,10 +4939,6 @@ end)
 				BorderSizePixel = 0,
 				BackgroundColor3 = FromRGB(0, 0, 0)
 			})
-
-            if IsMobile then
-                Items["Cursor"].Instance.Visible = false
-            end
 
 			Items["Image"] = Instances:Create("ImageLabel", {
 				Parent = Items["Cursor"].Instance,
@@ -5159,10 +5068,14 @@ end)
 			IsOpen = Bool
 
 			if IsOpen then
-				Items["MainFrame"].Instance.Visible = true
+				Library.Holder.Instance.Enabled = true
 			else
-				Items["MainFrame"].Instance.Visible = false
+				Library.Holder.Instance.Enabled = false
 			end
+
+            for Index, Value in Library.OpenFrames do 
+                Value:SetOpen(false)
+            end
 		end
 
 		Library:Connect(UserInputService.InputBegan, function(Input)
@@ -5644,7 +5557,7 @@ end)
 				Name = "\0",
 				ScaleType = Enum.ScaleType.Fit,
 				BorderColor3 = FromRGB(0, 0, 0),
-				Size = UDim2New(1, -16, 0, IsMobile and 179 or 279),
+				Size = UDim2New(1, -16, 0, 279),
 				Image = "rbxassetid://",
 				BackgroundTransparency = 1,
 				Position = UDim2New(0, 8, 0, 35),
