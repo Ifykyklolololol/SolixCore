@@ -465,17 +465,15 @@ local Library do
 
 			return UIStroke
 		end
-        
+       
 		Instances.Tooltip = function(self, Text)
-
-
-            if IsMobile then 
-                return 
-            else
-
 			if not self.Instance then 
 				return
 			end
+
+            if IsMobile then 
+                return 
+            end
 
 			if Text == nil then 
 				return
@@ -555,8 +553,7 @@ local Library do
 					RenderStepped = nil
 				end
 			end)
-        end
-		end
+		
         end
 
 		Instances.FadeItem = function(self, Visibility, Speed)
