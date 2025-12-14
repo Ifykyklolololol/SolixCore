@@ -88,12 +88,13 @@ local Library do
 	end
 
     -- Mobile Shit So Easy Testing.
-    local TOUCH_ROW = IsMobile and 44 or 20
-    local TOUCH_BTN = IsMobile and 48 or 25
-    local TOUCH_SLIDER = IsMobile and 28 or 15
-    local TOUCH_HANDLE = IsMobile and 22 or 7
-    local TOUCH_PAD = IsMobile and 8 or 4
-    local DRAG_SLOP = IsMobile and 8 or 0
+   local TOUCH_ROW     = IsMobile and 34 or 20
+local TOUCH_BTN     = IsMobile and 36 or 25
+local TOUCH_SLIDER  = IsMobile and 22 or 15
+local TOUCH_HANDLE  = IsMobile and 16 or 7
+local TOUCH_PAD     = IsMobile and 5  or 4
+local DRAG_SLOP     = IsMobile and 6  or 0
+
 
 
 	
