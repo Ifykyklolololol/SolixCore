@@ -465,10 +465,14 @@ local Library do
 
 			return UIStroke
 		end
-        if IsMobile then 
-            return 
-        else
+        
 		Instances.Tooltip = function(self, Text)
+
+
+            if IsMobile then 
+                return 
+            else
+
 			if not self.Instance then 
 				return
 			end
@@ -551,6 +555,7 @@ local Library do
 					RenderStepped = nil
 				end
 			end)
+        end
 		end
         end
 
@@ -2351,15 +2356,19 @@ local Library do
                 if IsMobile then
                     OptionData.Button.Instance.Activated:Connect(function()
                     OptionData:Set()
+                    if not Data.Multi then
                     Dropdown.IsOpen = false
                     Items["OptionHolder"].Instance.Visible = false
+                    end
                     end)
                 else
                 -- DESKTOP
                 OptionData.Button:Connect("MouseButton1Down", function()
                     OptionData:Set()
+                    if not Data.Multi then
                     Dropdown.IsOpen = false
                     Items["OptionHolder"].Instance.Visible = false
+                    end
                 end)
                 end
             end
