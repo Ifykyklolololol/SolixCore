@@ -818,23 +818,6 @@ local DRAG_SLOP     = IsMobile and 5  or 0
 		ResetOnSpawn = false
 	})
 
-    if IsMobile then
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 52, 0, 52)
-    btn.Position = UDim2.new(1, -60, 1, -60)
-    btn.Text = "≡"
-    btn.TextSize = 24
-    btn.BackgroundColor3 = Library.Theme.Accent
-    btn.Parent = Library.Holder.Instance
-    btn.ZIndex = 100
-
-    btn.Activated:Connect(function()
-        if Library.Holder.Instance.Enabled ~= nil then
-            Library.Holder.Instance.Enabled = not Library.Holder.Instance.Enabled
-        end
-    end)
-    end
-
 
 	Library.UnusedHolder = Instances:Create("ScreenGui", {
 		Parent = gethui(),
