@@ -1924,11 +1924,12 @@ local DRAG_SLOP     = IsMobile and 5  or 0
         }
     )
 
-    -- drag knob (RIGHT-ANCHOR SAFE)
+    -- drag knob MUST sit at the END of the fill
     if Items["Drag"] then
+        local FillWidth = Items["Accent"].Instance.AbsoluteSize.X
         Items["Drag"].Instance.Position = UDim2New(
-            Scale,
             0,
+            FillWidth,
             0.5,
             0
         )
