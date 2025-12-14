@@ -99,6 +99,7 @@ local DRAG_SLOP     = IsMobile and 5  or 0
 
 
 
+
 	
 
 	Library = {
@@ -1779,7 +1780,7 @@ local DRAG_SLOP     = IsMobile and 5  or 0
 					Parent = Data.Parent.Instance,
 					Name = "\0",
 					BackgroundTransparency = 1,
-					Size = UDim2New(1, 0, 0, 35),
+					Size = UDim2New(1, 0, 0, IsMobile and 42 or 35),
 					BorderColor3 = FromRGB(0, 0, 0),
 					ZIndex = 2,
 					BorderSizePixel = 0,
@@ -1815,6 +1816,10 @@ local DRAG_SLOP     = IsMobile and 5  or 0
 					BorderSizePixel = 0,
 					BackgroundColor3 = FromRGB(36, 32, 39)
 				})  Items["RealSlider"]:AddToTheme({BackgroundColor3 = "Element"})
+
+                if IsMobile then
+                    Items["RealSlider"].Instance.Position = UDim2New(0, 0, 1, -4)
+                end
 
 				Instances:Create("UICorner", {
 					Parent = Items["RealSlider"].Instance,
@@ -1888,6 +1893,11 @@ local DRAG_SLOP     = IsMobile and 5  or 0
 					TextSize = 14,
 					BackgroundColor3 = FromRGB(255, 255, 255)
 				})  Items["Value"]:AddToTheme({TextColor3 = "Text"})
+
+                if IsMobile then
+                    Items["Value"].Instance.Position = UDim2New(1, 0, -0.25, 0)
+                end
+
 			end
 
 			function Slider:Set(Value)
