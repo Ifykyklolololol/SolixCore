@@ -1895,31 +1895,51 @@ local DRAG_SLOP     = IsMobile and 5  or 0
 				})  Items["Value"]:AddToTheme({TextColor3 = "Text"})
 
                 if IsMobile then
-                    Items["Value"].Instance.Position = UDim2New(1, 0, -0.25, 0)
+                    Items["Value"].Instance.Position = UDim2New(1, 0, 0, 0)
                 end
 
 			end
 
 			function Slider:Set(Value)
-				if self.Disabled then 
-					return 
-				end
+            if self.Disabled then 
+                return 
+            end
 
-				self.Value = MathClamp(Library:Round(Value, Data.Decimals), Data.Min, Data.Max)
+            self.Value = MathClamp(Library:Round(Value, Data.Decimals), Data.Min, Data.Max)
+            Library.Flags[self.Flag] = self.Value
 
-				Library.Flags[self.Flag] = self.Value
+            local Scale = (self.Value - Data.Min) / (Data.Max - Data.Min)
+            Scale = MathClamp(Scale, 0, 1)
 
-				Items["Accent"]:Tween(TweenInfo.new(0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2New((self.Value - Data.Min) / (Data.Max - Data.Min), 0, 1, 0)})
-				Items["Value"].Instance.Text = StringFormat("%s%s", tostring(self.Value), Data.Suffix)
+            -- fill bar
+            Items["Accent"]:Tween(
+                TweenInfo.new(0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
+                { Size = UDim2New(Scale, 0, 1, 0) }
+            )
 
-				if Data.Callback then 
-					Library:SafeCall(Data.Callback, self.Value)
-				end
+            -- knob centering fix (prevents off-left at 0)
+            if Items["Drag"] then
+                local KnobWidth = Items["Drag"].Instance.AbsoluteSize.X
+                Items["Drag"].Instance.Position = UDim2New(
+                    Scale,
+                    -KnobWidth / 2,
+                    0.5,
+                    0
+                )
+            end
 
-				if self.OnChanged then 
-					self.OnChanged(self.Value)
-				end
-			end
+            -- value text
+            Items["Value"].Instance.Text = StringFormat("%s%s", tostring(self.Value), Data.Suffix)
+
+            if Data.Callback then 
+                Library:SafeCall(Data.Callback, self.Value)
+            end
+
+            if self.OnChanged then 
+                self.OnChanged(self.Value)
+            end
+            end
+
 
 			function Slider:SetText(Text)
 				Text = tostring(Text)
