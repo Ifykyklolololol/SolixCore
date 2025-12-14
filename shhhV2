@@ -2008,7 +2008,7 @@ Items["RealSlider"]:Connect("InputBegan", function(Input)
         if IsMobile then
             local Last = Slider._LastSizeX or SizeX
             local Delta = SizeX - Last
-            SizeX = Last + (Delta * 0.35) -- tune: 0.25–0.45
+            SizeX = Last + (Delta * 0.15) -- tune: 0.25–0.45
             Slider._LastSizeX = SizeX
         end
 
