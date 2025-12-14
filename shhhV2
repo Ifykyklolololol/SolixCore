@@ -1900,10 +1900,8 @@ local DRAG_SLOP     = IsMobile and 5  or 0
 
 			end
 
-			function Slider:Set(Value)
-    if self.Disabled then 
-        return 
-    end
+		    function Slider:Set(Value)
+    if self.Disabled then return end
 
     self.Value = MathClamp(
         Library:Round(Value, Data.Decimals),
@@ -1916,7 +1914,7 @@ local DRAG_SLOP     = IsMobile and 5  or 0
     local Scale = (self.Value - Data.Min) / (Data.Max - Data.Min)
     Scale = MathClamp(Scale, 0, 1)
 
-    -- fill bar (NO tween while dragging)
+    -- fill bar
     if self.Sliding then
         Items["Accent"].Instance.Size = UDim2New(Scale, 0, 1, 0)
     else
@@ -1926,29 +1924,20 @@ local DRAG_SLOP     = IsMobile and 5  or 0
         )
     end
 
-    -- drag knob MUST sit at the END of the fill
-    if Items["Drag"] then
-        local FillWidth = Items["Accent"].Instance.AbsoluteSize.X
-        Items["Drag"].Instance.Position = UDim2New(
-            0,
-            FillWidth,
-            0.5,
-            0
-        )
-    end
+    -- knob now auto-follows fill (NO POSITION CODE)
 
-    -- value text
     Items["Value"].Instance.Text =
         StringFormat("%s%s", tostring(self.Value), Data.Suffix)
 
-    if Data.Callback then 
+    if Data.Callback then
         Library:SafeCall(Data.Callback, self.Value)
     end
 
-    if self.OnChanged then 
+    if self.OnChanged then
         self.OnChanged(self.Value)
     end
 end
+
 
 
 
