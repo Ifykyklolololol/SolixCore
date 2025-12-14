@@ -1922,7 +1922,7 @@ local DRAG_SLOP     = IsMobile and 5  or 0
                 local KnobWidth = Items["Drag"].Instance.AbsoluteSize.X
                 Items["Drag"].Instance.Position = UDim2New(
                     Scale,
-                    -KnobWidth / 2,
+                    0,
                     0.5,
                     0
                 )
