@@ -750,41 +750,32 @@ local Library do
 	end
 
 	-- Custom font
-	local CustomFont = { } do
-		function CustomFont:New(Name, Weight, Style, Data)
-			if isfile(Library.Folders.Assets .. "/" .. Name .. ".json") then
-				return Font.new(getcustomasset(Library.Folders.Assets .. "/" .. Name .. ".json"))
-			end
+    local CustomFont = { } do
+        function CustomFont:New(Name, Weight, Style, Data)
+            if not isfile(Data.Id) then 
+                writefile(Data.Id, game:HttpGet(Data.Url))
+            end
 
-			if not isfile(Library.Folders.Assets .. "/" .. Name .. ".ttf") then 
-				writefile(Library.Folders.Assets .. "/" .. Name .. ".ttf", game:HttpGet(Data.Url))
-			end
+            local Data = {
+                name = Name,
+                faces = {
+                    {
+                        name = Name,
+                        weight = Weight,
+                        style = Style,
+                        assetId = getcustomasset(Data.Id)
+                    }
+                }
+            }
 
-			local FontData = {
-				name = Name,
-				faces = { {
-					name = "Regular",
-					weight = Weight,
-					style = Style,
-					assetId = getcustomasset(Library.Folders.Assets .. "/" .. Name .. ".ttf")
-				} }
-			}
+            writefile(`{Library.Folders.Assets}/{Name}.font`, HttpService:JSONEncode(Data))
+            return Font.new(getcustomasset(`{Library.Folders.Assets}/{Name}.font`))
+        end
 
-			writefile(Library.Folders.Assets .. "/" .. Name .. ".json", HttpService:JSONEncode(FontData))
-			return Font.new(getcustomasset(Library.Folders.Assets .. "/" .. Name .. ".json"))
-		end
-
-		function CustomFont:Get(Name)
-			if isfile(Library.Folders.Assets .. "/" .. Name .. ".json") then
-				return Font.new(getcustomasset(Library.Folders.Assets .. "/" .. Name .. ".json"))
-			end
-		end
-
-		CustomFont:New("Inter", 200, "Regular", {
+		Library.Font = CustomFont:New("Inter", 200, "Regular", {
+            Id = "InterSemibold",
 			Url = "https://github.com/sametexe001/luas/raw/refs/heads/main/fonts/InterSemibold.ttf"
 		})
-
-		Library.Font = CustomFont:Get("Inter")
 	end
 
 	Library.Holder = Instances:Create("ScreenGui", {
@@ -1997,11 +1988,12 @@ local Library do
 			}
 
 			local Items = { } do
+            
 				Items["Dropdown"] = Instances:Create("Frame", {
 					Parent = Data.Parent.Instance,
 					Name = "\0",
 					BackgroundTransparency = 1,
-					Size = UDim2New(1, 0, 0, 25),
+					Size = UDim2New(1, 0, 0, 50),
 					BorderColor3 = FromRGB(0, 0, 0),
 					ZIndex = 2,
 					BorderSizePixel = 0,
@@ -2016,10 +2008,10 @@ local Library do
 					BorderColor3 = FromRGB(0, 0, 0),
 					Text = Data.Name,
 					AutomaticSize = Enum.AutomaticSize.X,
-					AnchorPoint = Vector2New(0, 0.5),
+					AnchorPoint = Vector2New(0, 0),
 					Size = UDim2New(0, 0, 0, 15),
 					BackgroundTransparency = 1,
-					Position = UDim2New(0, 0, 0.5, 0),
+					Position = UDim2New(0, 0, 0, 0),
 					BorderSizePixel = 0,
 					ZIndex = 2,
 					TextSize = 14,
@@ -2032,9 +2024,9 @@ local Library do
 					AutoButtonColor = false,
 					Name = "\0",
 					BorderColor3 = FromRGB(0, 0, 0),
-					AnchorPoint = Vector2New(1, 0),
-					Position = UDim2New(1, 0, 0, 0),
-					Size = UDim2New(0, 135, 0, 25),
+					AnchorPoint = Vector2New(0, 1),
+					Position = UDim2New(0, 0, 1, 0),
+					Size = UDim2New(1, 0, 0, 25),
 					ZIndex = 2,
 					BorderSizePixel = 0,
 					BackgroundColor3 = FromRGB(36, 32, 39)
@@ -2105,7 +2097,7 @@ local Library do
 					BorderColor3 = FromRGB(0, 0, 0),
 					ScrollBarThickness = 1,
 					TopImage = "rbxassetid://128693616966482",
-					Size = UDim2New(0, 135, 0, 125),
+					Size = UDim2New(0, Items["RealDropdown"].Instance.AbsoluteSize.X, 0, 125),
 					BottomImage = "rbxassetid://128693616966482",
 					Position = UDim2New(0, Items["RealDropdown"].Instance.AbsolutePosition.X, 0, Items["RealDropdown"].Instance.AbsolutePosition.Y + 30),
 					BackgroundColor3 = FromRGB(15, 12, 16)
@@ -2538,7 +2530,7 @@ local Library do
 					Parent = Data.Parent.Instance,
 					Name = "\0",
 					BackgroundTransparency = 1,
-					Size = UDim2New(1, 0, 0, 25),
+					Size = UDim2New(1, 0, 0, 50),
 					BorderColor3 = FromRGB(0, 0, 0),
 					ZIndex = 2,
 					BorderSizePixel = 0,
@@ -2553,10 +2545,10 @@ local Library do
 					BorderColor3 = FromRGB(0, 0, 0),
 					Text = Data.Name,
 					AutomaticSize = Enum.AutomaticSize.X,
-					AnchorPoint = Vector2New(0, 0.5),
+					AnchorPoint = Vector2New(0, 0),
 					Size = UDim2New(0, 0, 0, 15),
 					BackgroundTransparency = 1,
-					Position = UDim2New(0, 0, 0.5, 0),
+					Position = UDim2New(0, 0, 0, 0),
 					BorderSizePixel = 0,
 					ZIndex = 2,
 					TextSize = 14,
@@ -2569,9 +2561,9 @@ local Library do
 					AutoButtonColor = false,
 					Name = "\0",
 					BorderColor3 = FromRGB(0, 0, 0),
-					AnchorPoint = Vector2New(1, 0),
-					Position = UDim2New(1, 0, 0, 0),
-					Size = UDim2New(0, 135, 0, 25),
+					AnchorPoint = Vector2New(0, 1),
+					Position = UDim2New(0, 0, 1, 0),
+					Size = UDim2New(1, 0, 0, 25),
 					ZIndex = 2,
 					BorderSizePixel = 0,
 					BackgroundColor3 = FromRGB(36, 32, 39)
@@ -2642,7 +2634,7 @@ local Library do
 					BorderColor3 = FromRGB(0, 0, 0),
 					ScrollBarThickness = 1,
 					TopImage = "rbxassetid://128693616966482",
-					Size = UDim2New(0, 135, 0, 125),
+					Size = UDim2New(0, Items["RealDropdown"].Instance.AbsoluteSize.X, 0, 125),
 					BottomImage = "rbxassetid://128693616966482",
 					Position = UDim2New(0, Items["RealDropdown"].Instance.AbsolutePosition.X, 0, Items["RealDropdown"].Instance.AbsolutePosition.Y + 30),
 					BackgroundColor3 = FromRGB(15, 12, 16)
