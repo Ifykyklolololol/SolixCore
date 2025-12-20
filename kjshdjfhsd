@@ -283,7 +283,7 @@ do
 
     local IsError, Resalt = pcall(function()
         return game:GetService("MarketplaceService"):GetProductInfoAsync(game.PlaceId).Name
-    end
+    end)
     if not IsError then
         GameName = ""
     else
