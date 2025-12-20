@@ -3063,7 +3063,6 @@ do
                     Instances:Create("UIScale", {
                         Parent = Items["MainFrame"].Instance,
                         Name = "\0",
-                        ScaleType = Enum.ScaleType.ScaleWithParentSize,
                         Scale = 0.7
                     })
                 end
