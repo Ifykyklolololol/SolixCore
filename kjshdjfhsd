@@ -281,8 +281,14 @@ do
         writefile(Library.Folders.Directory .. "/autoload.json", "")
     end
 
-    local GameName = game:GetService("MarketplaceService"):GetProductInfoAsync(game.PlaceId).Name
-
+    local IsError, Resalt = pcall(function()
+        return game:GetService("MarketplaceService"):GetProductInfoAsync(game.PlaceId).Name
+    end
+    if not IsError then
+        GameName = ""
+    else
+        GameName = Resalt
+    end
     if not isfolder(Library.Folders.Configs .. "/" .. GameName) then
         makefolder(Library.Folders.Configs .. "/" .. GameName)
     end
