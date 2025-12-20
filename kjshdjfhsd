@@ -1,4 +1,8 @@
-
+if LPH_OBFUSCATED == nil then
+    LPH_NO_VIRTUALIZE = function(...) return (...) end
+    LPH_NO_UPVALUES = function(...) return (...) end
+    LPH_CRASH = function(...) return ... end
+end
 
 if getgenv().Library and getgenv().Library.Unload then
     getgenv().Library:Unload()
