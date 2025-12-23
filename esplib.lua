@@ -1,5 +1,9 @@
-if (ESP and ESP.Unload) then
-    ESP.Unload();
+if ESP and ESP.Unload then
+    ESP.Unload()
+end
+
+if not LPH_OBFUSCATED then
+    LPH_NO_VIRTUALIZE = function(Func) return Func end
 end
 
 local game = game
@@ -8,78 +12,30 @@ local Service = function(Name)
     return cloneref(GetService(game, Name))
 end
 
-local HttpService = Service("HttpService")
-local RunService = Service("RunService")
-local Workspace = Service("Workspace")
 local Players = Service("Players")
+local RunService = Service("RunService")
+local HttpService = Service("HttpService")
+local Workspace = Service("Workspace")
 
 local Instance_new = Instance.new
-local Color3_fromRGB = Color3.fromRGB
-local Color3_new = Color3.new
-local Color3_fromHSV = Color3.fromHSV
-local Color3_fromHex = Color3.fromHex
-local table_clear = table.clear
-local table_insert = table.insert
-local table_remove = table.remove
-local table_unpack = table.unpack
-local table_find = table.find
-local table_sort = table.sort
-local table_concat = table.concat
-local string_find = string.find
-local string_match = string.match
-local string_format = string.format
-local string_gsub = string.gsub
-local string_lower = string.lower
-local string_upper = string.upper
-local string_sub = string.sub
-local task_wait = task.wait
-local task_spawn = task.spawn
-local task_delay = task.delay
-local task_defer = task.defer
-local coroutine_wrap = coroutine.wrap
-local coroutine_close = coroutine.close
-local coroutine_create = coroutine.create
-local coroutine_resume = coroutine.resume
-local os_clock = os.clock
-local os_date = os.date
-local Vector2_new = Vector2.new
-local Vector3_new = Vector3.new
-local Vector3_one = Vector3.one
-local Vector3_zero = Vector3.zero
-local UDim2_new = UDim2.new
-local UDim2_fromScale = UDim2.fromScale
-local UDim2_fromOffset = UDim2.fromOffset
-local UDim_new = UDim.new
-local CFrame_Angles = CFrame.Angles
-local CFrame_new = CFrame.new
-local math_clamp = math.clamp
-local math_round = math.round
-local math_floor = math.floor
-local math_huge = math.huge
-local math_sin = math.sin
-local math_min = math.min
-local math_max = math.max
-local math_random = math.random
-local Drawing_new = Drawing.new
-local Rect_new = Rect.new
-local Font_new = Font.new
-local ColorSequence_new = ColorSequence.new
-local ColorSequenceKeypoint_new = ColorSequenceKeypoint.new
-local TweenInfo_new = TweenInfo.new
-local NumberSequence_new = NumberSequence.new
-local NumberSequenceKeypoint_new = NumberSequenceKeypoint.new
-local FindFirstChild = game.FindFirstChild
-local GetChildren = game.GetChildren
-local GetDescendants = game.GetDescendants
-local WaitForChild = game.WaitForChild
-local FindFirstChildWhichIsA = game.FindFirstChildWhichIsA
-local IsA = game.IsA
+local Color3_fromRGB, Color3_new, Color3_fromHSV, Color3_fromHex = Color3.fromRGB, Color3.new, Color3.fromHSV, Color3.fromHex
+local table_clear, table_insert, table_remove, table_unpack, table_find, table_sort, table_concat = table.clear, table.insert, table.remove, table.unpack, table.find, table.sort, table.concat
+local string_find, string_match, string_format, string_gsub, string_lower, string_upper, string_sub = string.find, string.match, string.format, string.gsub, string.lower, string.upper, string.sub
+local task_wait, task_spawn, task_delay, task_defer = task.wait, task.spawn, task.delay, task.defer
+local coroutine_wrap, coroutine_close, coroutine_create, coroutine_resume = coroutine.wrap, coroutine.close, coroutine.create, coroutine.resume
+local os_clock, os_date = os.clock, os.date
+local Vector2_new, Vector3_new, Vector3_one, Vector3_zero = Vector2.new, Vector3.new, Vector3.one, Vector3.zero
+local UDim2_new, UDim2_fromScale, UDim2_fromOffset, UDim_new = UDim2.new, UDim2.fromScale, UDim2.fromOffset, UDim.new
+local CFrame_Angles, CFrame_new = CFrame.Angles, CFrame.new
+local math_clamp, math_round, math_floor, math_huge, math_sin, math_cos, math_pi, math_min, math_deg, math_max, math_random = math.clamp, math.round, math.floor, math.huge, math.sin, math.cos, math.pi, math.min, math.deg, math.max, math.random
+local Drawing_new, Rect_new, Font_new, ColorSequence_new, ColorSequenceKeypoint_new, TweenInfo_new, NumberSequence_new, NumberSequenceKeypoint_new = Drawing.new, Rect.new, Font.new, ColorSequence.new, ColorSequenceKeypoint.new, TweenInfo.new, NumberSequence.new, NumberSequenceKeypoint.new
+local FindFirstChild, GetChildren, GetDescendants, WaitForChild, FindFirstChildWhichIsA, IsA = game.FindFirstChild, game.GetChildren, game.GetDescendants, game.WaitForChild, game.FindFirstChildWhichIsA, game.IsA
 
 getgenv().ESP = {
     Settings = {
         Players = {
-            Enabled = false,
-            LocalPlayer = false,
+            Enabled = true,
+            LocalPlayer = true,
 
             Font = "Tahoma",
             FontSize = 12,
@@ -89,9 +45,10 @@ getgenv().ESP = {
             RefreshRate = 60,
 
             BoundingBox = {
-                Enabled = false,
-                DynamicBox = false, -- may drop fps
+                Enabled = true,
+                DynamicBox = true, -- may drop fps
                 IncludeAccessories = false,
+                Type = "Corner", -- 2D, Corner
                 
                 Rotation = 90,
                 Color = {Color3_fromRGB(216, 126, 157), Color3_fromRGB(216, 126, 157)},
@@ -105,7 +62,7 @@ getgenv().ESP = {
                 },
 
                 Fill = {
-                    Enabled = false,
+                    Enabled = true,
                     Rotation = 90,
                     Color = {Color3_fromRGB(216, 126, 157), Color3_fromRGB(216, 126, 157)},
                     Transparency = {1, 0.5},
@@ -114,7 +71,7 @@ getgenv().ESP = {
 
             Bars = {
                 HealthBar = {
-                    Enabled = false,
+                    Enabled = true,
                     Position = "Left",
                     Color = {Color3_fromRGB(131, 245, 78), Color3_fromRGB(255, 255, 0), Color3_fromRGB(252, 71, 77)},
 
@@ -128,8 +85,8 @@ getgenv().ESP = {
                     end,
 
                     Text = {
-                        Enabled = false,
-                        FollowBar = false,
+                        Enabled = true,
+                        FollowBar = true,
                         Ending = "",
                         Position = "Left", -- // will ignore if FollowBar is true
                         Color = Color3_fromRGB(255, 255, 255),
@@ -147,7 +104,7 @@ getgenv().ESP = {
                 },
 
                 ArmorBar = {
-                    Enabled = false,
+                    Enabled = true,
                     Position = "Bottom",
                     Color = {Color3_fromRGB(52, 131, 235), Color3_fromRGB(52, 131, 235), Color3_fromRGB(52, 131, 235)},
 
@@ -161,8 +118,8 @@ getgenv().ESP = {
                     end,
 
                     Text = {
-                        Enabled = false,
-                        FollowBar = false,
+                        Enabled = true,
+                        FollowBar = true,
                         Ending = "%",
                         Position = "Left", -- // will ignore if FollowBar is true
                         Color = Color3_fromRGB(255, 255, 255),
@@ -181,22 +138,22 @@ getgenv().ESP = {
             },
 
             Chams = {
-                Enabled = false,
+                Enabled = true,
                 DepthMode = Enum.HighlightDepthMode.AlwaysOnTop,
                 Fill = {Color3_fromRGB(216, 126, 157), 0.5},
                 Outline = {Color3_fromRGB(0, 0, 0), 0.5},
             },
 
             Name = {
-                Enabled = false,
-                UseDisplay = false,
+                Enabled = true,
+                UseDisplay = true,
                 Position = "Top",
                 Color = Color3_fromRGB(255, 255, 255),
                 Transparency = 0,
             },
 
             Distance = {
-                Enabled = false,
+                Enabled = true,
                 Ending = "st",
                 Position = "Bottom",
                 Color = Color3_fromRGB(255, 255, 255),
@@ -204,14 +161,14 @@ getgenv().ESP = {
             },
 
             Weapon = {
-                Enabled = false,
+                Enabled = true,
                 Position = "Bottom",
                 Color = Color3_fromRGB(255, 255, 255),
                 Transparency = 0,
             },
 
             Flags = {
-                Enabled = false,
+                Enabled = true,
                 Position = "Right",
                 Color = Color3_fromRGB(255, 255, 255),
                 Transparency = 0,
@@ -259,13 +216,6 @@ local ESPSettings = ESP.Settings
 local WorldToViewportPoint = Camera.WorldToViewportPoint
 local ExecutorName = getexecutorname()
 
-local Utility = {}
-local FontsToDownload = {
-    ["Tahoma"] = {Link = "https://github.com/LuckyHub1/LuckyHub/raw/main/zekton_rg.ttf"},
-    ["Minecraftia"] = {Link = "https://github.com/LuckyHub1/LuckyHub/raw/refs/heads/main/Minecraftia.ttf"},
-    ["Silkscreen"] = {Link = "https://github.com/LuckyHub1/LuckyHub/raw/refs/heads/main/Silkscreen.ttf"},
-}
-
 do -- Folders
     if not isfolder(FolderLocation) then
         makefolder(FolderLocation)
@@ -276,7 +226,11 @@ do -- Folders
     end
 end
 
-do -- Fonts
+local FontsToDownload = {
+    ["Tahoma"] = {Link = "https://github.com/LuckyHub1/LuckyHub/raw/main/zekton_rg.ttf"},
+    ["Minecraftia"] = {Link = "https://github.com/LuckyHub1/LuckyHub/raw/refs/heads/main/Minecraftia.ttf"},
+    ["Silkscreen"] = {Link = "https://github.com/LuckyHub1/LuckyHub/raw/refs/heads/main/Silkscreen.ttf"},
+}; do -- Fonts
     for Name, Table in FontsToDownload do
         if not isfile(FolderLocation .. "\\Fonts\\" .. Name .. ".ttf") then
             writefile(FolderLocation .. "\\Fonts\\" .. Name .. ".ttf", game:HttpGet(Table.Link))
@@ -312,7 +266,7 @@ do -- Fonts
     end
 end
 
-do -- Utility
+local Utility = {}; do
     function Utility.AddConnection(Signal, Function)
         local Connection = Signal:Connect(function(...)
             local Args = {...}
@@ -410,7 +364,70 @@ do -- Utility
     end
 end
 
+local PlayerHelper = {}; do
+    function PlayerHelper.GetCharacter(Player)
+        local Character = Player.Character
+
+        --[[
+            if CurrentGame == "Phantom Forces" then
+                Character = ...
+            elseif CurrentGame == "Bad Business" then
+                Character = ...
+            end
+        ]]
+
+        return Character
+    end
+
+    function PlayerHelper.GetChildren(Character)
+        local Children = GetChildren(Character)
+
+        return Children
+    end
+
+    function PlayerHelper.GetDescendants(Character)
+        local Descendants = GetDescendants(Character)
+
+        return Descendants
+    end
+
+    function PlayerHelper.GetTool(Player)
+        --[[
+            return nil to use the default way (connections)
+
+            if CurrentGame == "Phantom Forces" then
+                return ...
+            elseif CurrentGame == "Bad Business" then
+                return ...
+            end 
+        ]]
+
+        return nil
+    end
+end
+
 do -- Functions
+    local TextAlignments = {
+        ["Left"] = "Right",
+        ["Right"] = "Left",
+        ["Top"] = "Center",
+        ["Bottom"] = "Center",
+    }
+
+    local Layout = {
+        {UDim2_new(0, -1, 0, -1), UDim2_new(0.3, 0, 0, 1), Vector2_new(0, 0), 0},
+        {UDim2_new(0, -1, 0, -1), UDim2_new(0, 1, 0.3, 0), Vector2_new(0, 0), 180},
+
+        {UDim2_new(1, 1, 0, -1), UDim2_new(0.3, 0, 0, 1), Vector2_new(1, 0), 0},
+        {UDim2_new(1, 1, 0, -1), UDim2_new(0, 1, 0.3, 0), Vector2_new(1, 0), 180},
+
+        {UDim2_new(0, -1, 1, 1), UDim2_new(0.3, 0, 0, 1), Vector2_new(0, 1), 0},
+        {UDim2_new(0, -1, 1, 1), UDim2_new(0, 1, 0.3, 0), Vector2_new(0, 1), -180},
+
+        {UDim2_new(1, 1, 1, 1), UDim2_new(0.3, 0, 0, 1), Vector2_new(1, 1), 0},
+        {UDim2_new(1, 1, 1, 1), UDim2_new(0, 1, 0.3, 0), Vector2_new(1, 1), -180},
+    }
+
     ESP.Holder = Utility.CreateObject("ScreenGui", {
 		Name = "\n",
 		ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets,
@@ -435,6 +452,8 @@ do -- Functions
             LastTick = os_clock()
         }
 
+        local IsPlayer = IsA(Target, "Player")
+        local IsBasePart = IsA(Target, "BasePart")
         local Objects = TargetInfo.Objects
         local LastTick = TargetInfo.LastTick
         local ToolConnection = TargetInfo.ToolConnection
@@ -443,18 +462,12 @@ do -- Functions
         local ESPFont = Fonts.Loaded[ESPSettings.Font]
         local ESPFontSize = ESPSettings.FontSize
         local ESPHolder = ESP.Holder
-        local TextAlignments = {
-            ["Left"] = "Right",
-            ["Right"] = "Left",
-            ["Top"] = "Center",
-            ["Bottom"] = "Center",
-        }
 
-        CharacterObjects.Character = if IsA(Target, "Player") then (Target.Character or Target.CharacterAdded:Wait()) else Target
-        CharacterObjects.Children = GetChildren(CharacterObjects.Character)
-        CharacterObjects.Descendants = GetDescendants(CharacterObjects.Character)
+        CharacterObjects.Character = if IsPlayer then (PlayerHelper.GetCharacter(Target)) else Target
+        CharacterObjects.Children = PlayerHelper.GetChildren(CharacterObjects.Character)
+        CharacterObjects.Descendants = PlayerHelper.GetDescendants(CharacterObjects.Character)
 
-        if IsA(Target, "Player") then
+        if IsPlayer then
             CharacterObjects.HumanoidRootPart = FindFirstChild(CharacterObjects.Character, "HumanoidRootPart")
             CharacterObjects.Humanoid = FindFirstChildWhichIsA(CharacterObjects.Character, "Humanoid")
         end
@@ -463,13 +476,18 @@ do -- Functions
             function TargetInfo.Init()
                 if #Objects > 0 then return end
 
-                if IsA(Target, "Player") then
+                if IsPlayer then
                     TargetInfo.CharacterConnection = Utility.AddConnection(Target.CharacterAdded, function(Character)
                         CharacterObjects.Character = Character
                         CharacterObjects.HumanoidRootPart = WaitForChild(Character, "HumanoidRootPart", 10)
                         CharacterObjects.Humanoid = WaitForChild(Character, "Humanoid", 10)
-                        CharacterObjects.Children = GetChildren(Character)
-                        CharacterObjects.Descendants = GetDescendants(Character)
+                        CharacterObjects.Children = PlayerHelper.GetChildren(Character)
+                        CharacterObjects.Descendants = PlayerHelper.GetDescendants(Character)
+
+                        local Highlight = Objects["Highlight"]; do
+                            Highlight.Parent = CharacterObjects.Character
+                            Highlight.Adornee = CharacterObjects.Character
+                        end
                     end)
 
                     if CharacterObjects.Character then
@@ -552,6 +570,15 @@ do -- Functions
 
                     Objects["BoxFill"] = Utility.CreateObject("Frame", {Parent = Objects["BoxGlow"], Visible = false, BackgroundTransparency = 0, Position = UDim2_new(0, 0, 0, 0), BorderColor3 = Color3_fromRGB(0, 0, 0), Size = UDim2_new(0, 0, 0, 0), BorderSizePixel = 0, BackgroundColor3 = Color3_fromRGB(255, 255, 255)})
                     Objects["BoxFillGradient"] = Utility.CreateObject("UIGradient", {Parent = Objects["BoxFill"], Rotation = 90, Color = ColorSequence_new{ColorSequenceKeypoint_new(0, Color3_fromRGB(0, 0, 0)), ColorSequenceKeypoint_new(1, Color3_fromRGB(255, 255, 255))}, Transparency = NumberSequence_new{NumberSequenceKeypoint_new(0, 1), NumberSequenceKeypoint_new(1, 1)}})
+                end
+
+                do -- ConerBox
+                    Objects["CornerHolder"] = Utility.CreateObject("Frame", {Parent = Objects["BoxGlow"], Visible = false, BackgroundTransparency = 1, Position = UDim2_new(0, -1, 0, -1), BorderColor3 = Color3_fromRGB(0, 0, 0), Size = UDim2_new(0, 0, 0, 0), BorderSizePixel = 0, BackgroundColor3 = Color3_fromRGB(255, 255, 255)})
+
+                    for i = 1, 8 do
+                        Objects["Line_" .. i] = Utility.CreateObject("Frame", {Parent = Objects["CornerHolder"], Visible = false, BackgroundTransparency = 0, Position = UDim2_new(0, 0, 0, 0), BorderColor3 = Color3_fromRGB(0, 0, 0), Size = UDim2_new(0, 0, 0, 0), BorderSizePixel = 0, BackgroundColor3 = Color3_fromRGB(255, 255, 255)})
+                        Utility.CreateObject("UIStroke", {Parent = Objects["Line_" .. i], Thickness = 1, LineJoinMode = Enum.LineJoinMode.Miter})
+                    end
                 end
 
                 do -- Bars
@@ -654,14 +681,17 @@ do -- Functions
                 if not CharacterObjects.Children then return end
                 if not CharacterObjects.Descendants then return end
 
-                if #CharacterObjects.Children ~= #GetChildren(CharacterObjects.Character) then
-                    CharacterObjects.Children = GetChildren(CharacterObjects.Character)
+                local CurrentChildren = PlayerHelper.GetChildren(CharacterObjects.Character)
+                local CurrentDescendants = PlayerHelper.GetDescendants(CharacterObjects.Character)
+
+                if #CharacterObjects.Children ~= #CurrentChildren then
+                    CharacterObjects.Children = CurrentChildren
 
                     return
                 end
 
-                if #CharacterObjects.Descendants ~= #GetDescendants(CharacterObjects.Character) then
-                    CharacterObjects.Descendants = GetDescendants(CharacterObjects.Character)
+                if #CharacterObjects.Descendants ~= #CurrentDescendants then
+                    CharacterObjects.Descendants = CurrentDescendants
 
                     return
                 end
@@ -672,7 +702,7 @@ do -- Functions
 
                 if (not ESPSettings.LocalPlayer) and Target == Client then return end
                 if not CharacterObjects.Character then return end
-                if IsA(Target, "Player") then
+                if IsPlayer then
                     if not CharacterObjects.HumanoidRootPart then
                         CharacterObjects.HumanoidRootPart = FindFirstChild(CharacterObjects.Character, "HumanoidRootPart")
 
@@ -696,7 +726,7 @@ do -- Functions
                 if Distance > ESPSettings.MaxDistance then return end
 
                 local BodyParts = if ESPSettings.BoundingBox.IncludeAccessories then CharacterObjects.Descendants else CharacterObjects.Children
-                local BoxWidth, BoxHeight, BoxPositionX, BoxPositionY, OnScreen = Utility.CalculateBox(ESPSettings, Target, CharacterObjects.HumanoidRootPart, (if IsA(Target, "BasePart") then {Target} else BodyParts))
+                local BoxWidth, BoxHeight, BoxPositionX, BoxPositionY, OnScreen = Utility.CalculateBox(ESPSettings, Target, CharacterObjects.HumanoidRootPart, (if IsBasePart then {Target} else BodyParts))
                 if not OnScreen then return end
 
                 local BoxSize, BoxPosition = UDim2_fromOffset(math_floor(BoxWidth), math_floor(BoxHeight)), UDim2_fromOffset(math_floor(BoxPositionX), math_floor(BoxPositionY))
@@ -707,23 +737,9 @@ do -- Functions
                 end
 
                 local BoxOutline, BoxInline, BoxFill, BoxGlow = Objects["BoxOutline"], Objects["BoxInline"], Objects["BoxFill"], Objects["BoxGlow"]; do
-                    local BoxEnabled, BoxColor, BoxTransparency, BoxRotation = ESPSettings.BoundingBox.Enabled, ESPSettings.BoundingBox.Color, ESPSettings.BoundingBox.Transparency, ESPSettings.BoundingBox.Rotation
+                    local BoxEnabled, BoxColor, BoxTransparency, BoxRotation, BoxType = ESPSettings.BoundingBox.Enabled, ESPSettings.BoundingBox.Color, ESPSettings.BoundingBox.Transparency, ESPSettings.BoundingBox.Rotation, ESPSettings.BoundingBox.Type
 
                     if BoxEnabled then
-                        BoxOutline.Parent.Visible = true
-                        BoxOutline.Parent.Size = UDim2_fromOffset(BoxWidth, BoxHeight)
-                        BoxInline.Parent.Visible = true
-                        BoxInline.Parent.Size = UDim2_fromOffset(BoxWidth + 2, BoxHeight + 2)
-
-                        local BoxInlineGradient, BoxOutlineGradient = Objects["BoxInlineGradient"], Objects["BoxOutlineGradient"]; do
-                            BoxInlineGradient.Color = ColorSequence_new{ColorSequenceKeypoint_new(0, BoxColor[1]), ColorSequenceKeypoint_new(1, BoxColor[2])}
-                            BoxInlineGradient.Transparency = NumberSequence_new{NumberSequenceKeypoint_new(0, BoxTransparency[1]), NumberSequenceKeypoint_new(1, BoxTransparency[2])}
-                            BoxInlineGradient.Rotation = BoxRotation
-
-                            BoxOutlineGradient.Transparency = NumberSequence_new{NumberSequenceKeypoint_new(0, BoxTransparency[1]), NumberSequenceKeypoint_new(1, BoxTransparency[2])}
-                            BoxOutlineGradient.Rotation = BoxRotation
-                        end
-
                         local BoxGlowGradient = Objects["BoxGlowGradient"]; do
                             local BoxGlowEnabled, BoxGlowColor, BoxGlowTransparency, BoxGlowRotation = ESPSettings.BoundingBox.Glow.Enabled, ESPSettings.BoundingBox.Glow.Color, ESPSettings.BoundingBox.Glow.Transparency, ESPSettings.BoundingBox.Glow.Rotation
 
@@ -737,20 +753,64 @@ do -- Functions
                             end
                         end
 
-                        local BoxFillGradient = Objects["BoxFillGradient"]; do
-                            local BoxFillColor, BoxFillTransparency, BoxFillRotation = ESPSettings.BoundingBox.Fill.Color, ESPSettings.BoundingBox.Fill.Transparency, ESPSettings.BoundingBox.Fill.Rotation
+                        if BoxType == "2D" then
+                            BoxOutline.Parent.Visible = true
+                            BoxOutline.Parent.Size = UDim2_fromOffset(BoxWidth, BoxHeight)
+                            BoxInline.Parent.Visible = true
+                            BoxInline.Parent.Size = UDim2_fromOffset(BoxWidth + 2, BoxHeight + 2)
 
-                            BoxFill.Visible = ESPSettings.BoundingBox.Fill.Enabled
-                            BoxFill.Size = UDim2_fromOffset(BoxWidth, BoxHeight)
-                            BoxFillGradient.Rotation = BoxFillRotation
-                            BoxFillGradient.Color = ColorSequence_new{ColorSequenceKeypoint_new(0, BoxFillColor[1]), ColorSequenceKeypoint_new(1, BoxFillColor[2])}
-                            BoxFillGradient.Transparency = NumberSequence_new{NumberSequenceKeypoint_new(0, BoxFillTransparency[1]), NumberSequenceKeypoint_new(1, BoxFillTransparency[2])}
+                            local BoxInlineGradient, BoxOutlineGradient = Objects["BoxInlineGradient"], Objects["BoxOutlineGradient"]; do
+                                BoxInlineGradient.Color = ColorSequence_new{ColorSequenceKeypoint_new(0, BoxColor[1]), ColorSequenceKeypoint_new(1, BoxColor[2])}
+                                BoxInlineGradient.Transparency = NumberSequence_new{NumberSequenceKeypoint_new(0, BoxTransparency[1]), NumberSequenceKeypoint_new(1, BoxTransparency[2])}
+                                BoxInlineGradient.Rotation = BoxRotation
+
+                                BoxOutlineGradient.Transparency = NumberSequence_new{NumberSequenceKeypoint_new(0, BoxTransparency[1]), NumberSequenceKeypoint_new(1, BoxTransparency[2])}
+                                BoxOutlineGradient.Rotation = BoxRotation
+                            end
+
+                            local BoxFillGradient = Objects["BoxFillGradient"]; do
+                                local BoxFillColor, BoxFillTransparency, BoxFillRotation = ESPSettings.BoundingBox.Fill.Color, ESPSettings.BoundingBox.Fill.Transparency, ESPSettings.BoundingBox.Fill.Rotation
+
+                                BoxFill.Visible = ESPSettings.BoundingBox.Fill.Enabled
+                                BoxFill.Size = UDim2_fromOffset(BoxWidth, BoxHeight)
+                                BoxFillGradient.Rotation = BoxFillRotation
+                                BoxFillGradient.Color = ColorSequence_new{ColorSequenceKeypoint_new(0, BoxFillColor[1]), ColorSequenceKeypoint_new(1, BoxFillColor[2])}
+                                BoxFillGradient.Transparency = NumberSequence_new{NumberSequenceKeypoint_new(0, BoxFillTransparency[1]), NumberSequenceKeypoint_new(1, BoxFillTransparency[2])}
+                            end
+                        else
+                            local CornerHolder = Objects["CornerHolder"]; do
+                                CornerHolder.Visible = true
+                                CornerHolder.Size = UDim2_fromOffset(BoxWidth + 2, BoxHeight + 2)
+                            end
+
+                            for i = 1, 8 do
+                                local Line = Objects["Line_" .. i]
+                                local Stroke = Line.UIStroke
+                                local LayoutPosition = Layout[i]
+                                local Position, Size, AnchorPoint, Rotation = LayoutPosition[1], LayoutPosition[2], LayoutPosition[3], LayoutPosition[4]
+
+                                Stroke.Transparency = BoxTransparency[1]
+
+                                Line.Position = Position
+                                Line.Rotation = Rotation
+                                Line.BackgroundColor3 = BoxColor[1]
+                                Line.BackgroundTransparency = BoxTransparency[1]
+                                Line.Size = Size
+                                Line.AnchorPoint = AnchorPoint
+                                Line.Visible = true
+                            end
                         end
                     else
                         BoxGlow.ImageTransparency = 1
                         BoxOutline.Parent.Visible = false
                         BoxInline.Parent.Visible = false
                         BoxFill.Visible = false
+
+                        for i = 1, 8 do
+                            local Line = Objects["Line_" .. i]
+                            
+                            Line.Visible = false
+                        end
                     end
                 end
 
@@ -759,7 +819,7 @@ do -- Functions
                         local BarEnabled, BarColor, BarTransparency = BarInfo.Enabled, BarInfo.Color, BarInfo.Transparency
                         local NewParent = Objects[`{BarInfo.Position}BarHolder`]
 
-                        if BarEnabled and IsA(Target, "Player") then
+                        if BarEnabled and IsPlayer then
                             local BarValue = BarInfo.Type(Target, CharacterObjects)
                             local BarSizes = {
                                 ["Top"] = UDim2_new(BarValue, 0, 0, 1),
@@ -822,7 +882,7 @@ do -- Functions
                             ["Right"] = Enum.TextXAlignment.Center,
                         }
 
-                        if BarTextEnabled and IsA(Target, "Player") then
+                        if BarTextEnabled and IsPlayer then
                             local TextValue, TextVisible = BarInfo.Text.Type(Target, CharacterObjects)
 
                             BarText.Text = `{tostring(math_floor(TextValue))}{BarInfo.Text.Ending}`
@@ -867,7 +927,7 @@ do -- Functions
                     local NameEnabled, NameColor, NameTransparency = ESPSettings.Name.Enabled, ESPSettings.Name.Color, ESPSettings.Name.Transparency
                     
                     if NameEnabled then
-                        local TargetName = if ESPSettings.Name.UseDisplay then (IsA(Target, "Player") and Target.DisplayName or Target.Name) else Target.Name
+                        local TargetName = if ESPSettings.Name.UseDisplay then (IsPlayer and Target.DisplayName or Target.Name) else Target.Name
 
                         NameText.Visible = true
                         NameText.Text = Utility.GetFontType(ESPSettings, TargetName)
@@ -900,14 +960,16 @@ do -- Functions
                 local WeaponText = Objects["Weapon"]; do
                     local WeaponEnabled, WeaponColor, WeaponTransparency = ESPSettings.Weapon.Enabled, ESPSettings.Weapon.Color, ESPSettings.Weapon.Transparency
                     
-                    if IsA(Target, "Player") and WeaponEnabled then
+                    if IsPlayer and WeaponEnabled then
+                        local Tool = PlayerHelper.GetTool(Target) or TargetInfo.CurrentTool
+
                         WeaponText.Visible = true
                         WeaponText.TextXAlignment = TextAlignments[ESPSettings.Weapon.Position]
                         WeaponText.Parent = Objects[`{ESPSettings.Weapon.Position}TextHolder`]
                         WeaponText.TextColor3 = WeaponColor
                         WeaponText.TextTransparency = WeaponTransparency
                         WeaponText.UIStroke.Transparency = WeaponTransparency
-                        WeaponText.Text = Utility.GetFontType(ESPSettings, TargetInfo.CurrentTool)
+                        WeaponText.Text = Utility.GetFontType(ESPSettings, Tool)
                     else
                         WeaponText.Visible = false
                     end
@@ -969,38 +1031,18 @@ do -- Functions
         end
     end
 
-    function ESP.Init(RenderCallback)
+    function ESP.Init()
         for Type, _ in ESPSettings do
             if not ESP.Targets[Type] then ESP.Targets[Type] = {} end
         end
-
-        for _, Player in Players:GetPlayers() do
-            ESP.AddTarget(Player, "Players")
-        end
-
-        Utility.AddConnection(Players.PlayerAdded, function(Player)
-            ESP.AddTarget(Player, "Players")
-        end)
-
-        Utility.AddConnection(Players.PlayerRemoving, function(Player)
-            ESP.RemoveTarget(Player, "Players")
-        end)
-
-        Utility.AddConnection(RunService.PreRender, RenderCallback or function()
-            for Type, _ in ESP.Settings do
-                for _, Target in ESP.Targets[Type] do
-                    Target.Update()
-                end
-            end
-        end)
     end
 
     function ESP.Unload()
-        for _, Connection in ESP.Connections do
+        for _, Connection in ConnectionsTable do
             Connection:Disconnect()
         end
 
-        for _, Object in ESP.Objects do
+        for _, Object in ObjectsTable do
             Object:Destroy()
         end
 
@@ -1008,4 +1050,28 @@ do -- Functions
     end
 end
 
-return ESP;
+do -- Connections
+    ESP.Init()
+
+    for _, Player in Players:GetPlayers() do
+        ESP.AddTarget(Player, "Players")
+    end
+
+    Utility.AddConnection(Players.PlayerAdded, LPH_NO_VIRTUALIZE(function(Player)
+        Player.CharacterAdded:Wait()
+
+        ESP.AddTarget(Player, "Players")
+    end))
+
+    Utility.AddConnection(Players.PlayerRemoving, LPH_NO_VIRTUALIZE(function(Player)
+        ESP.RemoveTarget(Player, "Players")
+    end))
+
+    Utility.AddConnection(RunService.PreRender, LPH_NO_VIRTUALIZE(function()
+        for Type, _ in ESP.Settings do
+            for _, Target in ESP.Targets[Type] do
+                Target.Update()
+            end
+        end
+    end))
+end
