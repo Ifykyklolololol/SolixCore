@@ -380,13 +380,13 @@ local PlayerHelper = {}; do
     end
 
     function PlayerHelper.GetChildren(Character)
-        local Children = GetChildren(Character)
+        local Children = Character:GetChildren()
 
         return Children
     end
 
     function PlayerHelper.GetDescendants(Character)
-        local Descendants = GetDescendants(Character)
+        local Descendants = Character:GetDescendants()
 
         return Descendants
     end
