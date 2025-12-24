@@ -366,6 +366,8 @@ end
 
 local PlayerHelper = {}; do
     function PlayerHelper.GetCharacter(Player)
+        if not Player then return nil end
+        
         local Character = Player.Character
 
         --[[
@@ -380,18 +382,24 @@ local PlayerHelper = {}; do
     end
 
     function PlayerHelper.GetChildren(Character)
+        if not Character then return {} end
+        
         local Children = Character:GetChildren()
 
         return Children
     end
 
     function PlayerHelper.GetDescendants(Character)
+        if not Character then return {} end
+        
         local Descendants = Character:GetDescendants()
 
         return Descendants
     end
 
     function PlayerHelper.GetTool(Player)
+        if not Player then return nil end
+        
         --[[
             return nil to use the default way (connections)
 
