@@ -476,8 +476,8 @@ do -- Functions
         CharacterObjects.Descendants = PlayerHelper.GetDescendants(CharacterObjects.Character)
 
         if IsPlayer then
-            CharacterObjects.HumanoidRootPart = FindFirstChild(CharacterObjects.Character, "HumanoidRootPart")
-            CharacterObjects.Humanoid = FindFirstChildWhichIsA(CharacterObjects.Character, "Humanoid")
+            CharacterObjects.HumanoidRootPart = CharacterObjects.Character:FindFirstChild("HumanoidRootPart")
+            CharacterObjects.Humanoid = CharacterObjects.Character:FindFirstChildWhichIsA("Humanoid")
         end
 
         do -- Functions
