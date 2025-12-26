@@ -493,7 +493,6 @@ do -- Functions
                         CharacterObjects.Descendants = PlayerHelper.GetDescendants(Character)
 
                         local Highlight = Objects["Highlight"]; do
-                            Highlight.Parent = CharacterObjects.Character
                             Highlight.Adornee = CharacterObjects.Character
                         end
                     end)
