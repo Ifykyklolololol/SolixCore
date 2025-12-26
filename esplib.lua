@@ -475,7 +475,7 @@ do -- Functions
         CharacterObjects.Children = PlayerHelper.GetChildren(CharacterObjects.Character)
         CharacterObjects.Descendants = PlayerHelper.GetDescendants(CharacterObjects.Character)
 
-        if IsPlayer then
+        if IsPlayer and CharacterObjects.Character then
             CharacterObjects.HumanoidRootPart = CharacterObjects.Character:FindFirstChild("HumanoidRootPart")
             CharacterObjects.Humanoid = CharacterObjects.Character:FindFirstChildWhichIsA("Humanoid")
         end
@@ -712,19 +712,27 @@ do -- Functions
                 if not CharacterObjects.Character then return end
                 if IsPlayer then
                     if not CharacterObjects.HumanoidRootPart then
-                        CharacterObjects.HumanoidRootPart = FindFirstChild(CharacterObjects.Character, "HumanoidRootPart")
+                        if CharacterObjects.Character then
+                            CharacterObjects.HumanoidRootPart = FindFirstChild(CharacterObjects.Character, "HumanoidRootPart")
+                        end
 
                         return
                     end
                     
                     if not CharacterObjects.Humanoid then
-                        CharacterObjects.Humanoid = FindFirstChildWhichIsA(CharacterObjects.Character, "Humanoid")
+                        if CharacterObjects.Character then
+                            CharacterObjects.Humanoid = FindFirstChildWhichIsA(CharacterObjects.Character, "Humanoid")
+                        end
 
                         return
                     end
                 else
                     if not CharacterObjects.HumanoidRootPart then
-                        CharacterObjects.HumanoidRootPart = IsA(Target, "BasePart") and Target or CharacterObjects.Character.PrimaryPart
+                        if IsA(Target, "BasePart") then
+                            CharacterObjects.HumanoidRootPart = Target
+                        elseif CharacterObjects.Character and CharacterObjects.Character.PrimaryPart then
+                            CharacterObjects.HumanoidRootPart = CharacterObjects.Character.PrimaryPart
+                        end
 
                         return
                     end
