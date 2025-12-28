@@ -38,7 +38,7 @@ local WorldToViewportPoint = Camera.WorldToViewportPoint
 
 getgenv().Visuals = {
     Settings = {
-        Font = "Tahoma",
+        Font = "ProggyClean",
         FontSize = 12,
         RefreshRate = 60,
 
@@ -472,3 +472,4 @@ do -- Connections
     end))
 
 end
+
