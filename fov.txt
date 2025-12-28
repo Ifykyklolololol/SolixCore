@@ -43,13 +43,13 @@ getgenv().Visuals = {
         RefreshRate = 60,
 
         Crosshair = {
-            Enabled = true,
+            Enabled = false,
 
-            Dot = true,
+            Dot = false,
             Color = Color3_fromRGB(216, 126, 157),
             
             Lines = {
-                Enabled = true,
+                Enabled = false,
                 Rotate = {true, 5}, -- Enabled, Speed
                 Amount = 4,
 
@@ -59,7 +59,7 @@ getgenv().Visuals = {
             },
 
             Watermark = {
-                Enabled = true,
+                Enabled = false,
                 Color = Color3_fromRGB(255, 255, 255),
                 Text = `swag<font color="rgb(216, 126, 157)">hub</font>`,
             },
@@ -74,14 +74,14 @@ getgenv().Visuals = {
 
         FoVs = {
             SilentAim = {
-                Enabled = true,
+                Enabled = false,
                 Size = 150,
                 Thickness = 2,
                 Color = Color3_fromRGB(216, 126, 157),
                 ZIndex = 1,
 
                 Fill = {
-                    Enabled = true,
+                    Enabled = false,
                     Color = Color3_fromRGB(216, 126, 157),
                     Transparency = 0.65,
                 },
@@ -472,4 +472,5 @@ do -- Connections
     end))
 
 end
+
 
