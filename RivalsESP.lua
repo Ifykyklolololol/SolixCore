@@ -45,7 +45,7 @@ getgenv().ESP = {
             RefreshRate = 60,
 
             BoundingBox = {
-                Enabled = true,
+                Enabled = false,
                 DynamicBox = true, -- may drop fps
                 IncludeAccessories = false,
                 Type = "Corner", -- 2D, Corner
@@ -62,7 +62,7 @@ getgenv().ESP = {
                 },
 
                 Fill = {
-                    Enabled = true,
+                    Enabled = false,
                     Rotation = 90,
                     Color = {Color3_fromRGB(216, 126, 157), Color3_fromRGB(216, 126, 157)},
                     Transparency = {1, 0.5},
@@ -71,7 +71,7 @@ getgenv().ESP = {
 
             Bars = {
                 HealthBar = {
-                    Enabled = true,
+                    Enabled = false,
                     Position = "Left",
                     Color = {Color3_fromRGB(131, 245, 78), Color3_fromRGB(255, 255, 0), Color3_fromRGB(252, 71, 77)},
 
@@ -104,7 +104,7 @@ getgenv().ESP = {
                 },
 
                 ArmorBar = {
-                    Enabled = true,
+                    Enabled = false,
                     Position = "Bottom",
                     Color = {Color3_fromRGB(52, 131, 235), Color3_fromRGB(52, 131, 235), Color3_fromRGB(52, 131, 235)},
 
@@ -138,14 +138,14 @@ getgenv().ESP = {
             },
 
             Chams = {
-                Enabled = true,
+                Enabled = false,
                 DepthMode = Enum.HighlightDepthMode.AlwaysOnTop,
                 Fill = {Color3_fromRGB(216, 126, 157), 0.5},
                 Outline = {Color3_fromRGB(0, 0, 0), 0.5},
             },
 
             Name = {
-                Enabled = true,
+                Enabled = false,
                 UseDisplay = true,
                 Position = "Top",
                 Color = Color3_fromRGB(255, 255, 255),
@@ -153,7 +153,7 @@ getgenv().ESP = {
             },
 
             Distance = {
-                Enabled = true,
+                Enabled = false,
                 Ending = "st",
                 Position = "Bottom",
                 Color = Color3_fromRGB(255, 255, 255),
@@ -161,14 +161,14 @@ getgenv().ESP = {
             },
 
             Weapon = {
-                Enabled = true,
+                Enabled = false,
                 Position = "Bottom",
                 Color = Color3_fromRGB(255, 255, 255),
                 Transparency = 0,
             },
 
             Flags = {
-                Enabled = true,
+                Enabled = false,
                 Position = "Right",
                 Color = Color3_fromRGB(255, 255, 255),
                 Transparency = 0,
