@@ -240,6 +240,7 @@ local FontsToDownload = {
     ["Tahoma"] = {Link = "https://github.com/LuckyHub1/LuckyHub/raw/main/zekton_rg.ttf"},
     ["Minecraftia"] = {Link = "https://github.com/LuckyHub1/LuckyHub/raw/refs/heads/main/Minecraftia.ttf"},
     ["Silkscreen"] = {Link = "https://github.com/LuckyHub1/LuckyHub/raw/refs/heads/main/Silkscreen.ttf"},
+	["ProggyClean"] = {Link = "https://github.com/LuckyHub1/LuckyHub/raw/main/ProggyClean.ttf"},
 }; do -- Fonts
     for Name, Table in FontsToDownload do
         if not isfile(FolderLocation .. "\\Fonts\\" .. Name .. ".ttf") then
