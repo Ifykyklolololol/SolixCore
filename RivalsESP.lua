@@ -37,7 +37,7 @@ getgenv().ESP = {
             Enabled = true,
             LocalPlayer = true,
 
-            Font = "Tahoma",
+            Font = "ProggyClean",
             FontSize = 12,
             FontType = "lowercase", -- uppercase, lowercase, none
 
