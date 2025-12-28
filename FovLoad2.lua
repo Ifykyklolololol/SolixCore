@@ -1,5 +1,5 @@
-if Visuals and Visuals.Unload then
-    Visuals.Unload()
+if Visuals2 and Visuals2.Unload then
+    Visuals2.Unload()
 end
 
 if not LPH_OBFUSCATED then
@@ -36,7 +36,7 @@ local Camera = FindFirstChildWhichIsA(Workspace, "Camera")
 local Viewport = Camera.ViewportSize
 local WorldToViewportPoint = Camera.WorldToViewportPoint
 
-getgenv().Visuals = {
+getgenv().Visuals2 = {
     Settings = {
         Font = "Tahoma",
         FontSize = 12,
@@ -99,18 +99,18 @@ getgenv().Visuals = {
     Errors = {},
     Objects = {},
     FoVs = {},
-    Folder = "Visuals",
+    Folder = "Visuals2",
     Crosshair = nil,
     Font = nil,
     Holder = nil,
 }
 
-local ConnectionsTable = Visuals.Connections
-local ObjectsTable = Visuals.Objects
-local DrawingsTable = Visuals.Drawings
-local FolderLocation = Visuals.Folder
-local VisualsErrors = Visuals.Errors
-local VisualsSettings = Visuals.Settings
+local ConnectionsTable = Visuals2.Connections
+local ObjectsTable = Visuals2.Objects
+local DrawingsTable = Visuals2.Drawings
+local FolderLocation = Visuals2.Folder
+local Visuals2Errors = Visuals2.Errors
+local Visuals2Settings = Visuals2.Settings
 local FontsToDownload = {
     ["Tahoma"] = {Link = "https://github.com/LuckyHub1/LuckyHub/raw/main/zekton_rg.ttf"},
     ["Minecraftia"] = {Link = "https://github.com/LuckyHub1/LuckyHub/raw/refs/heads/main/Minecraftia.ttf"},
@@ -217,7 +217,7 @@ local Utility = {}; do
 end
 
 do -- Functions
-    Visuals.Holder = Utility.CreateObject("ScreenGui", {
+    Visuals2.Holder = Utility.CreateObject("ScreenGui", {
 		Name = "\n",
 		ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets,
 		ZIndexBehavior = Enum.ZIndexBehavior.Global,
@@ -227,7 +227,7 @@ do -- Functions
 		Parent = gethui()
 	})
 
-    function Visuals.CreateCrosshair()
+    function Visuals2.CreateCrosshair()
         local CrosshairObject = {
             Connection = nil,
             
@@ -237,25 +237,25 @@ do -- Functions
             LastSpinTime = os_clock(),
         }
 
-        local Settings = VisualsSettings.Crosshair
+        local Settings = Visuals2Settings.Crosshair
         local LineSettings = Settings.Lines
         local WatermarkSettings = Settings.Watermark
         local Objects = CrosshairObject.Objects
         local LastTick = CrosshairObject.LastTick
-        local VisualsHolder = Visuals.Holder
+        local Visuals2Holder = Visuals2.Holder
         local LinesAmount = LineSettings.Amount
         local CrosshairFunction = Settings.Follow
 
-        local ESPFont = (Fonts and Fonts.Loaded and Fonts.Loaded[VisualsSettings.Font]) or Font.new("Arial", Enum.FontWeight.Regular)
-        local ESPFontSize = VisualsSettings.FontSize
+        local ESPFont = (Fonts and Fonts.Loaded and Fonts.Loaded[Visuals2Settings.Font]) or Font.new("Arial", Enum.FontWeight.Regular)
+        local ESPFontSize = Visuals2Settings.FontSize
 
         do -- Functions
             function CrosshairObject.Init()
-                Objects["CrosshairDot"] = Utility.CreateObject("Frame", {Parent = VisualsHolder, ZIndex = 1000, AnchorPoint = Vector2_new(0.5, 0.5), Visible = false, BackgroundTransparency = 0, Position = UDim2_new(0, 0, 0, 0), BorderColor3 = Color3_fromRGB(0, 0, 0), Size = UDim2_new(0, 2, 0, 2), BorderSizePixel = 0, BackgroundColor3 = Color3_fromRGB(255, 255, 255)})
+                Objects["CrosshairDot"] = Utility.CreateObject("Frame", {Parent = Visuals2Holder, ZIndex = 1000, AnchorPoint = Vector2_new(0.5, 0.5), Visible = false, BackgroundTransparency = 0, Position = UDim2_new(0, 0, 0, 0), BorderColor3 = Color3_fromRGB(0, 0, 0), Size = UDim2_new(0, 2, 0, 2), BorderSizePixel = 0, BackgroundColor3 = Color3_fromRGB(255, 255, 255)})
                 Utility.CreateObject("UIStroke", {Parent = Objects["CrosshairDot"], Thickness = 1, LineJoinMode = Enum.LineJoinMode.Miter})
 
                 Objects["CrosshairWatermark"] = Utility.CreateObject("TextLabel", {
-                    Parent = VisualsHolder,
+                    Parent = Visuals2Holder,
                     FontFace = ESPFont,
                     TextSize = ESPFontSize,
                     TextColor3 = Color3_fromRGB(255, 255, 255),
@@ -271,13 +271,13 @@ do -- Functions
                 }); Utility.CreateObject("UIStroke", {Parent = Objects["CrosshairWatermark"], Color = Color3_fromRGB(0, 0, 0), LineJoinMode = Enum.LineJoinMode.Miter})
                 
                 for i = 1, LinesAmount do
-                    Objects["Line_" .. i] = Utility.CreateObject("Frame", {Parent = VisualsHolder, ZIndex = 1000, AnchorPoint = Vector2_new(0.5, 0.5), Visible = false, BackgroundTransparency = 0, Position = UDim2_new(0, 0, 0, 0), BorderColor3 = Color3_fromRGB(0, 0, 0), Size = UDim2_new(0, 2, 0, 2), BorderSizePixel = 0, BackgroundColor3 = Color3_fromRGB(255, 255, 255)})
+                    Objects["Line_" .. i] = Utility.CreateObject("Frame", {Parent = Visuals2Holder, ZIndex = 1000, AnchorPoint = Vector2_new(0.5, 0.5), Visible = false, BackgroundTransparency = 0, Position = UDim2_new(0, 0, 0, 0), BorderColor3 = Color3_fromRGB(0, 0, 0), Size = UDim2_new(0, 2, 0, 2), BorderSizePixel = 0, BackgroundColor3 = Color3_fromRGB(255, 255, 255)})
                     Utility.CreateObject("UIStroke", {Parent = Objects["Line_" .. i], Thickness = 1, LineJoinMode = Enum.LineJoinMode.Miter})
                 end
             end
 
             function CrosshairObject.Update(Delta)
-                if (os_clock() - LastTick) < (1 / VisualsSettings.RefreshRate) then return end
+                if (os_clock() - LastTick) < (1 / Visuals2Settings.RefreshRate) then return end
                 LastTick = os_clock()
 
                 local CrosshairPosition = CrosshairFunction()
@@ -340,16 +340,16 @@ do -- Functions
                     Object:Destroy()
                 end
 
-                Visuals.Crosshair = nil
+                Visuals2.Crosshair = nil
             end
         end
 
         CrosshairObject.Init()
-        Visuals.Crosshair = CrosshairObject
+        Visuals2.Crosshair = CrosshairObject
     end
 
-    function Visuals.RegisterFoV(Name, Settings)
-        if Visuals.FoVs[Name] then return end
+    function Visuals2.RegisterFoV(Name, Settings)
+        if Visuals2.FoVs[Name] then return end
 
         local FoVObject = {
             Objects = {},
@@ -358,26 +358,26 @@ do -- Functions
 
         local Objects = FoVObject.Objects
         local LastTick = FoVObject.LastTick
-        local VisualsHolder = Visuals.Holder
+        local Visuals2Holder = Visuals2.Holder
         local FovFunction = Settings.Follow
         local FillSettings = Settings.Fill
 
         do -- Functions
             function FoVObject.Init()
-                Objects["FoVFill"] = Utility.CreateObject("Frame", {Parent = VisualsHolder, ZIndex = Settings.ZIndex, AnchorPoint = Vector2_new(0.5, 0.5), Visible = false, BackgroundTransparency = 1, Position = UDim2_new(0, 0, 0, 0), BorderColor3 = Color3_fromRGB(0, 0, 0), Size = UDim2_new(0, 0, 0, 0), BorderSizePixel = 0, BackgroundColor3 = Color3_fromRGB(255, 255, 255)})
+                Objects["FoVFill"] = Utility.CreateObject("Frame", {Parent = Visuals2Holder, ZIndex = Settings.ZIndex, AnchorPoint = Vector2_new(0.5, 0.5), Visible = false, BackgroundTransparency = 1, Position = UDim2_new(0, 0, 0, 0), BorderColor3 = Color3_fromRGB(0, 0, 0), Size = UDim2_new(0, 0, 0, 0), BorderSizePixel = 0, BackgroundColor3 = Color3_fromRGB(255, 255, 255)})
                 Utility.CreateObject("UICorner", {Parent = Objects["FoVFill"], CornerRadius = UDim_new(1, 0)})
 
-                Objects["FoVMain"] = Utility.CreateObject("Frame", {Parent = VisualsHolder, ZIndex = Settings.ZIndex + 1, AnchorPoint = Vector2_new(0.5, 0.5), Visible = false, BackgroundTransparency = 1, Position = UDim2_new(0, 0, 0, 0), BorderColor3 = Color3_fromRGB(0, 0, 0), Size = UDim2_new(0, 0, 0, 0), BorderSizePixel = 0, BackgroundColor3 = Color3_fromRGB(255, 255, 255)})
+                Objects["FoVMain"] = Utility.CreateObject("Frame", {Parent = Visuals2Holder, ZIndex = Settings.ZIndex + 1, AnchorPoint = Vector2_new(0.5, 0.5), Visible = false, BackgroundTransparency = 1, Position = UDim2_new(0, 0, 0, 0), BorderColor3 = Color3_fromRGB(0, 0, 0), Size = UDim2_new(0, 0, 0, 0), BorderSizePixel = 0, BackgroundColor3 = Color3_fromRGB(255, 255, 255)})
                 Utility.CreateObject("UIStroke", {Parent = Objects["FoVMain"], Thickness = 1, LineJoinMode = Enum.LineJoinMode.Round})
                 Utility.CreateObject("UICorner", {Parent = Objects["FoVMain"], CornerRadius = UDim_new(1, 0)})
 
-                Objects["FoVOutline"] = Utility.CreateObject("Frame", {Parent = VisualsHolder, ZIndex = Settings.ZIndex, AnchorPoint = Vector2_new(0.5, 0.5), Visible = false, BackgroundTransparency = 1, Position = UDim2_new(0, 0, 0, 0), BorderColor3 = Color3_fromRGB(0, 0, 0), Size = UDim2_new(0, 0, 0, 0), BorderSizePixel = 0, BackgroundColor3 = Color3_fromRGB(255, 255, 255)})
+                Objects["FoVOutline"] = Utility.CreateObject("Frame", {Parent = Visuals2Holder, ZIndex = Settings.ZIndex, AnchorPoint = Vector2_new(0.5, 0.5), Visible = false, BackgroundTransparency = 1, Position = UDim2_new(0, 0, 0, 0), BorderColor3 = Color3_fromRGB(0, 0, 0), Size = UDim2_new(0, 0, 0, 0), BorderSizePixel = 0, BackgroundColor3 = Color3_fromRGB(255, 255, 255)})
                 Utility.CreateObject("UIStroke", {Parent = Objects["FoVOutline"], Thickness = 3, LineJoinMode = Enum.LineJoinMode.Round})
                 Utility.CreateObject("UICorner", {Parent = Objects["FoVOutline"], CornerRadius = UDim_new(1, 0)})
             end
 
             function FoVObject.Update()
-                if (os_clock() - LastTick) < (1 / VisualsSettings.RefreshRate) then return end
+                if (os_clock() - LastTick) < (1 / Visuals2Settings.RefreshRate) then return end
                 LastTick = os_clock()
 
                 local FoVPosition = FovFunction()
@@ -426,19 +426,19 @@ do -- Functions
                     Object:Destroy()
                 end
 
-                Visuals.FoVs[Name] = nil
+                Visuals2.FoVs[Name] = nil
             end
         end
 
         FoVObject.Init()
-        Visuals.FoVs[Name] = FoVObject
+        Visuals2.FoVs[Name] = FoVObject
     end
 
-    function Visuals.Init()
-        Visuals.CreateCrosshair()
+    function Visuals2.Init()
+        Visuals2.CreateCrosshair()
     end
 
-    function Visuals.Unload()
+    function Visuals2.Unload()
         for _, Connection in ConnectionsTable do
             Connection:Disconnect()
         end
@@ -452,16 +452,16 @@ do -- Functions
 end
 
 do -- Connections
-    Visuals.Init()
+    Visuals2.Init()
 
     Utility.AddConnection(RunService.PostSimulation, LPH_NO_VIRTUALIZE(function(Delta)
-        local CrosshairObject = Visuals.Crosshair
+        local CrosshairObject = Visuals2.Crosshair
 
         if CrosshairObject then
             CrosshairObject.Update(Delta)
         end
 
-        for _, FoV in Visuals.FoVs do
+        for _, FoV in Visuals2.FoVs do
             FoV.Update()
         end
     end))
