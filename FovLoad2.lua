@@ -1,0 +1,468 @@
+if Visuals and Visuals.Unload then
+    Visuals.Unload()
+end
+
+if not LPH_OBFUSCATED then
+    LPH_NO_VIRTUALIZE = function(Func) return Func end
+end
+
+local game = game
+local GetService = game.GetService
+local Service = function(Name)
+    return cloneref(GetService(game, Name))
+end
+
+local Players = Service("Players")
+local RunService = Service("RunService")
+local Workspace = Service("Workspace")
+local HttpService = Service("HttpService")
+local UserInputService = Service("UserInputService")
+
+local Color3_fromRGB, Color3_new, Color3_fromHSV, Color3_fromHex = Color3.fromRGB, Color3.new, Color3.fromHSV, Color3.fromHex
+local table_clear, table_insert, table_remove, table_unpack, table_find, table_sort, table_concat = table.clear, table.insert, table.remove, table.unpack, table.find, table.sort, table.concat
+local string_find, string_match, string_format, string_gsub, string_lower, string_upper, string_sub = string.find, string.match, string.format, string.gsub, string.lower, string.upper, string.sub
+local task_wait, task_spawn, task_delay, task_defer = task.wait, task.spawn, task.delay, task.defer
+local coroutine_wrap, coroutine_close, coroutine_create, coroutine_resume = coroutine.wrap, coroutine.close, coroutine.create, coroutine.resume
+local os_clock, os_date = os.clock, os.date
+local Vector2_new, Vector3_new, Vector3_one, Vector3_zero = Vector2.new, Vector3.new, Vector3.one, Vector3.zero
+local UDim2_new, UDim2_fromScale, UDim2_fromOffset, UDim_new = UDim2.new, UDim2.fromScale, UDim2.fromOffset, UDim.new
+local CFrame_Angles, CFrame_new = CFrame.Angles, CFrame.new
+local math_clamp, math_round, math_floor, math_huge, math_sin, math_cos, math_pi, math_min, math_deg, math_max, math_random = math.clamp, math.round, math.floor, math.huge, math.sin, math.cos, math.pi, math.min, math.deg, math.max, math.random
+local Drawing_new, Instance_new, Rect_new, Font_new, ColorSequence_new, ColorSequenceKeypoint_new, TweenInfo_new, NumberSequence_new, NumberSequenceKeypoint_new = Drawing.new, Instance.new, Rect.new, Font.new, ColorSequence.new, ColorSequenceKeypoint.new, TweenInfo.new, NumberSequence.new, NumberSequenceKeypoint.new
+local FindFirstChild, GetChildren, GetDescendants, WaitForChild, FindFirstChildWhichIsA, IsA = game.FindFirstChild, game.GetChildren, game.GetDescendants, game.WaitForChild, game.FindFirstChildWhichIsA, game.IsA
+
+local Client = Players.LocalPlayer
+local Camera = FindFirstChildWhichIsA(Workspace, "Camera")
+local Viewport = Camera.ViewportSize
+local WorldToViewportPoint = Camera.WorldToViewportPoint
+
+getgenv().Visuals = {
+    Settings = {
+        Font = "Tahoma",
+        FontSize = 12,
+        RefreshRate = 60,
+
+        Crosshair = {
+            Enabled = true,
+
+            Dot = true,
+            Color = Color3_fromRGB(216, 126, 157),
+            
+            Lines = {
+                Enabled = true,
+                Rotate = {true, 5}, -- Enabled, Speed
+                Amount = 4,
+
+                Length = 15,
+                Thickness = 2,
+                Gap = 12,
+            },
+
+            Watermark = {
+                Enabled = true,
+                Color = Color3_fromRGB(255, 255, 255),
+                Text = `Solix<font color="rgb(216, 126, 157)">hub</font>`,
+            },
+
+            Follow = function()
+                --local PlayerPosition = WorldToViewportPoint(Camera, Client.Character.HumanoidRootPart.Position)
+                local MousePosition = UserInputService:GetMouseLocation()
+
+                return MousePosition -- Return a vector2
+            end
+        },
+
+        FoVs = {
+            SilentAim = {
+                Enabled = true,
+                Size = 150,
+                Thickness = 2,
+                Color = Color3_fromRGB(216, 126, 157),
+                ZIndex = 1,
+
+                Fill = {
+                    Enabled = true,
+                    Color = Color3_fromRGB(216, 126, 157),
+                    Transparency = 0.65,
+                },
+
+                Follow = function()
+                    local MousePosition = UserInputService:GetMouseLocation()
+
+                    return MousePosition -- Return a vector2
+                end
+            },
+        },
+    },
+
+    Connections = {},
+    Errors = {},
+    Objects = {},
+    FoVs = {},
+    Folder = "Visuals",
+    Crosshair = nil,
+    Font = nil,
+    Holder = nil,
+}
+
+local ConnectionsTable = Visuals.Connections
+local ObjectsTable = Visuals.Objects
+local DrawingsTable = Visuals.Drawings
+local FolderLocation = Visuals.Folder
+local VisualsErrors = Visuals.Errors
+local VisualsSettings = Visuals.Settings
+local FontsToDownload = {
+    ["Tahoma"] = {Link = "https://github.com/LuckyHub1/LuckyHub/raw/main/zekton_rg.ttf"},
+    ["Minecraftia"] = {Link = "https://github.com/LuckyHub1/LuckyHub/raw/refs/heads/main/Minecraftia.ttf"},
+    ["Silkscreen"] = {Link = "https://github.com/LuckyHub1/LuckyHub/raw/refs/heads/main/Silkscreen.ttf"},
+}; do
+    for Name, Table in FontsToDownload do
+        if not isfile(FolderLocation .. "\\Fonts\\" .. Name .. ".ttf") then
+            writefile(FolderLocation .. "\\Fonts\\" .. Name .. ".ttf", game:HttpGet(Table.Link))
+        end
+        
+        if not isfile(FolderLocation .. "\\Fonts\\" .. Name .. ".font") or ExecutorName == "Potassium" then
+            local Config = {
+                name = Name,
+                faces = {{
+                    name = "Regular",
+                    weight = 9e9,
+                    style = "normal",
+                    assetId = getcustomasset(FolderLocation .. "\\Fonts\\" .. Name .. ".ttf")
+                }}
+            }
+            
+            writefile(FolderLocation .. "\\Fonts\\" .. Name .. ".font", HttpService:JSONEncode(Config))
+        end
+    end
+
+    if not getgenv().Fonts then
+        getgenv().Fonts = {
+            Loaded = {}
+        }
+
+        for _, FontPath in listfiles(FolderLocation .. "\\Fonts") do
+            local Name = string_match(FontPath, FolderLocation .. "\\Fonts\\(.+)%.font")
+
+            if Name then
+                Fonts.Loaded[Name] = Font_new(getcustomasset(FontPath), Enum.FontWeight.Regular)
+            end
+        end
+    end
+end
+
+local Utility = {}; do
+    function Utility.AddConnection(Signal, Function)
+        local Connection = Signal:Connect(function(...)
+            local Args = {...}
+            
+            local Success, Message = pcall(function() coroutine_wrap(Function)(table_unpack(Args)) end)
+            
+            if not Success and not ESPErrors[Message] then
+                local ErrorMessage = string_format("[ERROR] | An error has occured:\n%s", Message)
+
+                warn(ErrorMessage)
+                
+                ESPErrors[Message] = Message
+                
+                if ConnectionsTable[Connection] then
+                    ConnectionsTable[Connection] = nil
+                end
+                
+                return Connection and Connection:Disconnect()
+            end
+        end)
+        
+        if Connection and ConnectionsTable then
+            table_insert(ConnectionsTable, Connection)
+        end
+        
+        return Connection
+    end
+
+    function Utility.CreateObject(Type, Properties, Hidden)
+        local Hidden = Hidden or false
+        local Object = Instance_new(Type)
+
+        for Index, Value in Properties do
+            Object[Index] = Value
+        end
+
+        table_insert(ObjectsTable, Object)
+
+        return Object
+    end
+
+    function Utility.CalculateCrosshair(Lines, Center, TimeAngle, Length, Thickness, Gap)
+        local Results = {}
+        local Step = (math_pi * 2) / Lines
+        local Radius = Gap + Length / 2
+
+        for i = 1, Lines do
+            local BaseAngle = Step * (i - 1)
+            local Angle = BaseAngle + TimeAngle
+
+            local OffsetX = math_cos(Angle) * Radius
+            local OffsetY = math_sin(Angle) * Radius
+
+            Results[i] = {
+                Size = UDim2_fromOffset(Length, Thickness),
+                Position = Center + UDim2_fromOffset(OffsetX, OffsetY),
+                Rotation = math_deg(Angle)
+            }
+        end
+
+        return Results
+    end
+end
+
+do -- Functions
+    Visuals.Holder = Utility.CreateObject("ScreenGui", {
+		Name = "\n",
+		ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets,
+		ZIndexBehavior = Enum.ZIndexBehavior.Global,
+		ResetOnSpawn = false,
+		DisplayOrder = 10000,
+		IgnoreGuiInset = true,
+		Parent = gethui()
+	})
+
+    function Visuals.CreateCrosshair()
+        local CrosshairObject = {
+            Connection = nil,
+            
+            SpinAngle = 0,
+            Objects = {},
+            LastTick = os_clock(),
+            LastSpinTime = os_clock(),
+        }
+
+        local Settings = VisualsSettings.Crosshair
+        local LineSettings = Settings.Lines
+        local WatermarkSettings = Settings.Watermark
+        local Objects = CrosshairObject.Objects
+        local LastTick = CrosshairObject.LastTick
+        local VisualsHolder = Visuals.Holder
+        local LinesAmount = LineSettings.Amount
+        local CrosshairFunction = Settings.Follow
+
+        local ESPFont = (Fonts and Fonts.Loaded and Fonts.Loaded[VisualsSettings.Font]) or Font.new("Arial", Enum.FontWeight.Regular)
+        local ESPFontSize = VisualsSettings.FontSize
+
+        do -- Functions
+            function CrosshairObject.Init()
+                Objects["CrosshairDot"] = Utility.CreateObject("Frame", {Parent = VisualsHolder, ZIndex = 1000, AnchorPoint = Vector2_new(0.5, 0.5), Visible = false, BackgroundTransparency = 0, Position = UDim2_new(0, 0, 0, 0), BorderColor3 = Color3_fromRGB(0, 0, 0), Size = UDim2_new(0, 2, 0, 2), BorderSizePixel = 0, BackgroundColor3 = Color3_fromRGB(255, 255, 255)})
+                Utility.CreateObject("UIStroke", {Parent = Objects["CrosshairDot"], Thickness = 1, LineJoinMode = Enum.LineJoinMode.Miter})
+
+                Objects["CrosshairWatermark"] = Utility.CreateObject("TextLabel", {
+                    Parent = VisualsHolder,
+                    FontFace = ESPFont,
+                    TextSize = ESPFontSize,
+                    TextColor3 = Color3_fromRGB(255, 255, 255),
+                    RichText = true,
+                    Text = "",
+                    AnchorPoint = Vector2_new(0.5, 0.5),
+                    BorderSizePixel = 0,
+                    Visible = false,
+                    BackgroundTransparency = 1,
+                    ZIndex = 1001,
+                    AutomaticSize = Enum.AutomaticSize.XY,
+                    Size = UDim2_new(1, 0, 0, 0)
+                }); Utility.CreateObject("UIStroke", {Parent = Objects["CrosshairWatermark"], Color = Color3_fromRGB(0, 0, 0), LineJoinMode = Enum.LineJoinMode.Miter})
+                
+                for i = 1, LinesAmount do
+                    Objects["Line_" .. i] = Utility.CreateObject("Frame", {Parent = VisualsHolder, ZIndex = 1000, AnchorPoint = Vector2_new(0.5, 0.5), Visible = false, BackgroundTransparency = 0, Position = UDim2_new(0, 0, 0, 0), BorderColor3 = Color3_fromRGB(0, 0, 0), Size = UDim2_new(0, 2, 0, 2), BorderSizePixel = 0, BackgroundColor3 = Color3_fromRGB(255, 255, 255)})
+                    Utility.CreateObject("UIStroke", {Parent = Objects["Line_" .. i], Thickness = 1, LineJoinMode = Enum.LineJoinMode.Miter})
+                end
+            end
+
+            function CrosshairObject.Update(Delta)
+                if (os_clock() - LastTick) < (1 / VisualsSettings.RefreshRate) then return end
+                LastTick = os_clock()
+
+                local CrosshairPosition = CrosshairFunction()
+                local CenterPosition = UDim2_fromOffset(CrosshairPosition.X, CrosshairPosition.Y)
+                local CrosshairData = Utility.CalculateCrosshair(
+                    LinesAmount,
+                    CenterPosition,
+                    CrosshairObject.SpinAngle,
+                    LineSettings.Length,
+                    LineSettings.Thickness,
+                    LineSettings.Gap
+                )
+
+                local CrosshairDot = Objects["CrosshairDot"]; do
+                    if Settings.Enabled and Settings.Dot then
+                        CrosshairDot.Visible = true
+                        CrosshairDot.BackgroundColor3 = Settings.Color
+                        CrosshairDot.Position = CenterPosition
+                    else
+                        CrosshairDot.Visible = false
+                    end
+                end
+
+                local CrosshairWatermark = Objects["CrosshairWatermark"]; do
+                    if Settings.Enabled and WatermarkSettings.Enabled then
+                        CrosshairWatermark.Visible = true
+                        CrosshairWatermark.Text = WatermarkSettings.Text
+                        CrosshairWatermark.TextColor3 = WatermarkSettings.Color
+                        CrosshairWatermark.Position = CenterPosition + UDim2_fromOffset(0, 14 + LineSettings.Gap + LineSettings.Length)
+                    else
+                        CrosshairWatermark.Visible = false
+                    end
+                end
+
+                for i, Info in CrosshairData do
+                    local Line = Objects["Line_" .. i]
+
+                    if Settings.Enabled and LineSettings.Enabled then
+                        if LineSettings.Rotate[1] then
+                            local Now = os_clock()
+                            local Elapsed = Now - CrosshairObject.LastSpinTime
+
+                            CrosshairObject.LastSpinTime = Now
+                            CrosshairObject.SpinAngle += Elapsed * LineSettings.Rotate[2]
+                        end
+
+                        Line.Visible = true
+                        Line.BackgroundColor3 = Settings.Color
+                        Line.Size = Info.Size
+                        Line.Position = Info.Position
+                        Line.Rotation = Info.Rotation
+                    else
+                        Line.Visible = false
+                    end
+                end
+            end
+
+            function CrosshairObject.Remove()
+                for _, Object in Objects do
+                    Object:Destroy()
+                end
+
+                Visuals.Crosshair = nil
+            end
+        end
+
+        CrosshairObject.Init()
+        Visuals.Crosshair = CrosshairObject
+    end
+
+    function Visuals.RegisterFoV(Name, Settings)
+        if Visuals.FoVs[Name] then return end
+
+        local FoVObject = {
+            Objects = {},
+            LastTick = os_clock(),
+        }
+
+        local Objects = FoVObject.Objects
+        local LastTick = FoVObject.LastTick
+        local VisualsHolder = Visuals.Holder
+        local FovFunction = Settings.Follow
+        local FillSettings = Settings.Fill
+
+        do -- Functions
+            function FoVObject.Init()
+                Objects["FoVFill"] = Utility.CreateObject("Frame", {Parent = VisualsHolder, ZIndex = Settings.ZIndex, AnchorPoint = Vector2_new(0.5, 0.5), Visible = false, BackgroundTransparency = 1, Position = UDim2_new(0, 0, 0, 0), BorderColor3 = Color3_fromRGB(0, 0, 0), Size = UDim2_new(0, 0, 0, 0), BorderSizePixel = 0, BackgroundColor3 = Color3_fromRGB(255, 255, 255)})
+                Utility.CreateObject("UICorner", {Parent = Objects["FoVFill"], CornerRadius = UDim_new(1, 0)})
+
+                Objects["FoVMain"] = Utility.CreateObject("Frame", {Parent = VisualsHolder, ZIndex = Settings.ZIndex + 1, AnchorPoint = Vector2_new(0.5, 0.5), Visible = false, BackgroundTransparency = 1, Position = UDim2_new(0, 0, 0, 0), BorderColor3 = Color3_fromRGB(0, 0, 0), Size = UDim2_new(0, 0, 0, 0), BorderSizePixel = 0, BackgroundColor3 = Color3_fromRGB(255, 255, 255)})
+                Utility.CreateObject("UIStroke", {Parent = Objects["FoVMain"], Thickness = 1, LineJoinMode = Enum.LineJoinMode.Round})
+                Utility.CreateObject("UICorner", {Parent = Objects["FoVMain"], CornerRadius = UDim_new(1, 0)})
+
+                Objects["FoVOutline"] = Utility.CreateObject("Frame", {Parent = VisualsHolder, ZIndex = Settings.ZIndex, AnchorPoint = Vector2_new(0.5, 0.5), Visible = false, BackgroundTransparency = 1, Position = UDim2_new(0, 0, 0, 0), BorderColor3 = Color3_fromRGB(0, 0, 0), Size = UDim2_new(0, 0, 0, 0), BorderSizePixel = 0, BackgroundColor3 = Color3_fromRGB(255, 255, 255)})
+                Utility.CreateObject("UIStroke", {Parent = Objects["FoVOutline"], Thickness = 3, LineJoinMode = Enum.LineJoinMode.Round})
+                Utility.CreateObject("UICorner", {Parent = Objects["FoVOutline"], CornerRadius = UDim_new(1, 0)})
+            end
+
+            function FoVObject.Update()
+                if (os_clock() - LastTick) < (1 / VisualsSettings.RefreshRate) then return end
+                LastTick = os_clock()
+
+                local FoVPosition = FovFunction()
+                local FoVMain, FoVOutline = Objects["FoVMain"], Objects["FoVOutline"]; do
+                    local FoVSize = Settings.Size
+
+                    if Settings.Enabled then
+                        local MainUIStroke = FoVMain.UIStroke
+                        local OutlineUIStroke = FoVOutline.UIStroke
+
+                        FoVMain.Visible = true
+                        FoVMain.Position = UDim2_fromOffset(FoVPosition.X, FoVPosition.Y)
+                        FoVMain.Size = UDim2_fromOffset(FoVSize, FoVSize)
+
+                        FoVOutline.Visible = true
+                        FoVOutline.Position = UDim2_fromOffset(FoVPosition.X, FoVPosition.Y)
+                        FoVOutline.Size = UDim2_fromOffset(FoVSize - 2, FoVSize - 2)
+
+                        MainUIStroke.Color = Settings.Color
+                        MainUIStroke.Thickness = Settings.Thickness
+
+                        OutlineUIStroke.Thickness = Settings.Thickness + 2
+
+                        local FoVFill = Objects["FoVFill"]; do
+                            local FillEnabled, FillColor, FillTransparency = FillSettings.Enabled, FillSettings.Color, FillSettings.Transparency
+
+                            if FillEnabled then
+                                FoVFill.Visible = Settings.Enabled
+                                FoVFill.Transparency = FillTransparency
+                                FoVFill.BackgroundColor3 = FillColor
+                                FoVFill.Position = UDim2_fromOffset(FoVPosition.X, FoVPosition.Y)
+                                FoVFill.Size = UDim2_fromOffset(FoVSize, FoVSize)
+                            else
+                                FoVFill.Visible = false
+                            end
+                        end
+                    else
+                        FoVMain.Visible = false
+                        FoVOutline.Visible = false
+                    end
+                end
+            end
+
+            function FoVObject.Remove()
+                for _, Object in Objects do
+                    Object:Destroy()
+                end
+
+                Visuals.FoVs[Name] = nil
+            end
+        end
+
+        FoVObject.Init()
+        Visuals.FoVs[Name] = FoVObject
+    end
+
+    function Visuals.Init()
+        Visuals.CreateCrosshair()
+    end
+
+    function Visuals.Unload()
+        for _, Connection in ConnectionsTable do
+            Connection:Disconnect()
+        end
+
+        for _, Object in ObjectsTable do
+            Object:Destroy()
+        end
+
+        getgenv().Fonts = nil
+    end
+end
+
+do -- Connections
+    Visuals.Init()
+
+    Utility.AddConnection(RunService.PostSimulation, LPH_NO_VIRTUALIZE(function(Delta)
+        local CrosshairObject = Visuals.Crosshair
+
+        if CrosshairObject then
+            CrosshairObject.Update(Delta)
+        end
+
+        for _, FoV in Visuals.FoVs do
+            FoV.Update()
+        end
+    end))
+end
