@@ -246,7 +246,7 @@ do -- Functions
         local LinesAmount = LineSettings.Amount
         local CrosshairFunction = Settings.Follow
 
-        local ESPFont = Fonts.Loaded[VisualsSettings.Font]
+        local ESPFont = (Fonts and Fonts.Loaded and Fonts.Loaded[VisualsSettings.Font]) or Font.new("Arial", Enum.FontWeight.Regular)
         local ESPFontSize = VisualsSettings.FontSize
 
         do -- Functions
