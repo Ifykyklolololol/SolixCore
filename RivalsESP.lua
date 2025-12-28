@@ -181,12 +181,22 @@ getgenv().ESP = {
                     local Humanoid = CharacterObjects.Humanoid
                     if not Humanoid then return end
 
-                    if Humanoid.MoveDirection.Magnitude > 0 then
-                        table_insert(Flags, "moving")
+                    local DisplayELO = Target:GetAttribute("DisplayELO")
+                    if DisplayELO then
+                        table_insert(Flags, "ELO: " .. tostring(DisplayELO))
                     end
 
-                    if Humanoid.Jump then
-                        table_insert(Flags, "jumping")
+                    if Target:GetAttribute("IsInfluencer") then
+                        table_insert(Flags, "Influencer")
+                    end
+
+                    if Target:GetAttribute("IsRobloxEmployee") then
+                        table_insert(Flags, "Roblox Employee")
+                    end
+
+                    local Level = Target:GetAttribute("Level")
+                    if Level then
+                        table_insert(Flags, "Level: " .. tostring(Level))
                     end
 
                     return Flags -- return a table for it to work
