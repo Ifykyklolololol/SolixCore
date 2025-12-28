@@ -3371,7 +3371,34 @@ local Library do
                     BorderSizePixel = 0,
                     BackgroundColor3 = Library.Theme["Border"]
                 }):AddToTheme({BackgroundColor3 = 'Border'})   
-    -- Rip cursor :sad:
+                
+                if not IsMobile then
+                    Items["Cursor"] = Instances:Create("Frame", {
+                        Parent = Library.Holder.Instance,
+                        Name = "\0",
+                        BackgroundTransparency = 1,
+                        Position = UDim2New(0, 0, 0, 0),
+                        BorderColor3 = FromRGB(0, 0, 0),
+                        Size = UDim2New(0, 16, 0, 16),
+                        BorderSizePixel = 0,
+                        BackgroundColor3 = FromRGB(0, 0, 0)
+                    })
+        
+                    Items["Image"] = Instances:Create("ImageLabel", {
+                        Parent = Items["Cursor"].Instance,
+                        Name = "\0",
+                        ImageColor3 = FromRGB(232, 186, 248),
+                        BorderColor3 = FromRGB(0, 0, 0),
+                        Image = "rbxassetid://132511743665753",
+                        BackgroundTransparency = 1,
+                        Size = UDim2New(0, 16, 0, 16),
+                        BorderSizePixel = 0,
+                        ZIndex = 10001,
+                        Rotation = -90,
+                        BackgroundColor3 = FromRGB(232, 186, 248)
+                    })  Items["Image"]:AddToTheme({ImageColor3 = "Accent"})
+                end
+    
                 if IsMobile then 
                     Items["FloatingButton"] = Instances:Create("TextButton", {
                         Parent = Library.OtherHolder.Instance,
@@ -3421,6 +3448,13 @@ local Library do
                 end
 
                 UserInputService.MouseIconEnabled = false
+
+                if not IsMobile then
+                    Library:Connect(RunService.RenderStepped, LPH_NO_VIRTUALIZE(function()
+                        local MouseLocation = UserInputService:GetMouseLocation() 
+                        Items["Cursor"].Instance.Position = UDim2New(0, MouseLocation.X - 1, 0, MouseLocation.Y - 56)           
+                    end))
+                end
 
                 Window.Items = Items
             end
