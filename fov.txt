@@ -74,7 +74,7 @@ getgenv().Visuals = {
 
         FoVs = {
             SilentAim = {
-                Enabled = true,
+                Enabled = false,
                 Size = 150,
                 Thickness = 2,
                 Color = Color3_fromRGB(216, 126, 157),
@@ -472,6 +472,7 @@ do -- Connections
     end))
 
 end
+
 
 
 
