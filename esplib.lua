@@ -216,13 +216,20 @@ local ESPSettings = ESP.Settings
 local WorldToViewportPoint = Camera.WorldToViewportPoint
 local ExecutorName = getexecutorname()
 
-do -- Folders
-    if not isfolder(FolderLocation) then
-        makefolder(FolderLocation)
+local function P(p)
+    return p:gsub("\\", "/")
+end
+
+do 
+    local baseFolder = P(FolderLocation)
+    local fontsFolder = P(FolderLocation .. "/Fonts")
+
+    if not isfolder(baseFolder) then
+        makefolder(baseFolder)
     end
 
-    if not isfolder(FolderLocation .. "\\Fonts") then
-        makefolder(FolderLocation .. "\\Fonts")
+    if not isfolder(fontsFolder) then
+        makefolder(fontsFolder)
     end
 end
 
@@ -230,24 +237,31 @@ local FontsToDownload = {
     ["Tahoma"] = {Link = "https://github.com/LuckyHub1/LuckyHub/raw/main/zekton_rg.ttf"},
     ["Minecraftia"] = {Link = "https://github.com/LuckyHub1/LuckyHub/raw/refs/heads/main/Minecraftia.ttf"},
     ["Silkscreen"] = {Link = "https://github.com/LuckyHub1/LuckyHub/raw/refs/heads/main/Silkscreen.ttf"},
-}; do -- Fonts
+}
+
+do -- Fonts
+    local fontsFolder = P(FolderLocation .. "/Fonts")
+
     for Name, Table in FontsToDownload do
-        if not isfile(FolderLocation .. "\\Fonts\\" .. Name .. ".ttf") then
-            writefile(FolderLocation .. "\\Fonts\\" .. Name .. ".ttf", game:HttpGet(Table.Link))
+        local ttfPath  = P(fontsFolder .. "/" .. Name .. ".ttf")
+        local fontPath = P(fontsFolder .. "/" .. Name .. ".font")
+
+        if not isfile(ttfPath) then
+            pcall(writefile, ttfPath, game:HttpGet(Table.Link))
         end
         
-        if not isfile(FolderLocation .. "\\Fonts\\" .. Name .. ".font") or ExecutorName == "Potassium" then
+        if not isfile(fontPath) or ExecutorName == "Potassium" then
             local Config = {
                 name = Name,
                 faces = {{
                     name = "Regular",
                     weight = 9e9,
                     style = "normal",
-                    assetId = getcustomasset(FolderLocation .. "\\Fonts\\" .. Name .. ".ttf")
+                    assetId = getcustomasset(ttfPath)
                 }}
             }
-            
-            writefile(FolderLocation .. "\\Fonts\\" .. Name .. ".font", HttpService:JSONEncode(Config))
+
+            pcall(writefile, fontPath, HttpService:JSONEncode(Config))
         end
     end
 
@@ -256,15 +270,17 @@ local FontsToDownload = {
             Loaded = {}
         }
 
-        for _, FontPath in listfiles(FolderLocation .. "\\Fonts") do
-            local Name = string_match(FontPath, FolderLocation .. "\\Fonts\\(.+)%.font")
+        for _, FontPath in listfiles(fontsFolder) do
+            FontPath = P(FontPath)
 
+            local Name = string_match(FontPath, fontsFolder .. "/(.+)%.font")
             if Name then
                 Fonts.Loaded[Name] = Font_new(getcustomasset(FontPath), Enum.FontWeight.Regular)
             end
         end
     end
 end
+
 
 local Utility = {}; do
     function Utility.AddConnection(Signal, Function)
