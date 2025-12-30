@@ -766,7 +766,12 @@ do -- Functions
 
                 local BodyParts = if ESPSettings.BoundingBox.IncludeAccessories then CharacterObjects.Descendants else CharacterObjects.Children
                 local BoxWidth, BoxHeight, BoxPositionX, BoxPositionY, OnScreen = Utility.CalculateBox(ESPSettings, Target, CharacterObjects.HumanoidRootPart, (if IsBasePart then {Target} else BodyParts))
-                if not OnScreen then return end
+                
+                if not OnScreen then
+                    Objects["TargetHolder"].Visible = false
+                    Objects["Highlight"].Enabled = false
+                    return
+                end
 
                 local BoxSize, BoxPosition = UDim2_fromOffset(math_floor(BoxWidth), math_floor(BoxHeight)), UDim2_fromOffset(math_floor(BoxPositionX), math_floor(BoxPositionY))
                 local TargetHolder = Objects["TargetHolder"]; do
