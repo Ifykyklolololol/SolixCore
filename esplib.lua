@@ -273,10 +273,18 @@ do -- Fonts
         for _, FontPath in listfiles(fontsFolder) do
             FontPath = P(FontPath)
 
-            local Name = string_match(FontPath, fontsFolder .. "/(.+)%.font")
-            if Name then
-                Fonts.Loaded[Name] = Font_new(getcustomasset(FontPath), Enum.FontWeight.Regular)
-            end
+           local Name = string_match(FontPath, fontsFolder .. "/(.+)%.font")
+              if Name then
+    local ok, asset = pcall(getcustomasset, FontPath)
+
+    if ok then
+        Fonts.Loaded[Name] = Font_new(asset, Enum.FontWeight.Regular)
+    else
+        -- fall back cause shit mobile noobs
+        Fonts.Loaded[Name] = Font_new(Enum.Font.SourceSans, Enum.FontWeight.Regular)
+    end
+end
+
         end
     end
 end
