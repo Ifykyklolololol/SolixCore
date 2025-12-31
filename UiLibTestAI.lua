@@ -800,12 +800,15 @@ function Toggle.new(section, options)
 	local toggleSize = Mobile.IsMobile and 50 or 42
 	local toggleHeight = Mobile.IsMobile and 24 or 20
 	local toggleFrame = createInstance("TextButton", {
+		Name = "ToggleFrame",
 		Parent = toggleContainer,
 		Size = UDim2.new(0, toggleSize, 0, toggleHeight),
 		BackgroundColor3 = theme.Background,
 		BorderSizePixel = 1,
 		BorderColor3 = theme.Border,
 		Text = "",
+		TextTransparency = 1,
+		AutoButtonColor = false,
 		ZIndex = 15,
 	})
 	
