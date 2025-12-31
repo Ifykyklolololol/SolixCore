@@ -325,6 +325,20 @@ function Component:Destroy()
 	end
 end
 
+-- Component modules (declared early for use in Section)
+local Toggle = {}
+local Button = {}
+local TextLabel = {}
+local Dropdown = {}
+local Slider = {}
+local Textbox = {}
+local Keybind = {}
+local ColorPicker = {}
+
+-- Section System (declared early for use in Window:Page)
+local Section = {}
+Section.__index = Section
+
 -- Window System
 local Window = {}
 Window.__index = Window
@@ -630,10 +644,6 @@ function Window:Destroy()
 	end
 end
 
--- Section System
-local Section = {}
-Section.__index = Section
-
 function Section.new(page, options)
 	local self = setmetatable({}, Section)
 	
@@ -735,7 +745,6 @@ function Section.new(page, options)
 end
 
 -- Toggle Component
-local Toggle = {}
 Toggle.__index = Toggle
 
 function Toggle.new(section, options)
@@ -901,7 +910,6 @@ function Toggle.new(section, options)
 end
 
 -- Button Component
-local Button = {}
 Button.__index = Button
 
 function Button.new(section, options)
@@ -959,7 +967,6 @@ function Button.new(section, options)
 end
 
 -- TextLabel Component
-local TextLabel = {}
 TextLabel.__index = TextLabel
 
 function TextLabel.new(section, options)
@@ -992,7 +999,6 @@ function TextLabel.new(section, options)
 end
 
 -- Dropdown Component
-local Dropdown = {}
 Dropdown.__index = Dropdown
 
 function Dropdown.new(section, options)
@@ -1151,7 +1157,6 @@ function Dropdown.new(section, options)
 end
 
 -- Slider Component
-local Slider = {}
 Slider.__index = Slider
 
 function Slider.new(section, options)
@@ -1316,7 +1321,6 @@ function Slider.new(section, options)
 end
 
 -- Textbox Component
-local Textbox = {}
 Textbox.__index = Textbox
 
 function Textbox.new(section, options)
@@ -1401,7 +1405,6 @@ function Textbox.new(section, options)
 end
 
 -- Keybind Component
-local Keybind = {}
 Keybind.__index = Keybind
 
 function Keybind.new(section, options)
@@ -1519,7 +1522,6 @@ function Keybind.new(section, options)
 end
 
 -- ColorPicker Component
-local ColorPicker = {}
 ColorPicker.__index = ColorPicker
 
 function ColorPicker.new(section, options)
