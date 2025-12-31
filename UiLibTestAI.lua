@@ -47,16 +47,18 @@ local Theme = {
 	Current = "PinkWhite",
 	Themes = {
 		PinkWhite = {
-			Main = Color3.fromRGB(255, 105, 180), -- Pink
+			Main = Color3.fromRGB(0, 162, 255), -- Blue accent (like in image)
 			Secondary = Color3.fromRGB(255, 255, 255), -- White
-			Background = Color3.fromRGB(30, 30, 30),
-			Surface = Color3.fromRGB(40, 40, 40),
-			Text = Color3.fromRGB(255, 255, 255),
-			TextSecondary = Color3.fromRGB(200, 200, 200),
-			Accent = Color3.fromRGB(255, 105, 180),
+			Background = Color3.fromRGB(20, 20, 20), -- Very dark background
+			Surface = Color3.fromRGB(25, 25, 25), -- Dark grey sections
+			SurfaceHover = Color3.fromRGB(30, 30, 30), -- Slightly lighter on hover
+			Text = Color3.fromRGB(255, 255, 255), -- White text
+			TextSecondary = Color3.fromRGB(200, 200, 200), -- Light grey text
+			Accent = Color3.fromRGB(0, 162, 255), -- Blue
 			Success = Color3.fromRGB(76, 175, 80),
 			Error = Color3.fromRGB(244, 67, 54),
 			Warning = Color3.fromRGB(255, 152, 0),
+			Border = Color3.fromRGB(40, 40, 40), -- Subtle borders
 		}
 	}
 }
@@ -362,26 +364,20 @@ function Window.new(options)
 		Size = size,
 		Position = position,
 		BackgroundColor3 = theme.Background,
-		BorderSizePixel = 0,
+		BorderSizePixel = 1,
+		BorderColor3 = theme.Border,
 		ZIndex = 10,
 	})
 	
 	createInstance("UICorner", {
-		CornerRadius = UDim.new(0, 12),
+		CornerRadius = UDim.new(0, 6),
 		Parent = self.MainFrame,
-	})
-	
-	createInstance("UIStroke", {
-		Parent = self.MainFrame,
-		Color = theme.Main,
-		Thickness = 2,
-		Transparency = 0.3,
 	})
 	
 	self.TitleBar = createInstance("Frame", {
 		Name = "TitleBar",
 		Parent = self.MainFrame,
-		Size = UDim2.new(1, 0, 0, 40),
+		Size = UDim2.new(1, 0, 0, 35),
 		Position = UDim2.new(0, 0, 0, 0),
 		BackgroundColor3 = theme.Surface,
 		BorderSizePixel = 0,
@@ -389,37 +385,45 @@ function Window.new(options)
 	})
 	
 	createInstance("UICorner", {
-		CornerRadius = UDim.new(0, 12),
+		CornerRadius = UDim.new(0, 6),
 		Parent = self.TitleBar,
 	})
 	
 	local titleLabel = createInstance("TextLabel", {
 		Parent = self.TitleBar,
 		Size = UDim2.new(1, -80, 1, 0),
-		Position = UDim2.new(0, 15, 0, 0),
+		Position = UDim2.new(0, 10, 0, 0),
 		BackgroundTransparency = 1,
 		Text = title,
 		TextColor3 = theme.Text,
-		TextSize = 16,
-		Font = Enum.Font.GothamBold,
+		TextSize = 14,
+		Font = Enum.Font.GothamSemibold,
 		TextXAlignment = Enum.TextXAlignment.Left,
 		ZIndex = 12,
 	})
 	
 	local closeButton = createInstance("TextButton", {
 		Parent = self.TitleBar,
-		Size = UDim2.new(0, 30, 0, 30),
-		Position = UDim2.new(1, -35, 0, 5),
-		BackgroundColor3 = theme.Error,
+		Size = UDim2.new(0, 25, 0, 25),
+		Position = UDim2.new(1, -30, 0, 5),
+		BackgroundColor3 = theme.Surface,
 		BorderSizePixel = 0,
 		Text = "",
 		ZIndex = 12,
 	})
 	
 	createInstance("UICorner", {
-		CornerRadius = UDim.new(0, 6),
+		CornerRadius = UDim.new(0, 4),
 		Parent = closeButton,
 	})
+	
+	closeButton.MouseEnter:Connect(function()
+		closeButton.BackgroundColor3 = theme.Error
+	end)
+	
+	closeButton.MouseLeave:Connect(function()
+		closeButton.BackgroundColor3 = theme.Surface
+	end)
 	
 	local closeIcon = createInstance("TextLabel", {
 		Parent = closeButton,
@@ -439,8 +443,8 @@ function Window.new(options)
 	self.PageContainer = createInstance("Frame", {
 		Name = "PageContainer",
 		Parent = self.MainFrame,
-		Size = UDim2.new(1, 0, 1, -40),
-		Position = UDim2.new(0, 0, 0, 40),
+		Size = UDim2.new(1, 0, 1, -65),
+		Position = UDim2.new(0, 0, 0, 65),
 		BackgroundTransparency = 1,
 		ZIndex = 11,
 	})
@@ -448,16 +452,17 @@ function Window.new(options)
 	self.PageButtons = createInstance("Frame", {
 		Name = "PageButtons",
 		Parent = self.MainFrame,
-		Size = UDim2.new(1, -20, 0, 35),
-		Position = UDim2.new(0, 10, 0, 45),
-		BackgroundTransparency = 1,
+		Size = UDim2.new(1, 0, 0, 30),
+		Position = UDim2.new(0, 0, 0, 35),
+		BackgroundColor3 = theme.Surface,
+		BorderSizePixel = 0,
 		ZIndex = 12,
 	})
 	
 	createInstance("UIListLayout", {
 		Parent = self.PageButtons,
 		FillDirection = Enum.FillDirection.Horizontal,
-		Padding = UDim.new(0, 5),
+		Padding = UDim.new(0, 0),
 	})
 	
 	self.Pages = {}
@@ -471,8 +476,8 @@ function Window.new(options)
 		if dragging and startPos then
 			local delta = input.Position - dragStart
 			self.MainFrame.Position = UDim2.new(
-				0, startPos.X + delta.X,
-				0, startPos.Y + delta.Y
+				0, startPos.X.Offset + delta.X,
+				0, startPos.Y.Offset + delta.Y
 			)
 		end
 	end
@@ -515,15 +520,22 @@ function Window:Page(options)
 		BorderSizePixel = 0,
 		Text = name,
 		TextColor3 = theme.TextSecondary,
-		TextSize = Mobile.IsMobile and 15 or 14,
+		TextSize = Mobile.IsMobile and 13 or 12,
 		Font = Enum.Font.Gotham,
 		ZIndex = 13,
 	})
 	
-	createInstance("UICorner", {
-		CornerRadius = UDim.new(0, 6),
-		Parent = pageButton,
-	})
+	pageButton.MouseEnter:Connect(function()
+		if self.CurrentPage ~= page then
+			pageButton.BackgroundColor3 = theme.SurfaceHover
+		end
+	end)
+	
+	pageButton.MouseLeave:Connect(function()
+		if self.CurrentPage ~= page then
+			pageButton.BackgroundColor3 = theme.Surface
+		end
+	end)
 	
 	local pageContent = createInstance("ScrollingFrame", {
 		Name = name .. "Content",
@@ -532,7 +544,7 @@ function Window:Page(options)
 		Position = UDim2.new(0, 0, 0, 0),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
-		ScrollBarThickness = 6,
+		ScrollBarThickness = 4,
 		ScrollBarImageColor3 = theme.Main,
 		CanvasSize = UDim2.new(0, 0, 0, 0),
 		ZIndex = 11,
@@ -540,10 +552,10 @@ function Window:Page(options)
 	
 	createInstance("UIPadding", {
 		Parent = pageContent,
-		PaddingLeft = UDim.new(0, 10),
-		PaddingRight = UDim.new(0, 10),
-		PaddingTop = UDim.new(0, 10),
-		PaddingBottom = UDim.new(0, 10),
+		PaddingLeft = UDim.new(0, 8),
+		PaddingRight = UDim.new(0, 8),
+		PaddingTop = UDim.new(0, 8),
+		PaddingBottom = UDim.new(0, 8),
 	})
 	
 	local columnContainer = createInstance("Frame", {
@@ -585,16 +597,16 @@ function Window:Page(options)
 		end
 		
 		pageContent.Visible = true
-		pageButton.BackgroundColor3 = theme.Main
-		pageButton.TextColor3 = theme.Text
+		pageButton.BackgroundColor3 = theme.Background
+		pageButton.TextColor3 = theme.Main
 		
 		self.CurrentPage = page
 	end)
 	
 	if not self.CurrentPage then
 		pageContent.Visible = true
-		pageButton.BackgroundColor3 = theme.Main
-		pageButton.TextColor3 = theme.Text
+		pageButton.BackgroundColor3 = theme.Background
+		pageButton.TextColor3 = theme.Main
 		self.CurrentPage = page
 	end
 	
@@ -633,31 +645,25 @@ function Section.new(page, options)
 		Parent = page.ColumnContainer,
 		Size = UDim2.new(1, 0, 0, 0),
 		BackgroundColor3 = theme.Surface,
-		BorderSizePixel = 0,
+		BorderSizePixel = 1,
+		BorderColor3 = theme.Border,
 		ZIndex = 12,
 	})
 	
 	createInstance("UICorner", {
-		CornerRadius = UDim.new(0, 8),
+		CornerRadius = UDim.new(0, 4),
 		Parent = sectionFrame,
-	})
-	
-	createInstance("UIStroke", {
-		Parent = sectionFrame,
-		Color = theme.Main,
-		Thickness = 1,
-		Transparency = 0.7,
 	})
 	
 	local titleLabel = createInstance("TextLabel", {
 		Parent = sectionFrame,
-		Size = UDim2.new(1, -20, 0, 30),
+		Size = UDim2.new(1, -20, 0, 25),
 		Position = UDim2.new(0, 10, 0, 5),
 		BackgroundTransparency = 1,
 		Text = name,
 		TextColor3 = theme.Text,
-		TextSize = 14,
-		Font = Enum.Font.GothamBold,
+		TextSize = 13,
+		Font = Enum.Font.GothamSemibold,
 		TextXAlignment = Enum.TextXAlignment.Left,
 		ZIndex = 13,
 	})
@@ -665,20 +671,20 @@ function Section.new(page, options)
 	local contentContainer = createInstance("Frame", {
 		Name = "Content",
 		Parent = sectionFrame,
-		Size = UDim2.new(1, -20, 1, -40),
-		Position = UDim2.new(0, 10, 0, 35),
+		Size = UDim2.new(1, -20, 1, -35),
+		Position = UDim2.new(0, 10, 0, 30),
 		BackgroundTransparency = 1,
 		ZIndex = 13,
 	})
 	
 	local contentLayout = createInstance("UIListLayout", {
 		Parent = contentContainer,
-		Padding = UDim.new(0, 8),
+		Padding = UDim.new(0, 6),
 		SortOrder = Enum.SortOrder.LayoutOrder,
 	})
 	
 	contentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-		sectionFrame.Size = UDim2.new(1, 0, 0, contentLayout.AbsoluteContentSize.Y + 45)
+		sectionFrame.Size = UDim2.new(1, 0, 0, contentLayout.AbsoluteContentSize.Y + 40)
 		page.Content.CanvasSize = UDim2.new(0, 0, 0, contentLayout.AbsoluteContentSize.Y + 50)
 	end)
 	
@@ -746,7 +752,7 @@ function Toggle.new(section, options)
 	local toggleContainer = createInstance("Frame", {
 		Name = name,
 		Parent = section.Content,
-		Size = UDim2.new(1, 0, 0, 30),
+		Size = UDim2.new(1, 0, 0, 25),
 		BackgroundTransparency = 1,
 		ZIndex = 14,
 	})
@@ -764,7 +770,7 @@ function Toggle.new(section, options)
 		BackgroundTransparency = 1,
 		Text = name,
 		TextColor3 = theme.Text,
-		TextSize = 14,
+		TextSize = 12,
 		Font = Enum.Font.Gotham,
 		TextXAlignment = Enum.TextXAlignment.Left,
 		ZIndex = 15,
@@ -782,22 +788,23 @@ function Toggle.new(section, options)
 		})
 	end
 	
-	local toggleSize = Mobile.IsMobile and 60 or 50
-	local toggleHeight = Mobile.IsMobile and 32 or 26
+	local toggleSize = Mobile.IsMobile and 50 or 42
+	local toggleHeight = Mobile.IsMobile and 24 or 20
 	local toggleFrame = createInstance("Frame", {
 		Parent = toggleContainer,
 		Size = UDim2.new(0, toggleSize, 0, toggleHeight),
-		BackgroundColor3 = theme.Surface,
-		BorderSizePixel = 0,
+		BackgroundColor3 = theme.Background,
+		BorderSizePixel = 1,
+		BorderColor3 = theme.Border,
 		ZIndex = 15,
 	})
 	
 	createInstance("UICorner", {
-		CornerRadius = UDim.new(0, 13),
+		CornerRadius = UDim.new(0, 10),
 		Parent = toggleFrame,
 	})
 	
-	local toggleButtonSize = Mobile.IsMobile and 26 or 22
+	local toggleButtonSize = Mobile.IsMobile and 18 or 16
 	local toggleButton = createInstance("Frame", {
 		Parent = toggleFrame,
 		Size = UDim2.new(0, toggleButtonSize, 0, toggleButtonSize),
@@ -808,7 +815,7 @@ function Toggle.new(section, options)
 	})
 	
 	createInstance("UICorner", {
-		CornerRadius = UDim.new(0, 11),
+		CornerRadius = UDim.new(0, 8),
 		Parent = toggleButton,
 	})
 	
@@ -823,13 +830,15 @@ function Toggle.new(section, options)
 	self.MaybeLocked = maybeLocked
 	self.Enabled = true
 	
-	local buttonOffset = Mobile.IsMobile and -28 or -24
+	local buttonOffset = Mobile.IsMobile and -20 or -18
 	if defaultValue then
 		toggleButton.Position = UDim2.new(1, buttonOffset, 0, 2)
 		toggleFrame.BackgroundColor3 = theme.Main
+		toggleFrame.BorderColor3 = theme.Main
 	else
 		toggleButton.Position = UDim2.new(0, 2, 0, 2)
-		toggleFrame.BackgroundColor3 = theme.Surface
+		toggleFrame.BackgroundColor3 = theme.Background
+		toggleFrame.BorderColor3 = theme.Border
 	end
 	
 	toggleFrame.MouseButton1Click:Connect(function()
@@ -841,10 +850,10 @@ function Toggle.new(section, options)
 		local buttonOffset = Mobile.IsMobile and -28 or -24
 		if self.Value then
 			createTween(toggleButton, {Position = UDim2.new(1, buttonOffset, 0, 2)}, 0.2):Play()
-			createTween(toggleFrame, {BackgroundColor3 = theme.Main}, 0.2):Play()
+			createTween(toggleFrame, {BackgroundColor3 = theme.Main, BorderColor3 = theme.Main}, 0.2):Play()
 		else
 			createTween(toggleButton, {Position = UDim2.new(0, 2, 0, 2)}, 0.2):Play()
-			createTween(toggleFrame, {BackgroundColor3 = theme.Surface}, 0.2):Play()
+			createTween(toggleFrame, {BackgroundColor3 = theme.Background, BorderColor3 = theme.Border}, 0.2):Play()
 		end
 		
 		callback(self.Value)
@@ -870,13 +879,13 @@ function Toggle.new(section, options)
 	
 	function self:SetValue(value)
 		self.Value = value
-		local buttonOffset = Mobile.IsMobile and -28 or -24
+		local buttonOffset = Mobile.IsMobile and -20 or -18
 		if value then
 			createTween(toggleButton, {Position = UDim2.new(1, buttonOffset, 0, 2)}, 0.2):Play()
-			createTween(toggleFrame, {BackgroundColor3 = theme.Main}, 0.2):Play()
+			createTween(toggleFrame, {BackgroundColor3 = theme.Main, BorderColor3 = theme.Main}, 0.2):Play()
 		else
 			createTween(toggleButton, {Position = UDim2.new(0, 2, 0, 2)}, 0.2):Play()
-			createTween(toggleFrame, {BackgroundColor3 = theme.Surface}, 0.2):Play()
+			createTween(toggleFrame, {BackgroundColor3 = theme.Background, BorderColor3 = theme.Border}, 0.2):Play()
 		end
 		callback(self.Value)
 	end
@@ -903,24 +912,35 @@ function Button.new(section, options)
 	
 	local theme = Theme:GetTheme()
 	
-	local buttonSize = Mobile.IsMobile and 40 or 35
+	local buttonSize = Mobile.IsMobile and 35 or 28
 	local button = createInstance("TextButton", {
 		Name = name,
 		Parent = section.Content,
 		Size = UDim2.new(1, 0, 0, buttonSize),
-		BackgroundColor3 = theme.Main,
-		BorderSizePixel = 0,
+		BackgroundColor3 = theme.Surface,
+		BorderSizePixel = 1,
+		BorderColor3 = theme.Border,
 		Text = name,
 		TextColor3 = theme.Text,
-		TextSize = Mobile.IsMobile and 15 or 14,
+		TextSize = Mobile.IsMobile and 13 or 12,
 		Font = Enum.Font.Gotham,
 		ZIndex = 14,
 	})
 	
 	createInstance("UICorner", {
-		CornerRadius = UDim.new(0, 6),
+		CornerRadius = UDim.new(0, 4),
 		Parent = button,
 	})
+	
+	button.MouseEnter:Connect(function()
+		button.BackgroundColor3 = theme.SurfaceHover
+		button.BorderColor3 = theme.Main
+	end)
+	
+	button.MouseLeave:Connect(function()
+		button.BackgroundColor3 = theme.Surface
+		button.BorderColor3 = theme.Border
+	end)
 	
 	self.Instance = button
 	self.Callback = callback
@@ -934,17 +954,6 @@ function Button.new(section, options)
 		callback()
 	end)
 	
-	button.MouseEnter:Connect(function()
-		createTween(button, {BackgroundColor3 = Color3.fromRGB(
-			math.min(255, theme.Main.R * 255 + 20),
-			math.min(255, theme.Main.G * 255 + 20),
-			math.min(255, theme.Main.B * 255 + 20)
-		)}, 0.2):Play()
-	end)
-	
-	button.MouseLeave:Connect(function()
-		createTween(button, {BackgroundColor3 = theme.Main}, 0.2):Play()
-	end)
 	
 	return self
 end
@@ -962,11 +971,11 @@ function TextLabel.new(section, options)
 	local label = createInstance("TextLabel", {
 		Name = "TextLabel",
 		Parent = section.Content,
-		Size = UDim2.new(1, 0, 0, 20),
+		Size = UDim2.new(1, 0, 0, 18),
 		BackgroundTransparency = 1,
 		Text = text,
 		TextColor3 = theme.Text,
-		TextSize = 14,
+		TextSize = 12,
 		Font = Enum.Font.Gotham,
 		TextXAlignment = Enum.TextXAlignment.Left,
 		TextWrapped = true,
@@ -1010,18 +1019,27 @@ function Dropdown.new(section, options)
 		Parent = dropdownContainer,
 		Size = UDim2.new(1, 0, 0, dropdownSize),
 		BackgroundColor3 = theme.Surface,
-		BorderSizePixel = 0,
+		BorderSizePixel = 1,
+		BorderColor3 = theme.Border,
 		Text = defaultValue or "Select...",
 		TextColor3 = theme.Text,
-		TextSize = Mobile.IsMobile and 15 or 14,
+		TextSize = Mobile.IsMobile and 13 or 12,
 		Font = Enum.Font.Gotham,
 		ZIndex = 15,
 	})
 	
 	createInstance("UICorner", {
-		CornerRadius = UDim.new(0, 6),
+		CornerRadius = UDim.new(0, 4),
 		Parent = dropdownButton,
 	})
+	
+	dropdownButton.MouseEnter:Connect(function()
+		dropdownButton.BackgroundColor3 = theme.SurfaceHover
+	end)
+	
+	dropdownButton.MouseLeave:Connect(function()
+		dropdownButton.BackgroundColor3 = theme.Surface
+	end)
 	
 	local arrow = createInstance("TextLabel", {
 		Parent = dropdownButton,
@@ -1158,11 +1176,11 @@ function Slider.new(section, options)
 	
 	local label = createInstance("TextLabel", {
 		Parent = sliderContainer,
-		Size = UDim2.new(1, 0, 0, 20),
+		Size = UDim2.new(1, 0, 0, 18),
 		BackgroundTransparency = 1,
 		Text = name,
 		TextColor3 = theme.Text,
-		TextSize = 14,
+		TextSize = 12,
 		Font = Enum.Font.Gotham,
 		TextXAlignment = Enum.TextXAlignment.Left,
 		ZIndex = 15,
@@ -1170,12 +1188,12 @@ function Slider.new(section, options)
 	
 	local valueLabel = createInstance("TextLabel", {
 		Parent = sliderContainer,
-		Size = UDim2.new(0, 60, 0, 20),
+		Size = UDim2.new(0, 60, 0, 18),
 		Position = UDim2.new(1, -60, 0, 0),
 		BackgroundTransparency = 1,
 		Text = tostring(defaultValue),
-		TextColor3 = theme.TextSecondary,
-		TextSize = 12,
+		TextColor3 = theme.Main,
+		TextSize = 11,
 		Font = Enum.Font.Gotham,
 		TextXAlignment = Enum.TextXAlignment.Right,
 		ZIndex = 15,
@@ -1186,13 +1204,14 @@ function Slider.new(section, options)
 		Parent = sliderContainer,
 		Size = UDim2.new(1, -70, 0, sliderTrackHeight),
 		Position = UDim2.new(0, 0, 0, 25),
-		BackgroundColor3 = theme.Surface,
-		BorderSizePixel = 0,
+		BackgroundColor3 = theme.Background,
+		BorderSizePixel = 1,
+		BorderColor3 = theme.Border,
 		ZIndex = 15,
 	})
 	
 	createInstance("UICorner", {
-		CornerRadius = UDim.new(0, 3),
+		CornerRadius = UDim.new(0, 2),
 		Parent = sliderTrack,
 	})
 	
@@ -1336,39 +1355,31 @@ function Textbox.new(section, options)
 		Size = UDim2.new(1, 0, 0, textboxSize),
 		Position = UDim2.new(0, 0, 0, 18),
 		BackgroundColor3 = theme.Surface,
-		BorderSizePixel = 0,
+		BorderSizePixel = 1,
+		BorderColor3 = theme.Border,
 		Text = defaultValue,
 		PlaceholderText = placeholder,
 		PlaceholderColor3 = theme.TextSecondary,
 		TextColor3 = theme.Text,
-		TextSize = Mobile.IsMobile and 15 or 14,
+		TextSize = Mobile.IsMobile and 13 or 12,
 		Font = Enum.Font.Gotham,
 		ClearTextOnFocus = false,
 		ZIndex = 15,
 	})
 	
 	createInstance("UICorner", {
-		CornerRadius = UDim.new(0, 6),
+		CornerRadius = UDim.new(0, 4),
 		Parent = textbox,
-	})
-	
-	createInstance("UIStroke", {
-		Parent = textbox,
-		Color = theme.Main,
-		Thickness = 1,
-		Transparency = 0.7,
 	})
 	
 	textbox.Focused:Connect(function()
-		createTween(textbox, {BackgroundColor3 = Color3.fromRGB(
-			math.min(255, theme.Surface.R * 255 + 10),
-			math.min(255, theme.Surface.G * 255 + 10),
-			math.min(255, theme.Surface.B * 255 + 10)
-		)}, 0.2):Play()
+		textbox.BorderColor3 = theme.Main
+		textbox.BackgroundColor3 = theme.SurfaceHover
 	end)
 	
 	textbox.FocusLost:Connect(function()
-		createTween(textbox, {BackgroundColor3 = theme.Surface}, 0.2):Play()
+		textbox.BorderColor3 = theme.Border
+		textbox.BackgroundColor3 = theme.Surface
 		callback(textbox.Text)
 	end)
 	
@@ -1416,7 +1427,7 @@ function Keybind.new(section, options)
 		BackgroundTransparency = 1,
 		Text = name,
 		TextColor3 = theme.Text,
-		TextSize = 14,
+		TextSize = 12,
 		Font = Enum.Font.Gotham,
 		TextXAlignment = Enum.TextXAlignment.Left,
 		ZIndex = 15,
@@ -1429,25 +1440,31 @@ function Keybind.new(section, options)
 		Size = UDim2.new(0, keybindSize, 0, keybindHeight),
 		Position = UDim2.new(1, -keybindSize, 0, 0),
 		BackgroundColor3 = theme.Surface,
-		BorderSizePixel = 0,
+		BorderSizePixel = 1,
+		BorderColor3 = theme.Border,
 		Text = defaultValue.Name or "None",
 		TextColor3 = theme.Text,
-		TextSize = Mobile.IsMobile and 13 or 12,
+		TextSize = Mobile.IsMobile and 12 or 11,
 		Font = Enum.Font.Gotham,
 		ZIndex = 15,
 	})
 	
 	createInstance("UICorner", {
-		CornerRadius = UDim.new(0, 6),
+		CornerRadius = UDim.new(0, 4),
 		Parent = keybindButton,
 	})
 	
-	createInstance("UIStroke", {
-		Parent = keybindButton,
-		Color = theme.Main,
-		Thickness = 1,
-		Transparency = 0.7,
-	})
+	keybindButton.MouseEnter:Connect(function()
+		keybindButton.BackgroundColor3 = theme.SurfaceHover
+		keybindButton.BorderColor3 = theme.Main
+	end)
+	
+	keybindButton.MouseLeave:Connect(function()
+		if not listening then
+			keybindButton.BackgroundColor3 = theme.Surface
+			keybindButton.BorderColor3 = theme.Border
+		end
+	end)
 	
 	local listening = false
 	
@@ -1455,6 +1472,7 @@ function Keybind.new(section, options)
 		listening = true
 		keybindButton.Text = "..."
 		keybindButton.BackgroundColor3 = theme.Main
+		keybindButton.BorderColor3 = theme.Main
 		
 		local connection
 		connection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
@@ -1464,12 +1482,14 @@ function Keybind.new(section, options)
 				self.Value = input.KeyCode
 				keybindButton.Text = input.KeyCode.Name
 				keybindButton.BackgroundColor3 = theme.Surface
+				keybindButton.BorderColor3 = theme.Border
 				listening = false
 				callback(input.KeyCode)
 				connection:Disconnect()
 			elseif input.KeyCode == Enum.KeyCode.Escape then
 				keybindButton.Text = self.Value.Name or "None"
 				keybindButton.BackgroundColor3 = theme.Surface
+				keybindButton.BorderColor3 = theme.Border
 				listening = false
 				connection:Disconnect()
 			end
@@ -1525,7 +1545,7 @@ function ColorPicker.new(section, options)
 		BackgroundTransparency = 1,
 		Text = name,
 		TextColor3 = theme.Text,
-		TextSize = 14,
+		TextSize = 12,
 		Font = Enum.Font.Gotham,
 		TextXAlignment = Enum.TextXAlignment.Left,
 		ZIndex = 15,
