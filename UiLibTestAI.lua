@@ -799,12 +799,13 @@ function Toggle.new(section, options)
 	
 	local toggleSize = Mobile.IsMobile and 50 or 42
 	local toggleHeight = Mobile.IsMobile and 24 or 20
-	local toggleFrame = createInstance("Frame", {
+	local toggleFrame = createInstance("TextButton", {
 		Parent = toggleContainer,
 		Size = UDim2.new(0, toggleSize, 0, toggleHeight),
 		BackgroundColor3 = theme.Background,
 		BorderSizePixel = 1,
 		BorderColor3 = theme.Border,
+		Text = "",
 		ZIndex = 15,
 	})
 	
@@ -850,8 +851,7 @@ function Toggle.new(section, options)
 		toggleFrame.BorderColor3 = theme.Border
 	end
 	
-	toggleFrame.InputBegan:Connect(function(input)
-		if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then return end
+	toggleFrame.MouseButton1Click:Connect(function()
 		if not self.Enabled then return end
 		if not condition() then return end
 		
