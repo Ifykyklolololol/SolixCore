@@ -850,13 +850,14 @@ function Toggle.new(section, options)
 		toggleFrame.BorderColor3 = theme.Border
 	end
 	
-	toggleFrame.MouseButton1Click:Connect(function()
+	toggleFrame.InputBegan:Connect(function(input)
+		if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then return end
 		if not self.Enabled then return end
 		if not condition() then return end
 		
 		self.Value = not self.Value
 		
-		local buttonOffset = Mobile.IsMobile and -28 or -24
+		local buttonOffset = Mobile.IsMobile and -20 or -18
 		if self.Value then
 			createTween(toggleButton, {Position = UDim2.new(1, buttonOffset, 0, 2)}, 0.2):Play()
 			createTween(toggleFrame, {BackgroundColor3 = theme.Main, BorderColor3 = theme.Main}, 0.2):Play()
