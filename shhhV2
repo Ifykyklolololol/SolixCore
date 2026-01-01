@@ -4037,7 +4037,7 @@ local Library do
                     AutoButtonColor = false,
                     BackgroundTransparency = 1,
                     BorderSizePixel = 0,
-                    Size = UDim2New(1, 0, 0, 40),
+                    Size = UDim2New(1, 0, 0, Toggle.Description ~= "" and 40 or 20),
                     ZIndex = 2,
                     TextSize = 14
                 })
@@ -4062,23 +4062,25 @@ local Library do
                     TextSize = 14
                 }):AddToTheme({TextColor3 = 'Text'})
 
-                Items["Description"] = Instances:Create("TextLabel", {
-                    Parent = Items["Toggle"].Instance,
-                    Name = "\0",
-                    FontFace = Library.Font,
-                    TextColor3 = Library.Theme["Text"],
-                    TextTransparency = 0.4000000059604645,
-                    Text = Toggle.Description,
-                    AutomaticSize = Enum.AutomaticSize.X,
-                    Size = UDim2New(0, 0, 0, 15),
-                    AnchorPoint = Vector2New(0, 0),
-                    BorderSizePixel = 0,
-                    BackgroundTransparency = 1,
-                    Position = UDim2New(0, 0, 0, 22),
-                    BorderColor3 = FromRGB(0, 0, 0),
-                    ZIndex = 2,
-                    TextSize = 14
-                }):AddToTheme({TextColor3 = 'Text'})
+                if Toggle.Description ~= "" then
+                    Items["Description"] = Instances:Create("TextLabel", {
+                        Parent = Items["Toggle"].Instance,
+                        Name = "\0",
+                        FontFace = Library.Font,
+                        TextColor3 = Library.Theme["Text"],
+                        TextTransparency = 0.4000000059604645,
+                        Text = Toggle.Description,
+                        AutomaticSize = Enum.AutomaticSize.X,
+                        Size = UDim2New(0, 0, 0, 15),
+                        AnchorPoint = Vector2New(0, 0),
+                        BorderSizePixel = 0,
+                        BackgroundTransparency = 1,
+                        Position = UDim2New(0, 0, 0, 22),
+                        BorderColor3 = FromRGB(0, 0, 0),
+                        ZIndex = 2,
+                        TextSize = 14
+                    }):AddToTheme({TextColor3 = 'Text'})
+                end
                 
                 Items["Indicator"] = Instances:Create("TextButton", {
                     Parent = Items["Toggle"].Instance,
@@ -4323,7 +4325,7 @@ local Library do
                     AutoButtonColor = false,
                     BackgroundTransparency = 1,
                     BorderSizePixel = 0,
-                    Size = UDim2New(1, 0, 0, 40),
+                    Size = UDim2New(1, 0, 0, Toggle.Description ~= "" and 40 or 20),
                     ZIndex = 2,
                     TextSize = 14,
                     BackgroundColor3 = FromRGB(255, 255, 255)
@@ -4348,24 +4350,26 @@ local Library do
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 }):AddToTheme({TextColor3 = 'Text'})
                 
-                Items["Description"] = Instances:Create("TextLabel", {
-                    Parent = Items["Checkbox"].Instance,
-                    Name = "\0",
-                    FontFace = Library.Font,
-                    TextColor3 = FromRGB(255, 255, 255),
-                    TextTransparency = 0.4000000059604645,
-                    Text = Toggle.Description,
-                    AutomaticSize = Enum.AutomaticSize.X,
-                    Size = UDim2New(0, 0, 0, 15),
-                    AnchorPoint = Vector2New(0, 0),
-                    BorderSizePixel = 0,
-                    BackgroundTransparency = 1,
-                    Position = UDim2New(0, 0, 0, 22),
-                    BorderColor3 = FromRGB(0, 0, 0),
-                    ZIndex = 2,
-                    TextSize = 14,
-                    BackgroundColor3 = FromRGB(255, 255, 255)
-                }):AddToTheme({TextColor3 = 'Text'})
+                if Toggle.Description ~= "" then
+                    Items["Description"] = Instances:Create("TextLabel", {
+                        Parent = Items["Checkbox"].Instance,
+                        Name = "\0",
+                        FontFace = Library.Font,
+                        TextColor3 = FromRGB(255, 255, 255),
+                        TextTransparency = 0.4000000059604645,
+                        Text = Toggle.Description,
+                        AutomaticSize = Enum.AutomaticSize.X,
+                        Size = UDim2New(0, 0, 0, 15),
+                        AnchorPoint = Vector2New(0, 0),
+                        BorderSizePixel = 0,
+                        BackgroundTransparency = 1,
+                        Position = UDim2New(0, 0, 0, 22),
+                        BorderColor3 = FromRGB(0, 0, 0),
+                        ZIndex = 2,
+                        TextSize = 14,
+                        BackgroundColor3 = FromRGB(255, 255, 255)
+                    }):AddToTheme({TextColor3 = 'Text'})
+                end
 
                 Items["Indicator"] = Instances:Create("Frame", {
                     Parent = Items["Checkbox"].Instance,
@@ -4725,7 +4729,7 @@ local Library do
                     Parent = Slider.Section.Items["Content"].Instance,
                     Name = "\0",
                     BackgroundTransparency = 1,
-                    Size = UDim2New(1, 0, 0, 62),
+                    Size = UDim2New(1, 0, 0, Slider.Description ~= "" and 62 or 40),
                     BorderColor3 = FromRGB(0, 0, 0),
                     ZIndex = 2,
                     BorderSizePixel = 0
@@ -4748,22 +4752,24 @@ local Library do
                     TextSize = 14
                 }):AddToTheme({TextColor3 = 'Text'})
 
-                Items["Description"] = Instances:Create("TextLabel", {
-                    Parent = Items["Slider"].Instance,
-                    Name = "\0",
-                    FontFace = Library.Font,
-                    TextColor3 = Library.Theme["Text"],
-                    BorderColor3 = FromRGB(0, 0, 0),
-                    TextTransparency = 0.4,
-                    Text = Slider.Description,
-                    AutomaticSize = Enum.AutomaticSize.X,
-                    BackgroundTransparency = 1,
-                    Position = UDim2New(0, 0, 0, 22),
-                    Size = UDim2New(0, 0, 0, 15),
-                    BorderSizePixel = 0,
-                    ZIndex = 2,
-                    TextSize = 14
-                }):AddToTheme({TextColor3 = 'Text'})
+                if Slider.Description ~= "" then
+                    Items["Description"] = Instances:Create("TextLabel", {
+                        Parent = Items["Slider"].Instance,
+                        Name = "\0",
+                        FontFace = Library.Font,
+                        TextColor3 = Library.Theme["Text"],
+                        BorderColor3 = FromRGB(0, 0, 0),
+                        TextTransparency = 0.4,
+                        Text = Slider.Description,
+                        AutomaticSize = Enum.AutomaticSize.X,
+                        BackgroundTransparency = 1,
+                        Position = UDim2New(0, 0, 0, 22),
+                        Size = UDim2New(0, 0, 0, 15),
+                        BorderSizePixel = 0,
+                        ZIndex = 2,
+                        TextSize = 14
+                    }):AddToTheme({TextColor3 = 'Text'})
+                end
                 
                 Items["Value"] = Instances:Create("TextLabel", {
                     Parent = Items["Slider"].Instance,
@@ -4994,7 +5000,7 @@ local Library do
                     Parent = Dropdown.Section.Items["Content"].Instance,
                     Name = "\0",
                     BackgroundTransparency = 1,
-                    Size = UDim2New(1, 0, 0, 72),
+                    Size = UDim2New(1, 0, 0, Dropdown.Description ~= "" and 72 or 50),
                     BorderColor3 = FromRGB(0, 0, 0),
                     ZIndex = 2,
                     BorderSizePixel = 0
@@ -5085,22 +5091,24 @@ local Library do
                     TextSize = 14
                 }):AddToTheme({TextColor3 = 'Text'})     
                 
-                Items["Description"] = Instances:Create("TextLabel", {
-                    Parent = Items["Dropdown"].Instance,
-                    Name = "\0",
-                    FontFace = Library.Font,
-                    TextColor3 = Library.Theme["Text"],
-                    BorderColor3 = FromRGB(0, 0, 0),
-                    Position = UDim2New(0, 0, 0, 22),
-                    Text = Dropdown.Description,
-                    TextTransparency = 0.4,
-                    AutomaticSize = Enum.AutomaticSize.X,
-                    BackgroundTransparency = 1,
-                    Size = UDim2New(0, 0, 0, 15),
-                    BorderSizePixel = 0,
-                    ZIndex = 2,
-                    TextSize = 14
-                }):AddToTheme({TextColor3 = 'Text'})     
+                if Dropdown.Description ~= "" then
+                    Items["Description"] = Instances:Create("TextLabel", {
+                        Parent = Items["Dropdown"].Instance,
+                        Name = "\0",
+                        FontFace = Library.Font,
+                        TextColor3 = Library.Theme["Text"],
+                        BorderColor3 = FromRGB(0, 0, 0),
+                        Position = UDim2New(0, 0, 0, 22),
+                        Text = Dropdown.Description,
+                        TextTransparency = 0.4,
+                        AutomaticSize = Enum.AutomaticSize.X,
+                        BackgroundTransparency = 1,
+                        Size = UDim2New(0, 0, 0, 15),
+                        BorderSizePixel = 0,
+                        ZIndex = 2,
+                        TextSize = 14
+                    }):AddToTheme({TextColor3 = 'Text'})     
+                end
 
                 Items["OptionHolder"] = Instances:Create("TextButton", {
                     Parent = Library.UnusedHolder.Instance,
@@ -5599,7 +5607,7 @@ local Library do
                     Parent = Label.Section.Items["Content"].Instance,
                     Name = "\0",
                     BackgroundTransparency = 1,
-                    Size = UDim2New(1, 0, 0, 40),
+                    Size = UDim2New(1, 0, 0, Label.Description ~= "" and 40 or 20),
                     BorderColor3 = FromRGB(0, 0, 0),
                     ZIndex = 2,
                     BorderSizePixel = 0
@@ -5624,23 +5632,25 @@ local Library do
                     TextSize = 14
                 }):AddToTheme({TextColor3 = 'Text'})
 
-                Items["Description"] = Instances:Create("TextLabel", {
-                    Parent = Items["Label"].Instance,
-                    Name = "\0",
-                    FontFace = Library.Font,
-                    TextColor3 = FromRGB(255, 255, 255),
-                    BorderColor3 = FromRGB(0, 0, 0),
-                    Text = Label.Description,
-                    AutomaticSize = Enum.AutomaticSize.X,
-                    AnchorPoint = Vector2New(0, 0),
-                    Size = UDim2New(0, 0, 0, 15),
-                    BackgroundTransparency = 1,
-                    Position = UDim2New(0, 0, 0, 22),
-                    BorderSizePixel = 0,
-                    TextTransparency = 0.4,
-                    ZIndex = 2,
-                    TextSize = 14
-                }):AddToTheme({TextColor3 = 'Text'})
+                if Label.Description ~= "" then
+                    Items["Description"] = Instances:Create("TextLabel", {
+                        Parent = Items["Label"].Instance,
+                        Name = "\0",
+                        FontFace = Library.Font,
+                        TextColor3 = FromRGB(255, 255, 255),
+                        BorderColor3 = FromRGB(0, 0, 0),
+                        Text = Label.Description,
+                        AutomaticSize = Enum.AutomaticSize.X,
+                        AnchorPoint = Vector2New(0, 0),
+                        Size = UDim2New(0, 0, 0, 15),
+                        BackgroundTransparency = 1,
+                        Position = UDim2New(0, 0, 0, 22),
+                        BorderSizePixel = 0,
+                        TextTransparency = 0.4,
+                        ZIndex = 2,
+                        TextSize = 14
+                    }):AddToTheme({TextColor3 = 'Text'})
+                end
                 
                 Items["SubElements"] = Instances:Create("Frame", {
                     Parent = Items["Label"].Instance,
@@ -5770,7 +5780,7 @@ local Library do
                     Parent = Textbox.Section.Items["Content"].Instance,
                     Name = "\0",
                     BackgroundTransparency = 1,
-                    Size = UDim2New(1, 0, 0, 72),
+                    Size = UDim2New(1, 0, 0, Textbox.Description ~= "" and 72 or 50),
                     BorderColor3 = FromRGB(0, 0, 0),
                     ZIndex = 2,
                     BorderSizePixel = 0
@@ -5793,22 +5803,24 @@ local Library do
                     TextSize = 14
                 }):AddToTheme({TextColor3 = 'Text'})
 
-                Items["Description"] = Instances:Create("TextLabel", {
-                    Parent = Items["Textbox"].Instance,
-                    Name = "\0",
-                    FontFace = Library.Font,
-                    TextColor3 = Library.Theme["Text"],
-                    BorderColor3 = FromRGB(0, 0, 0),
-                    Text = Textbox.Description,
-                    AutomaticSize = Enum.AutomaticSize.X,
-                    BackgroundTransparency = 1,
-                    Size = UDim2New(0, 0, 0, 15),
-                    BorderSizePixel = 0,
-                    Position = UDim2New(0, 0, 0, 22),
-                    TextTransparency = 0.4,
-                    ZIndex = 2,
-                    TextSize = 14
-                }):AddToTheme({TextColor3 = 'Text'})
+                if Textbox.Description ~= "" then
+                    Items["Description"] = Instances:Create("TextLabel", {
+                        Parent = Items["Textbox"].Instance,
+                        Name = "\0",
+                        FontFace = Library.Font,
+                        TextColor3 = Library.Theme["Text"],
+                        BorderColor3 = FromRGB(0, 0, 0),
+                        Text = Textbox.Description,
+                        AutomaticSize = Enum.AutomaticSize.X,
+                        BackgroundTransparency = 1,
+                        Size = UDim2New(0, 0, 0, 15),
+                        BorderSizePixel = 0,
+                        Position = UDim2New(0, 0, 0, 22),
+                        TextTransparency = 0.4,
+                        ZIndex = 2,
+                        TextSize = 14
+                    }):AddToTheme({TextColor3 = 'Text'})
+                end
                 
                 Items["Background"] = Instances:Create("Frame", {
                     Parent = Items["Textbox"].Instance,
