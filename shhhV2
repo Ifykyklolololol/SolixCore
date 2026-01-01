@@ -96,12 +96,12 @@ local Library do
 
     local RectNew = Rect.new
 
-    local IsMobile = false
+    local IsMobile 
     
     if UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled and not UserInputService.MouseEnabled then
         IsMobile = true
     elseif not UserInputService.TouchEnabled and UserInputService.KeyboardEnabled and UserInputService.MouseEnabled then
-        IsMobile = false
+        IsMobile 
     elseif UserInputService.TouchEnabled and UserInputService.KeyboardEnabled and UserInputService.MouseEnabled then 
         IsMobile = true
     end 
@@ -122,7 +122,7 @@ local Library do
         FadeSpeed = 0.2,
         
         BackgroundTransparency = 0.25,
-         = false,
+        AutoSave = false,
 
         CustomCursor = true,
 
