@@ -96,12 +96,12 @@ local Library do
 
     local RectNew = Rect.new
 
-    local IsMobile 
+    local IsMobile = false
     
     if UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled and not UserInputService.MouseEnabled then
         IsMobile = true
     elseif not UserInputService.TouchEnabled and UserInputService.KeyboardEnabled and UserInputService.MouseEnabled then
-        IsMobile 
+        IsMobile = false
     elseif UserInputService.TouchEnabled and UserInputService.KeyboardEnabled and UserInputService.MouseEnabled then 
         IsMobile = true
     end 
