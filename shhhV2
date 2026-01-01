@@ -96,7 +96,15 @@ local Library do
 
     local RectNew = Rect.new
 
-    local IsMobile = UserInputService.TouchEnabled or false
+    local IsMobile = false
+    
+    if UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled and not UserInputService.MouseEnabled then
+        IsMobile = true
+    elseif not UserInputService.TouchEnabled and UserInputService.KeyboardEnabled and UserInputService.MouseEnabled then
+        IsMobile = false
+    elseif UserInputService.TouchEnabled and UserInputService.KeyboardEnabled and UserInputService.MouseEnabled then 
+        IsMobile = true
+    end 
 
     Library = {
         Theme =  { },
@@ -317,7 +325,7 @@ local Library do
         writefile(Library.Folders.Directory .. "/autoload.json", "")
     end
 
-    local GameName = game.GameId
+    local GameName = tostring(game.GameId)
 
     if not isfolder(Library.Folders.Configs .. "/" .. GameName) then
         makefolder(Library.Folders.Configs .. "/" .. GameName)
@@ -2899,6 +2907,8 @@ local Library do
         end
 
         Library.KeybindList = function(self, Name)
+            Name = Name or "Keybinds"
+
             local KeybindList = { }
             Library.KeyList = KeybindList
 
@@ -3500,10 +3510,12 @@ local Library do
                             return 
                         end
 
-                        UserInputService.MouseIconEnabled = false
-                        Items["Cursor"].Instance.Visible = true
-                        local MouseLocation = UserInputService:GetMouseLocation() 
-                        Items["Cursor"].Instance.Position = UDim2New(0, MouseLocation.X - 1, 0, MouseLocation.Y - 56)           
+                        if Window.IsOpen then
+                            UserInputService.MouseIconEnabled = false
+                            Items["Cursor"].Instance.Visible = true
+                            local MouseLocation = UserInputService:GetMouseLocation() 
+                            Items["Cursor"].Instance.Position = UDim2New(0, MouseLocation.X - 1, 0, MouseLocation.Y - 56)           
+                        end
                     end))
                 end
 
@@ -3593,8 +3605,6 @@ local Library do
                 NewTween.Tween.Completed:Connect(function()
                     Debounce = false 
                     Items["MainFrame"].Instance.Visible = Window.IsOpen
-                    Library.Holder.Instance.Enabled = Window.IsOpen
-
                     UserInputService.MouseIconEnabled = not Window.IsOpen
                 end)
             end
@@ -4004,6 +4014,7 @@ local Library do
                 Section = self,
 
                 Name = Data.Name or Data.name or "Toggle",
+                Description = Data.Description or Data.Description or "Toggle description",
                 Flag = Data.Flag or Data.flag or Library:NextFlag(),
                 Default = Data.Default or Data.default or false,
                 Tooltip = Data.Tooltip or Data.tooltip or nil,
@@ -4024,7 +4035,7 @@ local Library do
                     AutoButtonColor = false,
                     BackgroundTransparency = 1,
                     BorderSizePixel = 0,
-                    Size = UDim2New(1, 0, 0, 20),
+                    Size = UDim2New(1, 0, 0, 40),
                     ZIndex = 2,
                     TextSize = 14
                 })
@@ -4040,10 +4051,28 @@ local Library do
                     Text = Toggle.Name,
                     AutomaticSize = Enum.AutomaticSize.X,
                     Size = UDim2New(0, 0, 0, 15),
-                    AnchorPoint = Vector2New(0, 0.5),
+                    AnchorPoint = Vector2New(0, 0),
                     BorderSizePixel = 0,
                     BackgroundTransparency = 1,
-                    Position = UDim2New(0, 0, 0.5, 0),
+                    Position = UDim2New(0, 0, 0, 0),
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    ZIndex = 2,
+                    TextSize = 14
+                }):AddToTheme({TextColor3 = 'Text'})
+
+                Items["Description"] = Instances:Create("TextLabel", {
+                    Parent = Items["Toggle"].Instance,
+                    Name = "\0",
+                    FontFace = Library.Font,
+                    TextColor3 = Library.Theme["Text"],
+                    TextTransparency = 0.4000000059604645,
+                    Text = Toggle.Description,
+                    AutomaticSize = Enum.AutomaticSize.X,
+                    Size = UDim2New(0, 0, 0, 15),
+                    AnchorPoint = Vector2New(0, 0),
+                    BorderSizePixel = 0,
+                    BackgroundTransparency = 1,
+                    Position = UDim2New(0, 0, 0, 22),
                     BorderColor3 = FromRGB(0, 0, 0),
                     ZIndex = 2,
                     TextSize = 14
@@ -4055,8 +4084,8 @@ local Library do
                     AutoButtonColor = false,
                     Name = "\0",
                     BorderColor3 = FromRGB(0, 0, 0),
-                    AnchorPoint = Vector2New(1, 0),
-                    Position = UDim2New(1, 0, 0, 0),
+                    AnchorPoint = Vector2New(1, 0.5),
+                    Position = UDim2New(1, 0, 0.5, 0),
                     Size = UDim2New(0, 40, 0, 20),
                     ZIndex = 2,
                     BorderSizePixel = 0,
@@ -4271,6 +4300,7 @@ local Library do
                 Section = self,
 
                 Name = Data.Name or Data.name or "Checkbox",
+                Description = Data.Description or Data.Description or "Checkbox description",
                 Flag = Data.Flag or Data.flag or Library:NextFlag(),
                 Default = Data.Default or Data.default or false,
                 Tooltip = Data.Tooltip or Data.tooltip or nil,
@@ -4291,7 +4321,7 @@ local Library do
                     AutoButtonColor = false,
                     BackgroundTransparency = 1,
                     BorderSizePixel = 0,
-                    Size = UDim2New(1, 0, 0, 20),
+                    Size = UDim2New(1, 0, 0, 40),
                     ZIndex = 2,
                     TextSize = 14,
                     BackgroundColor3 = FromRGB(255, 255, 255)
@@ -4303,13 +4333,32 @@ local Library do
                     FontFace = Library.Font,
                     TextColor3 = FromRGB(255, 255, 255),
                     TextTransparency = 0.4000000059604645,
-                    Text = Data.Name,
+                    Text = Toggle.Name,
                     AutomaticSize = Enum.AutomaticSize.X,
                     Size = UDim2New(0, 0, 0, 15),
-                    AnchorPoint = Vector2New(0, 0.5),
+                    AnchorPoint = Vector2New(0, 0),
                     BorderSizePixel = 0,
                     BackgroundTransparency = 1,
-                    Position = UDim2New(0, 0, 0.5, 0),
+                    Position = UDim2New(0, 0, 0, 0),
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    ZIndex = 2,
+                    TextSize = 14,
+                    BackgroundColor3 = FromRGB(255, 255, 255)
+                }):AddToTheme({TextColor3 = 'Text'})
+                
+                Items["Description"] = Instances:Create("TextLabel", {
+                    Parent = Items["Checkbox"].Instance,
+                    Name = "\0",
+                    FontFace = Library.Font,
+                    TextColor3 = FromRGB(255, 255, 255),
+                    TextTransparency = 0.4000000059604645,
+                    Text = Toggle.Description,
+                    AutomaticSize = Enum.AutomaticSize.X,
+                    Size = UDim2New(0, 0, 0, 15),
+                    AnchorPoint = Vector2New(0, 0),
+                    BorderSizePixel = 0,
+                    BackgroundTransparency = 1,
+                    Position = UDim2New(0, 0, 0, 22),
                     BorderColor3 = FromRGB(0, 0, 0),
                     ZIndex = 2,
                     TextSize = 14,
@@ -4320,8 +4369,8 @@ local Library do
                     Parent = Items["Checkbox"].Instance,
                     Name = "\0",
                     BorderColor3 = FromRGB(0, 0, 0),
-                    AnchorPoint = Vector2New(1, 0),
-                    Position = UDim2New(1, 0, 0, 0),
+                    AnchorPoint = Vector2New(1, 0.5),
+                    Position = UDim2New(1, 0, 0.5, 0),
                     Size = UDim2New(0, 20, 0, 20),
                     ZIndex = 2,
                     BorderSizePixel = 0,
@@ -4373,6 +4422,7 @@ local Library do
                     Name = "\0",
                     Padding = UDimNew(0, 5),
                     SortOrder = Enum.SortOrder.LayoutOrder,
+                    VerticalAlignment = Enum.VerticalAlignment.Center,
                     FillDirection = Enum.FillDirection.Horizontal
                 })
             end
@@ -4653,6 +4703,7 @@ local Library do
                 Section = self,
 
                 Name = Data.Name or Data.name or "Slider",
+                Description = Data.Description or Data.Description or "Slider description",
                 Flag = Data.Flag or Data.flag or Library:NextFlag(),
                 Min = Data.Min or Data.min or 0,
                 Default = Data.Default or Data.default or 0,
@@ -4672,7 +4723,7 @@ local Library do
                     Parent = Slider.Section.Items["Content"].Instance,
                     Name = "\0",
                     BackgroundTransparency = 1,
-                    Size = UDim2New(1, 0, 0, 35),
+                    Size = UDim2New(1, 0, 0, 62),
                     BorderColor3 = FromRGB(0, 0, 0),
                     ZIndex = 2,
                     BorderSizePixel = 0
@@ -4689,6 +4740,23 @@ local Library do
                     Text = Slider.Name,
                     AutomaticSize = Enum.AutomaticSize.X,
                     BackgroundTransparency = 1,
+                    Size = UDim2New(0, 0, 0, 15),
+                    BorderSizePixel = 0,
+                    ZIndex = 2,
+                    TextSize = 14
+                }):AddToTheme({TextColor3 = 'Text'})
+
+                Items["Description"] = Instances:Create("TextLabel", {
+                    Parent = Items["Slider"].Instance,
+                    Name = "\0",
+                    FontFace = Library.Font,
+                    TextColor3 = Library.Theme["Text"],
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    TextTransparency = 0.4,
+                    Text = Slider.Description,
+                    AutomaticSize = Enum.AutomaticSize.X,
+                    BackgroundTransparency = 1,
+                    Position = UDim2New(0, 0, 0, 22),
                     Size = UDim2New(0, 0, 0, 15),
                     BorderSizePixel = 0,
                     ZIndex = 2,
@@ -4904,6 +4972,7 @@ local Library do
                 Section = self,
 
                 Name = Data.Name or Data.name or "Dropdown",
+                Description = Data.Description or Data.Description or "Dropdown description",
                 Flag = Data.Flag or Data.flag or Library:NextFlag(),
                 Items = Data.Items or Data.items or { "One", "Two", "Three" },
                 MaxSize = Data.MaxSize or Data.maxsize or 145,
@@ -4923,7 +4992,7 @@ local Library do
                     Parent = Dropdown.Section.Items["Content"].Instance,
                     Name = "\0",
                     BackgroundTransparency = 1,
-                    Size = UDim2New(1, 0, 0, 50),
+                    Size = UDim2New(1, 0, 0, 72),
                     BorderColor3 = FromRGB(0, 0, 0),
                     ZIndex = 2,
                     BorderSizePixel = 0
@@ -5014,6 +5083,23 @@ local Library do
                     TextSize = 14
                 }):AddToTheme({TextColor3 = 'Text'})     
                 
+                Items["Description"] = Instances:Create("TextLabel", {
+                    Parent = Items["Dropdown"].Instance,
+                    Name = "\0",
+                    FontFace = Library.Font,
+                    TextColor3 = Library.Theme["Text"],
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Position = UDim2New(0, 0, 0, 22),
+                    Text = Dropdown.Description,
+                    TextTransparency = 0.4,
+                    AutomaticSize = Enum.AutomaticSize.X,
+                    BackgroundTransparency = 1,
+                    Size = UDim2New(0, 0, 0, 15),
+                    BorderSizePixel = 0,
+                    ZIndex = 2,
+                    TextSize = 14
+                }):AddToTheme({TextColor3 = 'Text'})     
+
                 Items["OptionHolder"] = Instances:Create("TextButton", {
                     Parent = Library.UnusedHolder.Instance,
                     Name = "\0",
@@ -5496,13 +5582,14 @@ local Library do
             return Dropdown
         end
 
-        Library.Sections.Label = function(self, Name, Tooltip)
+        Library.Sections.Label = function(self, Name, Description, Tooltip)
             local Label = {
                 Window = self.Window,
                 Page = self.Page,
                 Section = self,
 
-                Name = Name or "Label"
+                Name = Name or "Label",
+                Description = Description or "Label Description",
             }
 
             local Items = { } do 
@@ -5510,7 +5597,7 @@ local Library do
                     Parent = Label.Section.Items["Content"].Instance,
                     Name = "\0",
                     BackgroundTransparency = 1,
-                    Size = UDim2New(1, 0, 0, 20),
+                    Size = UDim2New(1, 0, 0, 40),
                     BorderColor3 = FromRGB(0, 0, 0),
                     ZIndex = 2,
                     BorderSizePixel = 0
@@ -5526,11 +5613,29 @@ local Library do
                     BorderColor3 = FromRGB(0, 0, 0),
                     Text = Label.Name,
                     AutomaticSize = Enum.AutomaticSize.X,
-                    AnchorPoint = Vector2New(0, 0.5),
+                    AnchorPoint = Vector2New(0, 0),
                     Size = UDim2New(0, 0, 0, 15),
                     BackgroundTransparency = 1,
-                    Position = UDim2New(0, 0, 0.5, 0),
+                    Position = UDim2New(0, 0, 0, 0),
                     BorderSizePixel = 0,
+                    ZIndex = 2,
+                    TextSize = 14
+                }):AddToTheme({TextColor3 = 'Text'})
+
+                Items["Description"] = Instances:Create("TextLabel", {
+                    Parent = Items["Label"].Instance,
+                    Name = "\0",
+                    FontFace = Library.Font,
+                    TextColor3 = FromRGB(255, 255, 255),
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Text = Label.Description,
+                    AutomaticSize = Enum.AutomaticSize.X,
+                    AnchorPoint = Vector2New(0, 0),
+                    Size = UDim2New(0, 0, 0, 15),
+                    BackgroundTransparency = 1,
+                    Position = UDim2New(0, 0, 0, 22),
+                    BorderSizePixel = 0,
+                    TextTransparency = 0.4,
                     ZIndex = 2,
                     TextSize = 14
                 }):AddToTheme({TextColor3 = 'Text'})
@@ -5645,6 +5750,7 @@ local Library do
                 Section = self,
 
                 Name = Data.Name or Data.name or "Textbox",
+                Description = Data.Description or Data.Description or "Textbox description",
                 Flag = Data.Flag or Data.flag or Library:NextFlag(),
                 Default = Data.Default or Data.default or "",
                 Tooltip = Data.Tooltip or Data.tooltip or nil,
@@ -5662,7 +5768,7 @@ local Library do
                     Parent = Textbox.Section.Items["Content"].Instance,
                     Name = "\0",
                     BackgroundTransparency = 1,
-                    Size = UDim2New(1, 0, 0, 46),
+                    Size = UDim2New(1, 0, 0, 72),
                     BorderColor3 = FromRGB(0, 0, 0),
                     ZIndex = 2,
                     BorderSizePixel = 0
@@ -5681,6 +5787,23 @@ local Library do
                     BackgroundTransparency = 1,
                     Size = UDim2New(0, 0, 0, 15),
                     BorderSizePixel = 0,
+                    ZIndex = 2,
+                    TextSize = 14
+                }):AddToTheme({TextColor3 = 'Text'})
+
+                Items["Description"] = Instances:Create("TextLabel", {
+                    Parent = Items["Textbox"].Instance,
+                    Name = "\0",
+                    FontFace = Library.Font,
+                    TextColor3 = Library.Theme["Text"],
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Text = Textbox.Description,
+                    AutomaticSize = Enum.AutomaticSize.X,
+                    BackgroundTransparency = 1,
+                    Size = UDim2New(0, 0, 0, 15),
+                    BorderSizePixel = 0,
+                    Position = UDim2New(0, 0, 0, 22),
+                    TextTransparency = 0.4,
                     ZIndex = 2,
                     TextSize = 14
                 }):AddToTheme({TextColor3 = 'Text'})
@@ -5827,6 +5950,7 @@ local Library do
                 local ConfigsDropdown = ConfigsSection:Dropdown({
                     Name = "Configs",
                     Flag = "ConfigsDropdown",
+                    Description = "List of the configs",
                     Items = { },
                     Multi = false,
                     Callback = function(Value)
@@ -5836,6 +5960,7 @@ local Library do
 
                 ConfigsSection:Textbox({
                     Name = "Config name",
+                    Description = "Name of the config",
                     Flag = "ConfigName",
                     Placeholder = "Config name",
                     Callback = function(Value)
@@ -5976,7 +6101,7 @@ local Library do
 
             do
                 for Index, Value in Library.Theme do 
-                    ThemeColorpickers[Index] = ThemingSection:Label(Index):Colorpicker({
+                    ThemeColorpickers[Index] = ThemingSection:Label(Index, Index:lower() .. " theme color"):Colorpicker({
                         Flag = Index.."_ThemingThing",
                         Default = Value,
                         Alpha = 0,
@@ -5995,6 +6120,7 @@ local Library do
                 local ThemesDropdown = ThemingConfigs:Dropdown({
                     Name = "Themes",
                     Flag = "ThemesDropdown",
+                    Description = "Theme list",
                     Items = { },
                     Multi = false,
                     Callback = function(Value)
@@ -6005,6 +6131,7 @@ local Library do
                 ThemingConfigs:Textbox({
                     Name = "Theme name",
                     Flag = "ThemeName",
+                    Description = "Theme name",
                     Placeholder = "Theme name",
                     Callback = function(Value)
                         ThemeName = Value 
@@ -6113,6 +6240,7 @@ local Library do
                 local PresetThemes = ThemingConfigs:Dropdown({
                     Name = "Themes Preset", 
                     Flag = "ThemesPresetList", 
+                    Description = "Select a theme",
                     Items = { }, 
                     Default = "Preset",
                     Multi = false,
@@ -6148,7 +6276,7 @@ local Library do
                     Library:Unload()
                 end)
 
-                SettingsSection:Label("Menu keybind"):Keybind({
+                SettingsSection:Label("Menu keybind", "Keybind to open/close the menu"):Keybind({
                     Name = "Menu keybind",
                     Flag = "Menu Keybind",
                     Default = Enum.KeyCode.RightControl,
@@ -6160,6 +6288,7 @@ local Library do
 
                 SettingsSection:Slider({
                     Name = "Background opacity",
+                    Description = "Menu background opacity",
                     Min = 0,
                     Max = 1,
                     Default = Library.BackgroundTransparency,
@@ -6174,6 +6303,7 @@ local Library do
 
                 SettingsSection:Slider({
                     Name = "Tween time",
+                    Description = "Menu animation speed",
                     Min = 0,
                     Max = 5,
                     Default = Library.Tween.Time,
@@ -6186,6 +6316,7 @@ local Library do
 
                 SettingsSection:Slider({
                     Name = "Fade time",
+                    Description = "Menu fade speed",
                     Min = 0,
                     Max = 5,
                     Default = Library.FadeSpeed,
@@ -6198,6 +6329,7 @@ local Library do
 
                 SettingsSection:Dropdown({
                     Name = "Style",
+                    Description = "Menu animation style",
                     Flag = "TweenStyle",
                     Default = "Cubic",
                     Items = {"Linear", "Sine", "Quad", "Cubic", "Quart", "Quint", "Exponential", "Circular", "Back", "Elastic", "Bounce"},
@@ -6208,6 +6340,7 @@ local Library do
 
                 SettingsSection:Dropdown({
                     Name = "Direction",
+                    Description = "Menu animation direction",
                     Flag = "TweenDirection",
                     Default = "Out",
                     Items = {"In", "Out", "InOut"},
@@ -6218,7 +6351,8 @@ local Library do
 
                 SettingsSection:Toggle({
                     Name = "Watermark",
-                    Flag = "Watermark",
+                    Description = "Watermark",
+                    Flag = "Menu watermark state",
                     Default = false,
                     Callback = function(Value)
                         Watermark:SetVisibility(Value)
@@ -6228,6 +6362,7 @@ local Library do
                 SettingsSection:Toggle({
                     Name = "KeybindList",
                     Flag = "KeybindList",
+                    Description = "List of all the keybinds",
                     Default = false,
                     Callback = function(Value)
                         KeybindList:SetVisibility(Value)
@@ -6237,6 +6372,7 @@ local Library do
                 SettingsSection:Toggle({
                     Name = "Custom Cursor",
                     Flag = "Custom Cursor",
+                    Description = "Custom cursor for the menu",
                     Default = true,
                     Callback = function(Value)
                         Library.CustomCursor = Value
@@ -6246,6 +6382,125 @@ local Library do
         end
     end
 end
+
+local Window = Library:Window({
+    Name = "Solix Hub"
+})
+
+local Watermark = Library:Watermark("kiss that  thtkhgjhj kl l lbig mac")
+local KeybindList = Library:KeybindList("keybinds")
+
+local CombatPage = Window:Page({Name = "Combat", Columns = 2})
+local PlayerPage = Window:Page({Name = "Player", Columns = 2})
+local VisualsPage = Window:Page({Name = "Visuals", Columns = 2})
+local PlayersPage = Window:Page({Name = "Players", Columns = 2})
+local SettingsPage = Library:CreateSettingsPage(Window, Watermark, KeybindList)
+
+local AimbotSection = CombatPage:Section({Name = "Aimbot", Side = 1})
+local PlayerSection = CombatPage:Section({Name = "Player", Side = 2})
+local VisualsSection = CombatPage:Section({Name = "Visuals", Side = 1})
+local PlayersSection = CombatPage:Section({Name = "Players", Side = 2})
+
+AimbotSection:Toggle({
+    Name = "Aimbot",
+    Description = "This is a description",
+    Default = false,
+    Flag = "Aimbot",
+    Callback = function(Value)
+        print(Value)
+    end
+})
+
+AimbotSection:Checkbox({
+    Name = "Aimbot",
+    Description = "Checkbox description",
+    Default = false,
+    Flag = "Checkbox",
+    Callback = function(Value)
+        print(Value)
+    end
+}):Colorpicker({
+    Flag = "Colorpicker",
+    Default = Color3.fromRGB(255, 255, 255),
+    Alpha = 0,
+    Callback = function(Value)
+        print(Value)
+    end
+})
+
+local Button = AimbotSection:Button():Add("Button", function()
+    print("Pressed")
+end):Add("Button", function()
+    print("Pressed")
+end, false):Add("Button", function()
+    print("Pressed")
+end, false)
+
+AimbotSection:Slider({
+    Name = "Slider",
+    Description = "Slider description",
+    Default = 50,
+    Min = 0,
+    Max = 100,
+    Suffix = "%",
+    Flag = "Slider",
+    Callback = function(Value)
+        print(Value)
+    end
+})
+
+AimbotSection:Dropdown({
+    Name = "Dropdown",
+    Default = "Value2",
+    Items = {"Value", "Value2", "Value3", "Value4", "Value5", "Value6"},
+    Flag = "Dropdown",
+    Multi = true,
+    Callback = function(Value)
+        print(Value)
+    end
+})
+
+AimbotSection:Label("Text")
+AimbotSection:Label("Text"):Colorpicker({
+    Flag = "Colorpicker",
+    Default = Color3.fromRGB(255, 255, 255),
+    Alpha = 0,
+    Callback = function(Value)
+        print(Value)
+    end
+})
+
+AimbotSection:Label("lol"):Keybind({
+    Name = "keybind lol edit",
+    Flag = "Keybind",
+    Default = Enum.KeyCode.E,
+    Mode = "Toggle",
+    Callback = function(Value)
+        print(Value)
+    end
+})
+
+AimbotSection:Textbox({
+    Name = "Textbox",
+    Flag = "Textbox",
+    Placeholder = "Placeholder",
+    Default = "Text",
+    Numeric = false,
+    Finished = false,
+    Callback = function(Value)
+        print(Value)
+    end
+})
+
+Library:Notification({
+    Title = "ooo na nanaaaa",
+    Description = "Very long description lol",
+    Duration = 5,
+    Color = Color3.fromRGB(255, 0, 0)
+})
+
+Window:Init()
+Library:CheckForAutoLoad()
 
 getgenv().Library = Library
 return Library
