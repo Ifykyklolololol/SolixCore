@@ -6237,7 +6237,7 @@ local Library do
                 SettingsSection:Toggle({
                     Name = "Custom Cursor",
                     Flag = "Custom Cursor",
-                    Default = true,
+                    Default = false,
                     Callback = function(Value)
                         Library.CustomCursor = Value
                     end
