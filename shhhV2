@@ -122,7 +122,7 @@ local Library do
         FadeSpeed = 0.2,
         
         BackgroundTransparency = 0.25,
-        AutoSave = false,
+         = false,
 
         CustomCursor = true,
 
@@ -6385,7 +6385,7 @@ local Library do
                     Name = "Auto Save",
                     Flag = "Auto Save",
                     Description = "Auto saves your config",
-                    Default = true,
+                    Default = false,
                     Callback = function(Value)
                         Library.AutoSave = Value
                     end
