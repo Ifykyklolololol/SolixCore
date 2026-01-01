@@ -6383,8 +6383,5 @@ local Library do
     end
 end
 
-Window:Init()
-Library:CheckForAutoLoad()
-
 getgenv().Library = Library
 return Library
