@@ -3469,7 +3469,56 @@ local Library do
                         BackgroundColor3 = Library.Theme['Background']
                     }):AddToTheme({BackgroundColor3 = 'Background'})
     
-                    Items["FloatingButton"]:MakeDraggable()
+                    Library.FloatingButton = Items["FloatingButton"]
+                    Library.FloatingButtonLocked = false
+                    Library.FloatingButtonVisibility = 0
+    
+                    local FloatingButtonDragging = false
+                    local FloatingButtonDragStart
+                    local FloatingButtonStartPosition
+                    local FloatingButtonChanged
+    
+                    local FloatingButtonSet = function(Input)
+                        if Library.FloatingButtonLocked then
+                            return
+                        end
+                        local DragDelta = Input.Position - FloatingButtonDragStart
+                        Items["FloatingButton"]:Tween(TweenInfo.new(0.16, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2New(FloatingButtonStartPosition.X.Scale, FloatingButtonStartPosition.X.Offset + DragDelta.X, FloatingButtonStartPosition.Y.Scale, FloatingButtonStartPosition.Y.Offset + DragDelta.Y)})
+                    end
+    
+                    Items["FloatingButton"]:Connect("InputBegan", function(Input)
+                        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+                            if Library.FloatingButtonLocked then
+                                return
+                            end
+                            FloatingButtonDragging = true
+                            FloatingButtonDragStart = Input.Position
+                            FloatingButtonStartPosition = Items["FloatingButton"].Instance.Position
+    
+                            if FloatingButtonChanged then
+                                return
+                            end
+    
+                            FloatingButtonChanged = Input.Changed:Connect(function()
+                                if Input.UserInputState == Enum.UserInputState.End then
+                                    FloatingButtonDragging = false
+    
+                                    if FloatingButtonChanged then
+                                        FloatingButtonChanged:Disconnect()
+                                        FloatingButtonChanged = nil
+                                    end
+                                end
+                            end)
+                        end
+                    end)
+    
+                    Library:Connect(UserInputService.InputChanged, function(Input)
+                        if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
+                            if FloatingButtonDragging and not Library.FloatingButtonLocked then
+                                FloatingButtonSet(Input)
+                            end
+                        end
+                    end)
     
                     Items["OpenTitle"] = Instances:Create("TextLabel", {
                         Parent = Items["FloatingButton"].Instance,
@@ -6453,6 +6502,39 @@ local Library do
                         Library.AutoSave = Value
                     end
                 })
+
+                if IsMobile then
+                    SettingsSection:Toggle({
+                        Name = "Lock Floating Button",
+                        Flag = "Lock Floating Button",
+                        Description = "Lock floating button position",
+                        Default = false,
+                        Callback = function(Value)
+                            Library.FloatingButtonLocked = Value
+                        end
+                    })
+
+                    SettingsSection:Slider({
+                        Name = "Floating Button Visibility",
+                        Description = "Floating button visibility (0 = visible, 1 = invisible)",
+                        Min = 0,
+                        Max = 1,
+                        Default = 0,
+                        Decimals = 0.01,
+                        Flag = "Floating Button Visibility",
+                        Callback = function(Value)
+                            Library.FloatingButtonVisibility = Value
+                            if Library.FloatingButton then
+                                Library.FloatingButton.Instance.BackgroundTransparency = Value
+                                for _, child in pairs(Library.FloatingButton.Instance:GetChildren()) do
+                                    if child:IsA("TextLabel") then
+                                        child.TextTransparency = Value
+                                    end
+                                end
+                            end
+                        end
+                    })
+                end
             end
         end
     end
