@@ -1007,6 +1007,14 @@ local Library do
                     Config[Index] = Value
                 end
             end
+
+            if IsMobile and Library.FloatingButton and Library.FloatingButton.Instance then
+                local Pos = Library.FloatingButton.Instance.Position
+                Config["_FloatingButtonPosition"] = {
+                    X = {Scale = Pos.X.Scale, Offset = Pos.X.Offset},
+                    Y = {Scale = Pos.Y.Scale, Offset = Pos.Y.Offset}
+                }
+            end
         end)
 
         return HttpService:JSONEncode(Config)
@@ -1017,6 +1025,13 @@ local Library do
 
         local Success, Result = Library:SafeCall(function()
             for Index, Value in Decoded do 
+                if Index == "_FloatingButtonPosition" then
+                    if IsMobile and Library.FloatingButton and Library.FloatingButton.Instance then
+                        Library.FloatingButton.Instance.Position = UDim2New(Value.X.Scale, Value.X.Offset, Value.Y.Scale, Value.Y.Offset)
+                    end
+                    continue
+                end
+
                 local SetFunction = Library.SetFlags[Index]
 
                 if not SetFunction then
