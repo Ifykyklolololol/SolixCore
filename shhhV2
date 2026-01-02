@@ -1007,6 +1007,14 @@ local Library do
                     Config[Index] = Value
                 end
             end
+
+            if IsMobile and Library.FloatingButton and Library.FloatingButton.Instance then
+                local Pos = Library.FloatingButton.Instance.Position
+                Config["_FloatingButtonPosition"] = {
+                    X = {Scale = Pos.X.Scale, Offset = Pos.X.Offset},
+                    Y = {Scale = Pos.Y.Scale, Offset = Pos.Y.Offset}
+                }
+            end
         end)
 
         return HttpService:JSONEncode(Config)
@@ -1017,6 +1025,13 @@ local Library do
 
         local Success, Result = Library:SafeCall(function()
             for Index, Value in Decoded do 
+                if Index == "_FloatingButtonPosition" then
+                    if IsMobile and Library.FloatingButton and Library.FloatingButton.Instance then
+                        Library.FloatingButton.Instance.Position = UDim2New(Value.X.Scale, Value.X.Offset, Value.Y.Scale, Value.Y.Offset)
+                    end
+                    continue
+                end
+
                 local SetFunction = Library.SetFlags[Index]
 
                 if not SetFunction then
@@ -3469,7 +3484,56 @@ local Library do
                         BackgroundColor3 = Library.Theme['Background']
                     }):AddToTheme({BackgroundColor3 = 'Background'})
     
-                    Items["FloatingButton"]:MakeDraggable()
+                    Library.FloatingButton = Items["FloatingButton"]
+                    Library.FloatingButtonLocked = false
+                    Library.FloatingButtonVisibility = 0
+    
+                    local FloatingButtonDragging = false
+                    local FloatingButtonDragStart
+                    local FloatingButtonStartPosition
+                    local FloatingButtonChanged
+    
+                    local FloatingButtonSet = function(Input)
+                        if Library.FloatingButtonLocked then
+                            return
+                        end
+                        local DragDelta = Input.Position - FloatingButtonDragStart
+                        Items["FloatingButton"]:Tween(TweenInfo.new(0.16, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2New(FloatingButtonStartPosition.X.Scale, FloatingButtonStartPosition.X.Offset + DragDelta.X, FloatingButtonStartPosition.Y.Scale, FloatingButtonStartPosition.Y.Offset + DragDelta.Y)})
+                    end
+    
+                    Items["FloatingButton"]:Connect("InputBegan", function(Input)
+                        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+                            if Library.FloatingButtonLocked then
+                                return
+                            end
+                            FloatingButtonDragging = true
+                            FloatingButtonDragStart = Input.Position
+                            FloatingButtonStartPosition = Items["FloatingButton"].Instance.Position
+    
+                            if FloatingButtonChanged then
+                                return
+                            end
+    
+                            FloatingButtonChanged = Input.Changed:Connect(function()
+                                if Input.UserInputState == Enum.UserInputState.End then
+                                    FloatingButtonDragging = false
+    
+                                    if FloatingButtonChanged then
+                                        FloatingButtonChanged:Disconnect()
+                                        FloatingButtonChanged = nil
+                                    end
+                                end
+                            end)
+                        end
+                    end)
+    
+                    Library:Connect(UserInputService.InputChanged, function(Input)
+                        if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
+                            if FloatingButtonDragging and not Library.FloatingButtonLocked then
+                                FloatingButtonSet(Input)
+                            end
+                        end
+                    end)
     
                     Items["OpenTitle"] = Instances:Create("TextLabel", {
                         Parent = Items["FloatingButton"].Instance,
@@ -6104,6 +6168,57 @@ local Library do
                     })
                 end)
 
+                local PastedConfig = ""
+                local SharedConfigTextbox = ConfigsSection:Textbox({
+                    Name = "Paste shared config",
+                    Description = "Paste a shared config here",
+                    Flag = "SharedConfigPaste",
+                    Placeholder = "Paste config string here...",
+                    Finished = true,
+                    Callback = function(Value)
+                        PastedConfig = Value
+                    end
+                })
+
+                ConfigsSection:Button():Add("Share Config", function()
+                    local CurrentConfig = Library:GetConfig()
+                    setclipboard(CurrentConfig)
+
+                    Library:Notification({
+                        Name = "Success",
+                        Description = "Config copied to clipboard",
+                        Color = Color3.fromRGB(0, 255, 0),
+                        Duration = 5
+                    })
+                end):Add("Import Pasted", function()
+                    if PastedConfig and PastedConfig ~= "" then
+                        local Success, Error = Library:LoadConfig(PastedConfig)
+                        
+                        if Success then
+                            Library:Notification({
+                                Name = "Success",
+                                Description = "Succesfully imported config",
+                                Color = Color3.fromRGB(0, 255, 0),
+                                Duration = 5
+                            })
+                        else
+                            Library:Notification({
+                                Name = "Error",
+                                Description = "Failed to import config: ".. tostring(Error),
+                                Color = Color3.fromRGB(255, 0, 0),
+                                Duration = 5
+                            })
+                        end
+                    else
+                        Library:Notification({
+                            Name = "Error",
+                            Description = "No config pasted",
+                            Color = Color3.fromRGB(255, 0, 0),
+                            Duration = 5
+                        })
+                    end
+                end)
+
                 Library:RefreshConfigsList(ConfigsDropdown)
             end
         end
@@ -6402,6 +6517,39 @@ local Library do
                         Library.AutoSave = Value
                     end
                 })
+
+                if IsMobile then
+                    SettingsSection:Toggle({
+                        Name = "Lock Floating Button",
+                        Flag = "Lock Floating Button",
+                        Description = "Lock floating button position",
+                        Default = false,
+                        Callback = function(Value)
+                            Library.FloatingButtonLocked = Value
+                        end
+                    })
+
+                    SettingsSection:Slider({
+                        Name = "Floating Button Visibility",
+                        Description = "Floating button visibility (0 = visible, 1 = invisible)",
+                        Min = 0,
+                        Max = 1,
+                        Default = 0,
+                        Decimals = 0.01,
+                        Flag = "Floating Button Visibility",
+                        Callback = function(Value)
+                            Library.FloatingButtonVisibility = Value
+                            if Library.FloatingButton then
+                                Library.FloatingButton.Instance.BackgroundTransparency = Value
+                                for _, child in pairs(Library.FloatingButton.Instance:GetChildren()) do
+                                    if child:IsA("TextLabel") then
+                                        child.TextTransparency = Value
+                                    end
+                                end
+                            end
+                        end
+                    })
+                end
             end
         end
     end
