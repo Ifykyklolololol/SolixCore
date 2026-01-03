@@ -227,13 +227,20 @@ local WorldToViewportPoint = Camera.WorldToViewportPoint
 local ExecutorName = getexecutorname()
 
 do -- Folders
-    if not isfolder(FolderLocation) then
-        makefolder(FolderLocation)
-    end
-
-    if not isfolder(FolderLocation .. "\\Fonts") then
-        makefolder(FolderLocation .. "\\Fonts")
-    end
+    local PathSeparator = "/"
+    local FontsFolder = FolderLocation .. PathSeparator .. "Fonts"
+    
+    pcall(function()
+        if not isfolder(FolderLocation) then
+            makefolder(FolderLocation)
+        end
+    end)
+    
+    pcall(function()
+        if not isfolder(FontsFolder) then
+            makefolder(FontsFolder)
+        end
+    end)
 end
 
 local FontsToDownload = {
@@ -242,39 +249,74 @@ local FontsToDownload = {
     ["Silkscreen"] = {Link = "https://github.com/LuckyHub1/LuckyHub/raw/refs/heads/main/Silkscreen.ttf"},
 	["ProggyClean"] = {Link = "https://github.com/LuckyHub1/LuckyHub/raw/main/ProggyClean.ttf"},
 }; do -- Fonts
-    for Name, Table in FontsToDownload do
-        if not isfile(FolderLocation .. "\\Fonts\\" .. Name .. ".ttf") then
-            writefile(FolderLocation .. "\\Fonts\\" .. Name .. ".ttf", game:HttpGet(Table.Link))
-        end
-        
-        if not isfile(FolderLocation .. "\\Fonts\\" .. Name .. ".font") or ExecutorName == "Potassium" then
-            local Config = {
-                name = Name,
-                faces = {{
-                    name = "Regular",
-                    weight = 9e9,
-                    style = "normal",
-                    assetId = getcustomasset(FolderLocation .. "\\Fonts\\" .. Name .. ".ttf")
-                }}
-            }
-            
-            writefile(FolderLocation .. "\\Fonts\\" .. Name .. ".font", HttpService:JSONEncode(Config))
-        end
-    end
-
+    local PathSeparator = "/"
+    local FontsFolder = FolderLocation .. PathSeparator .. "Fonts"
+    
     if not getgenv().Fonts then
         getgenv().Fonts = {
             Loaded = {}
         }
-
-        for _, FontPath in listfiles(FolderLocation .. "\\Fonts") do
-            local Name = string_match(FontPath, FolderLocation .. "\\Fonts\\(.+)%.font")
-
-            if Name then
-                Fonts.Loaded[Name] = Font_new(getcustomasset(FontPath), Enum.FontWeight.Regular)
+    end
+    
+    for Name, Table in FontsToDownload do
+        local FontTtfPath = FontsFolder .. PathSeparator .. Name .. ".ttf"
+        local FontFilePath = FontsFolder .. PathSeparator .. Name .. ".font"
+        
+        local success1, result1 = pcall(function()
+            if not isfile(FontTtfPath) then
+                local fontData = game:HttpGet(Table.Link)
+                writefile(FontTtfPath, fontData)
             end
+        end)
+        
+        if success1 then
+            local success2, result2 = pcall(function()
+                if not isfile(FontFilePath) or ExecutorName == "Potassium" then
+                    local assetId = getcustomasset(FontTtfPath)
+                    local Config = {
+                        name = Name,
+                        faces = {{
+                            name = "Regular",
+                            weight = 9e9,
+                            style = "normal",
+                            assetId = assetId
+                        }}
+                    }
+                    writefile(FontFilePath, HttpService:JSONEncode(Config))
+                end
+            end)
+            
+            if success2 then
+                local success3, result3 = pcall(function()
+                    Fonts.Loaded[Name] = Font_new(getcustomasset(FontFilePath), Enum.FontWeight.Regular)
+                end)
+                
+                if not success3 then
+                    Fonts.Loaded[Name] = Font_new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Regular)
+                end
+            else
+                Fonts.Loaded[Name] = Font_new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Regular)
+            end
+        else
+            Fonts.Loaded[Name] = Font_new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Regular)
         end
     end
+    
+    local success4, result4 = pcall(function()
+        for _, FontPath in listfiles(FontsFolder) do
+            local Name = string_match(FontPath, FontsFolder .. PathSeparator .. "(.+)%.font")
+            
+            if Name and not Fonts.Loaded[Name] then
+                local success5, result5 = pcall(function()
+                    Fonts.Loaded[Name] = Font_new(getcustomasset(FontPath), Enum.FontWeight.Regular)
+                end)
+                
+                if not success5 then
+                    Fonts.Loaded[Name] = Font_new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Regular)
+                end
+            end
+        end
+    end)
 end
 
 local Utility = {}; do
@@ -478,7 +520,7 @@ do -- Functions
         local ToolConnection = TargetInfo.ToolConnection
         local CharacterObjects = TargetInfo.CharacterObjects
         local ESPSettings = ESPSettings[Type]
-        local ESPFont = Fonts.Loaded[ESPSettings.Font]
+        local ESPFont = Fonts.Loaded[ESPSettings.Font] or Font_new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Regular)
         local ESPFontSize = ESPSettings.FontSize
         local ESPHolder = ESP.Holder
 
