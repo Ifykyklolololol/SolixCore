@@ -1225,7 +1225,7 @@ local Library do
         else
             Library:Notification({
                 Name = "Error",
-                Description = "Failed to load config: \n" .. Error,
+                Description = "Failed to load config: \n" .. (Error or "Unknown error"),
                 Color = Color3.fromRGB(255, 0, 0),
                 Duration = 5
             })
@@ -5399,6 +5399,11 @@ local Library do
             end
 
             function Dropdown:Set(Option)
+                -- Validate Option is not nil
+                if Option == nil then
+                    return
+                end
+                
                 if Dropdown.Multi then 
                     if type(Option) ~= "table" then 
                         return
@@ -5420,14 +5425,20 @@ local Library do
 
                     Items["Value"].Instance.Text = TableConcat(Option, ", ")
                 else
-                    if not Dropdown.Options[Option] then
+                    -- Convert Option to string for lookup and validation
+                    local OptionStr = tostring(Option)
+                    if OptionStr == "" or OptionStr == "nil" then
+                        return
+                    end
+                    
+                    if not Dropdown.Options[OptionStr] then
                         return
                     end
 
-                    local OptionData = Dropdown.Options[Option]
+                    local OptionData = Dropdown.Options[OptionStr]
 
-                    Dropdown.Value = Option
-                    Library.Flags[Dropdown.Flag] = Option
+                    Dropdown.Value = OptionStr
+                    Library.Flags[Dropdown.Flag] = OptionStr
 
                     for Index, Value in Dropdown.Options do
                         if Value ~= OptionData then
@@ -5439,7 +5450,7 @@ local Library do
                         end
                     end
 
-                    Items["Value"].Instance.Text = Option
+                    Items["Value"].Instance.Text = OptionStr
                 end
 
                 if Dropdown.Callback then   
@@ -6094,7 +6105,7 @@ local Library do
                             else
                                 Library:Notification({
                                     Name = "Error",
-                                    Description = "Failed to load config: ".. ConfigSelected .. "\n" .. Error,
+                                    Description = "Failed to load config: ".. (ConfigSelected or "Unknown") .. "\n" .. (Error or "Unknown error"),
                                     Color = Color3.fromRGB(255, 0, 0),
                                     Duration = 5
                                 })
