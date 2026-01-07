@@ -749,7 +749,7 @@ do -- Functions
                     Objects["Flags"] = Utility.CreateObject("TextLabel", {
                         Parent = Objects["RightTextHolder"],
                         FontFace = ESPFont,
-                        TextSize = ESPFontSize,
+                        TextSize = math_max(8, ESPFontSize - 2),
                         LayoutOrder = 2,
                         TextColor3 = Color3_fromRGB(255, 255, 255),
                         Text = "",
