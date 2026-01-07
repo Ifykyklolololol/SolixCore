@@ -181,22 +181,74 @@ getgenv().ESP = {
                     local Humanoid = CharacterObjects.Humanoid
                     if not Humanoid then return end
 
-                    local DisplayELO = Target:GetAttribute("DisplayELO")
-                    if DisplayELO then
-                        table_insert(Flags, "ELO: " .. tostring(DisplayELO))
+                    -- Get Player Level
+                    local Level = Player:GetAttribute("Level")
+                    if Level then
+                        table_insert(Flags, "Level: " .. tostring(Level))
                     end
 
-                    if Target:GetAttribute("IsInfluencer") then
+                    -- Get Player Streak
+                    local Streak = Player:GetAttribute("StatisticDuelsWinStreak")
+                    if Streak and Streak > 0 then
+                        table_insert(Flags, "Streak: " .. tostring(Streak))
+                    end
+
+                    -- Get Player ELO and Rank
+                    local DisplayELO = Player:GetAttribute("DisplayELO")
+                    if DisplayELO then
+                        table_insert(Flags, "ELO: " .. tostring(DisplayELO))
+                        
+                        -- Try to get rank from ELO
+                        local success, rank = pcall(function()
+                            local ReplicatedStorage = Service("ReplicatedStorage")
+                            local RankIcon = require(ReplicatedStorage:FindFirstChild("Modules", true):FindFirstChild("RankIcon", true))
+                            if RankIcon and RankIcon.GetRank then
+                                return RankIcon:GetRank(DisplayELO, Player.UserId)
+                            end
+                        end)
+                        if success and rank then
+                            table_insert(Flags, "Rank: " .. tostring(rank))
+                        end
+                    end
+
+                    -- Get Player Weapon and Ammo
+                    local success, fighter = pcall(function()
+                        local playerScripts = Player:FindFirstChild("PlayerScripts")
+                        if playerScripts then
+                            local controllers = playerScripts:FindFirstChild("Controllers")
+                            if controllers then
+                                local FighterController = require(controllers:FindFirstChild("FighterController", true))
+                                if FighterController then
+                                    return FighterController:GetFighter(Player)
+                                end
+                            end
+                        end
+                    end)
+                    
+                    if success and fighter then
+                        local equippedItem = fighter.EquippedItem
+                        if equippedItem then
+                            local weaponName = equippedItem.Info and equippedItem.Info.Name or equippedItem.Name
+                            if weaponName then
+                                table_insert(Flags, "Weapon: " .. tostring(weaponName))
+                            end
+                            
+                            local ammo = equippedItem:Get("Ammo")
+                            local maxAmmo = equippedItem.Info and equippedItem.Info.MaxAmmo
+                            if ammo ~= nil and maxAmmo then
+                                table_insert(Flags, "Ammo: " .. tostring(ammo) .. "/" .. tostring(maxAmmo))
+                            elseif ammo ~= nil then
+                                table_insert(Flags, "Ammo: " .. tostring(ammo))
+                            end
+                        end
+                    end
+
+                    if Player:GetAttribute("IsInfluencer") then
                         table_insert(Flags, "Influencer")
                     end
 
-                    if Target:GetAttribute("IsRobloxEmployee") then
+                    if Player:GetAttribute("IsRobloxEmployee") then
                         table_insert(Flags, "Roblox Employee")
-                    end
-
-                    local Level = Target:GetAttribute("Level")
-                    if Level then
-                        table_insert(Flags, "Level: " .. tostring(Level))
                     end
 
                     return Flags -- return a table for it to work
