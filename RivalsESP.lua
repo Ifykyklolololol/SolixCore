@@ -39,16 +39,16 @@ getgenv().ESP = {
 
             Font = "ProggyClean",
             FontSize = 12,
-            FontType = "lowercase", -- uppercase, lowercase, none
+            FontType = "lowercase",
 
             MaxDistance = 1000,
             RefreshRate = 60,
 
             BoundingBox = {
                 Enabled = false,
-                DynamicBox = true, -- may drop fps
+                DynamicBox = true,
                 IncludeAccessories = false,
-                Type = "Corner", -- 2D, Corner
+                Type = "Corner",
                 
                 Rotation = 90,
                 Color = {Color3_fromRGB(216, 126, 157), Color3_fromRGB(216, 126, 157)},
@@ -81,14 +81,14 @@ getgenv().ESP = {
                         local Humanoid = CharacterObjects.Humanoid
                         if not Humanoid then return end
 
-                        return Humanoid.Health / Humanoid.MaxHealth -- what value the bar follows
+                        return Humanoid.Health / Humanoid.MaxHealth
                     end,
 
                     Text = {
                         Enabled = true,
                         FollowBar = true,
                         Ending = "",
-                        Position = "Left", -- // will ignore if FollowBar is true
+                        Position = "Left",
                         Color = Color3_fromRGB(255, 255, 255),
                         Transparency = 0,
 
@@ -98,7 +98,7 @@ getgenv().ESP = {
                             local Humanoid = CharacterObjects.Humanoid
                             if not Humanoid then return end
 
-                            return Humanoid.Health, Humanoid.Health ~= Humanoid.MaxHealth -- Value the text follows, Value the text turns visible if follow bar is on
+                            return Humanoid.Health, Humanoid.Health ~= Humanoid.MaxHealth
                         end,
                     },
                 },
@@ -114,14 +114,14 @@ getgenv().ESP = {
                         local Humanoid = CharacterObjects.Humanoid
                             if not Humanoid then return end
 
-                        return Humanoid.Health / Humanoid.MaxHealth -- what value the bar follows
+                        return Humanoid.Health / Humanoid.MaxHealth
                     end,
 
                     Text = {
                         Enabled = true,
                         FollowBar = true,
                         Ending = "%",
-                        Position = "Left", -- // will ignore if FollowBar is true
+                        Position = "Left",
                         Color = Color3_fromRGB(255, 255, 255),
                         Transparency = 0,
 
@@ -131,7 +131,7 @@ getgenv().ESP = {
                             local Humanoid = CharacterObjects.Humanoid
                             if not Humanoid then return end
 
-                            return Humanoid.Health, Humanoid.Health ~= Humanoid.MaxHealth -- value the text follows, value the text turns visible if follow bar is on
+                            return Humanoid.Health, Humanoid.Health ~= Humanoid.MaxHealth
                         end,
                     },
                 },
@@ -179,40 +179,40 @@ getgenv().ESP = {
                     if not IsA(Player, "Player") then return Flags end
 
                     local Humanoid = CharacterObjects.Humanoid
-                    if not Humanoid then return end
+                    if not Humanoid then return Flags end
 
-                    -- Get Player Level
+                    local originalIdentity = getthreadidentity and getthreadidentity() or 2
+                    if setthreadidentity then
+                        setthreadidentity(2)
+                    end
+
                     local Level = Player:GetAttribute("Level")
                     if Level then
                         table_insert(Flags, "Level: " .. tostring(Level))
                     end
 
-                    -- Get Player Streak
                     local Streak = Player:GetAttribute("StatisticDuelsWinStreak")
                     if Streak and Streak > 0 then
                         table_insert(Flags, "Streak: " .. tostring(Streak))
                     end
 
-                    -- Get Player ELO and Rank
                     local DisplayELO = Player:GetAttribute("DisplayELO")
                     if DisplayELO then
                         table_insert(Flags, "ELO: " .. tostring(DisplayELO))
                         
-                        -- Try to get rank from ELO
-                        local success, rank = pcall(function()
+                        local rankSuccess, rank = pcall(function()
                             local ReplicatedStorage = Service("ReplicatedStorage")
-                            local RankIcon = require(ReplicatedStorage:FindFirstChild("Modules", true):FindFirstChild("RankIcon", true))
-                            if RankIcon and RankIcon.GetRank then
-                                return RankIcon:GetRank(DisplayELO, Player.UserId)
+                            local SeasonLibrary = require(ReplicatedStorage:FindFirstChild("Modules", true):FindFirstChild("SeasonLibrary", true))
+                            if SeasonLibrary and SeasonLibrary.GetRank then
+                                return SeasonLibrary:GetRank(DisplayELO, Player.UserId)
                             end
                         end)
-                        if success and rank then
+                        if rankSuccess and rank then
                             table_insert(Flags, "Rank: " .. tostring(rank))
                         end
                     end
 
-                    -- Get Player Weapon and Ammo
-                    local success, fighter = pcall(function()
+                    local fighterSuccess, fighter = pcall(function()
                         local playerScripts = Player:FindFirstChild("PlayerScripts")
                         if playerScripts then
                             local controllers = playerScripts:FindFirstChild("Controllers")
@@ -225,7 +225,7 @@ getgenv().ESP = {
                         end
                     end)
                     
-                    if success and fighter then
+                    if fighterSuccess and fighter then
                         local equippedItem = fighter.EquippedItem
                         if equippedItem then
                             local weaponName = equippedItem.Info and equippedItem.Info.Name or equippedItem.Name
@@ -233,12 +233,16 @@ getgenv().ESP = {
                                 table_insert(Flags, "Weapon: " .. tostring(weaponName))
                             end
                             
-                            local ammo = equippedItem:Get("Ammo")
-                            local maxAmmo = equippedItem.Info and equippedItem.Info.MaxAmmo
-                            if ammo ~= nil and maxAmmo then
-                                table_insert(Flags, "Ammo: " .. tostring(ammo) .. "/" .. tostring(maxAmmo))
-                            elseif ammo ~= nil then
-                                table_insert(Flags, "Ammo: " .. tostring(ammo))
+                            local ammoSuccess, ammo = pcall(function()
+                                return equippedItem:Get("Ammo")
+                            end)
+                            if ammoSuccess and ammo ~= nil then
+                                local maxAmmo = equippedItem.Info and equippedItem.Info.MaxAmmo
+                                if maxAmmo then
+                                    table_insert(Flags, "Ammo: " .. tostring(ammo) .. "/" .. tostring(maxAmmo))
+                                else
+                                    table_insert(Flags, "Ammo: " .. tostring(ammo))
+                                end
                             end
                         end
                     end
@@ -251,7 +255,11 @@ getgenv().ESP = {
                         table_insert(Flags, "Roblox Employee")
                     end
 
-                    return Flags -- return a table for it to work
+                    if setthreadidentity then
+                        setthreadidentity(originalIdentity)
+                    end
+
+                    return Flags
                 end
             },
         },
@@ -278,7 +286,7 @@ local ESPSettings = ESP.Settings
 local WorldToViewportPoint = Camera.WorldToViewportPoint
 local ExecutorName = getexecutorname()
 
-do -- Folders
+do
     local PathSeparator = "/"
     local FontsFolder = FolderLocation .. PathSeparator .. "Fonts"
     
@@ -300,7 +308,7 @@ local FontsToDownload = {
     ["Minecraftia"] = {Link = "https://github.com/LuckyHub1/LuckyHub/raw/refs/heads/main/Minecraftia.ttf"},
     ["Silkscreen"] = {Link = "https://github.com/LuckyHub1/LuckyHub/raw/refs/heads/main/Silkscreen.ttf"},
 	["ProggyClean"] = {Link = "https://github.com/LuckyHub1/LuckyHub/raw/main/ProggyClean.ttf"},
-}; do -- Fonts
+}; do
     local PathSeparator = "/"
     local FontsFolder = FolderLocation .. PathSeparator .. "Fonts"
     
@@ -475,13 +483,6 @@ local PlayerHelper = {}; do
         
         local Character = Player.Character
 
-        --[[
-            if CurrentGame == "Phantom Forces" then
-                Character = ...
-            elseif CurrentGame == "Bad Business" then
-                Character = ...
-            end
-        ]]
 
         return Character
     end
@@ -505,15 +506,6 @@ local PlayerHelper = {}; do
     function PlayerHelper.GetTool(Player)
         if not Player then return nil end
         
-        --[[
-            return nil to use the default way (connections)
-
-            if CurrentGame == "Phantom Forces" then
-                return ...
-            elseif CurrentGame == "Bad Business" then
-                return ...
-            end 
-        ]]
 
         return nil
     end
@@ -562,7 +554,9 @@ do -- Functions
             CharacterConnection = nil,
             ToolConnection = {Added = nil, Removed = nil},
             CurrentTool = "none",
-            LastTick = os_clock()
+            LastTick = os_clock(),
+            FlagsCache = {},
+            FlagsCacheTime = 0
         }
 
         local IsPlayer = IsA(Target, "Player")
@@ -585,7 +579,7 @@ do -- Functions
             CharacterObjects.Humanoid = CharacterObjects.Character:FindFirstChildWhichIsA("Humanoid")
         end
 
-        do -- Functions
+        do
             function TargetInfo.Init()
                 if #Objects > 0 then return end
 
@@ -624,7 +618,7 @@ do -- Functions
                 Objects["LeftHolder"] = Utility.CreateObject("Frame", {Parent = Objects["TargetHolder"], AutomaticSize = Enum.AutomaticSize.X, Visible = true, BackgroundTransparency = 1, AnchorPoint = Vector2_new(1, 0), Position = UDim2_new(0, -4, 0, -2), BorderColor3 = Color3_fromRGB(0, 0, 0), Size = UDim2_new(0, 0, 1, 4), BorderSizePixel = 0, BackgroundColor3 = Color3_fromRGB(255, 255, 255)})
                 Objects["RightHolder"] = Utility.CreateObject("Frame", {Parent = Objects["TargetHolder"], AutomaticSize = Enum.AutomaticSize.X, Visible = true, BackgroundTransparency = 1, Position = UDim2_new(1, 8, 0, -2), BorderColor3 = Color3_fromRGB(0, 0, 0), Size = UDim2_new(0, 0, 1, 4), BorderSizePixel = 0, BackgroundColor3 = Color3_fromRGB(255, 255, 255)})
                 
-                do -- Text Holders
+                do
                     Objects["TopTextHolder"] = Utility.CreateObject("Frame", {Parent = Objects["TopHolder"], AutomaticSize = Enum.AutomaticSize.Y, Visible = true, BackgroundTransparency = 1, Position = UDim2_new(0, 0, 0, 0), BorderColor3 = Color3_fromRGB(0, 0, 0), Size = UDim2_new(1, 0, 0, 0), BorderSizePixel = 0, BackgroundColor3 = Color3_fromRGB(255, 255, 255)})
                     Utility.CreateObject("UIListLayout", {Parent = Objects["TopTextHolder"], VerticalAlignment = Enum.VerticalAlignment.Bottom, HorizontalAlignment = Enum.HorizontalAlignment.Center, Padding = UDim_new(0, 0), SortOrder = Enum.SortOrder.LayoutOrder})
                     Utility.CreateObject("UIPadding", {Parent = Objects["TopTextHolder"], PaddingBottom = UDim_new(0, 2)})
@@ -642,7 +636,7 @@ do -- Functions
                     Utility.CreateObject("UIPadding", {Parent = Objects["RightTextHolder"], PaddingTop = UDim_new(0, -3)})
                 end
 
-                do -- Bar Holders
+                do
                     Objects["TopBarHolder"] = Utility.CreateObject("Frame", {Visible = false, Parent = Objects["TopHolder"], AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, Position = UDim2_new(0, 0, 0, 0), BorderColor3 = Color3_fromRGB(0, 0, 0), Size = UDim2_new(1, 0, 0, 0), BorderSizePixel = 0, BackgroundColor3 = Color3_fromRGB(255, 255, 255)})
                     Utility.CreateObject("UIListLayout", {Parent = Objects["TopBarHolder"], HorizontalAlignment = Enum.HorizontalAlignment.Center, Padding = UDim_new(0, 1), VerticalAlignment = Enum.VerticalAlignment.Bottom, SortOrder = Enum.SortOrder.LayoutOrder})
 
@@ -659,7 +653,7 @@ do -- Functions
                     Utility.CreateObject("UIPadding", {Parent = Objects["RightBarHolder"], PaddingLeft = UDim_new(0, -3)})
                 end
                 
-                do -- List Layouts
+                do
                     Utility.CreateObject("UIListLayout", {Parent = Objects["TopHolder"], VerticalAlignment = Enum.VerticalAlignment.Bottom, Padding = UDim_new(0, 3), SortOrder = Enum.SortOrder.LayoutOrder})
                     Utility.CreateObject("UIListLayout", {Parent = Objects["BottomHolder"], Padding = UDim_new(0, 1), SortOrder = Enum.SortOrder.LayoutOrder})
                     Utility.CreateObject("UIPadding", {Parent = Objects["LeftHolder"], PaddingRight = UDim_new(0, 1)})
@@ -667,7 +661,7 @@ do -- Functions
                     Utility.CreateObject("UIListLayout", {Parent = Objects["RightHolder"], FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Left, Padding = UDim_new(0, 2), SortOrder = Enum.SortOrder.LayoutOrder})
                 end
 
-                do -- Box
+                do
                     Objects["BoxGlow"] = Utility.CreateObject("ImageLabel", {Parent = Objects["TargetHolder"], Image = "rbxassetid://110204605000367", ScaleType = Enum.ScaleType.Slice, SliceCenter = Rect_new(Vector2_new(21, 21), Vector2_new(79, 79)), AutomaticSize = Enum.AutomaticSize.XY, ImageTransparency = 0.65, ResampleMode = Enum.ResamplerMode.Pixelated, Visible = true, BackgroundTransparency = 1, Position = UDim2_new(0, -21, 0, -21), BorderColor3 = Color3_fromRGB(0, 0, 0), Size = UDim2_new(0, 0, 0, 0), BorderSizePixel = 0, BackgroundColor3 = Color3_fromRGB(255, 255, 255)})
                     Objects["BoxGlowGradient"] = Utility.CreateObject("UIGradient", {Parent = Objects["BoxGlow"], Rotation = 90, Color = ColorSequence_new{ColorSequenceKeypoint_new(0, Color3_fromRGB(0, 0, 0)), ColorSequenceKeypoint_new(1, Color3_fromRGB(0, 0, 0))}, Transparency = NumberSequence_new{NumberSequenceKeypoint_new(0, 0), NumberSequenceKeypoint_new(1, 0)}})
                     Utility.CreateObject("UIPadding", {Parent = Objects["BoxGlow"], PaddingTop = UDim_new(0, 21), PaddingBottom = UDim_new(0, 20), PaddingLeft = UDim_new(0, 21), PaddingRight = UDim_new(0, 20)})
@@ -684,7 +678,7 @@ do -- Functions
                     Objects["BoxFillGradient"] = Utility.CreateObject("UIGradient", {Parent = Objects["BoxFill"], Rotation = 90, Color = ColorSequence_new{ColorSequenceKeypoint_new(0, Color3_fromRGB(0, 0, 0)), ColorSequenceKeypoint_new(1, Color3_fromRGB(255, 255, 255))}, Transparency = NumberSequence_new{NumberSequenceKeypoint_new(0, 1), NumberSequenceKeypoint_new(1, 1)}})
                 end
 
-                do -- ConerBox
+                do
                     Objects["CornerHolder"] = Utility.CreateObject("Frame", {Parent = Objects["BoxGlow"], Visible = false, BackgroundTransparency = 1, Position = UDim2_new(0, -1, 0, -1), BorderColor3 = Color3_fromRGB(0, 0, 0), Size = UDim2_new(0, 0, 0, 0), BorderSizePixel = 0, BackgroundColor3 = Color3_fromRGB(255, 255, 255)})
 
                     for i = 1, 8 do
@@ -693,7 +687,7 @@ do -- Functions
                     end
                 end
 
-                do -- Bars
+                do
                     for BarName, Bar in ESPSettings.Bars do
                         Objects[BarName .. "Outline"] = Utility.CreateObject("Frame", {Parent = Objects[Bar.Position .. "BarHolder"], ZIndex = 5, LayoutOrder = 0, Visible = true, BackgroundTransparency = 0, Position = UDim2_new(0, 0, 0, 0), BorderColor3 = Color3_fromRGB(0, 0, 0), Size = UDim2_new(1, 0, 0, 1), BorderSizePixel = 0, BackgroundColor3 = Color3_fromRGB(0, 0, 0)})
                         Utility.CreateObject("UIStroke", {Parent = Objects[BarName .. "Outline"], Thickness = 1, LineJoinMode = Enum.LineJoinMode.Miter})
@@ -719,7 +713,7 @@ do -- Functions
                     end
                 end
 
-                do -- Texts
+                do
                     Objects["TargetName"] = Utility.CreateObject("TextLabel", {
                         Parent = Objects["TopTextHolder"],
                         FontFace = ESPFont,
@@ -1099,7 +1093,17 @@ do -- Functions
                     local FlagsEnabled, FlagsColor, FlagsTransparency = ESPSettings.Flags.Enabled, ESPSettings.Flags.Color, ESPSettings.Flags.Transparency
                     
                     if FlagsEnabled then
-                        local Flags = ESPSettings.Flags.Type(Target, CharacterObjects)
+                        local currentTime = os_clock()
+                        local cacheTime = 0.5
+                        if currentTime - TargetInfo.FlagsCacheTime > cacheTime then
+                            local success, flags = pcall(function()
+                                return ESPSettings.Flags.Type(Target, CharacterObjects)
+                            end)
+                            if success and flags then
+                                TargetInfo.FlagsCache = flags
+                                TargetInfo.FlagsCacheTime = currentTime
+                            end
+                        end
 
                         FlagsText.Visible = true
                         FlagsText.TextXAlignment = TextAlignments[ESPSettings.Flags.Position]
@@ -1107,7 +1111,7 @@ do -- Functions
                         FlagsText.TextColor3 = FlagsColor
                         FlagsText.TextTransparency = FlagsTransparency
                         FlagsText.UIStroke.Transparency = FlagsTransparency
-                        FlagsText.Text = table_concat(Flags, "\n")
+                        FlagsText.Text = table_concat(TargetInfo.FlagsCache, "\n")
                     else
                         FlagsText.Visible = false
                     end
@@ -1170,7 +1174,7 @@ do -- Functions
     end
 end
 
-do -- Connections
+do
     ESP.Init()
 
     for _, Player in Players:GetPlayers() do
