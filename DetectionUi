@@ -1,4 +1,5 @@
-print("ver 1.8")
+print("ver 1.9")
+
 -- Detection UI Library
 -- A smooth, modern UI library for displaying detection prompts
 
@@ -105,7 +106,7 @@ function DetectionUI:CreateUI()
 	title.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 	title.BackgroundTransparency = 1
 	title.Position = UDim2.new(0, 12, 0, 10)
-	title.Size = UDim2.new(1, -50, 0, 0)
+	title.Size = UDim2.new(1, -42, 0, 0) -- Wider to fit "anyway." on second line
 	title.Font = Enum.Font.Code
 	title.Text = "Game files changed! There is a risk of detection. Press proceed if you'd like to run the script anyway."
 	title.TextColor3 = CONFIG.TextColor
@@ -377,5 +378,3 @@ end
 ]]
 
 return guiAPI
-
-
