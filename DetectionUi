@@ -1,6 +1,4 @@
--- Detection UI Library
--- A smooth, modern UI library for displaying detection prompts
-
+print("ver 1.1")
 local DetectionUI = {}
 DetectionUI.__index = DetectionUI
 
