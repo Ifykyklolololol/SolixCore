@@ -8,14 +8,18 @@ local TweenService = game:GetService("TweenService")
 
 -- UI Configuration
 local CONFIG = {
-	BackgroundColor = Color3.fromRGB(30, 30, 35),
-	BorderColor = Color3.fromRGB(60, 60, 70),
-	TextColor = Color3.fromRGB(255, 255, 255),
-	AccentColor = Color3.fromRGB(46, 204, 113), -- Green for Run Anyway button
-	CloseButtonColor = Color3.fromRGB(231, 76, 60), -- Red for X button
-	TransitionTime = 0.3,
+	BackgroundColor = Color3.fromRGB(25, 25, 30),
+	BackgroundColor2 = Color3.fromRGB(35, 35, 40),
+	BorderColor = Color3.fromRGB(70, 70, 80),
+	TextColor = Color3.fromRGB(240, 240, 245),
+	TextColorSecondary = Color3.fromRGB(200, 200, 210),
+	AccentColor = Color3.fromRGB(52, 211, 153), -- Modern green for Run Anyway button
+	CloseButtonColor = Color3.fromRGB(239, 68, 68), -- Modern red for X button
+	ShadowColor = Color3.fromRGB(0, 0, 0),
+	TransitionTime = 0.35,
 	EasingStyle = Enum.EasingStyle.Quad,
-	EasingDirection = Enum.EasingDirection.Out
+	EasingDirection = Enum.EasingDirection.Out,
+	ShadowOffset = 8
 }
 
 function DetectionUI.new()
@@ -40,6 +44,22 @@ function DetectionUI:CreateUI()
 	self.gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	self.gui.Parent = game:GetService("CoreGui")
 	
+	-- Add shadow effect (behind main frame)
+	local shadow = Instance.new("Frame")
+	shadow.Name = "Shadow"
+	shadow.Size = UDim2.new(0, 500 + CONFIG.ShadowOffset, 0, 350 + CONFIG.ShadowOffset)
+	shadow.Position = UDim2.new(0.5, CONFIG.ShadowOffset / 2, 0.5, CONFIG.ShadowOffset / 2)
+	shadow.AnchorPoint = Vector2.new(0.5, 0.5)
+	shadow.BackgroundColor3 = CONFIG.ShadowColor
+	shadow.BackgroundTransparency = 0.8
+	shadow.BorderSizePixel = 0
+	shadow.ZIndex = 1
+	shadow.Parent = self.gui
+	
+	local shadowCorner = Instance.new("UICorner")
+	shadowCorner.CornerRadius = UDim.new(0, 16)
+	shadowCorner.Parent = shadow
+	
 	-- Create main container frame
 	self.mainFrame = Instance.new("Frame")
 	self.mainFrame.Name = "MainFrame"
@@ -48,72 +68,85 @@ function DetectionUI:CreateUI()
 	self.mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 	self.mainFrame.BackgroundColor3 = CONFIG.BackgroundColor
 	self.mainFrame.BorderSizePixel = 0
+	self.mainFrame.ZIndex = 2
 	self.mainFrame.Parent = self.gui
 	
-	-- Add corner radius (if available)
+	-- Add gradient background
+	local gradient = Instance.new("UIGradient")
+	gradient.ColorColorSequence = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, CONFIG.BackgroundColor),
+		ColorSequenceKeypoint.new(1, CONFIG.BackgroundColor2)
+	})
+	gradient.Rotation = 135
+	gradient.Parent = self.mainFrame
+	
+	-- Add corner radius
 	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 12)
+	corner.CornerRadius = UDim.new(0, 16)
 	corner.Parent = self.mainFrame
 	
-	-- Add shadow effect
-	local shadow = Instance.new("Frame")
-	shadow.Name = "Shadow"
-	shadow.Size = UDim2.new(1, 0, 1, 0)
-	shadow.Position = UDim2.new(0, 4, 0, 4)
-	shadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-	shadow.BackgroundTransparency = 0.7
-	shadow.BorderSizePixel = 0
-	shadow.ZIndex = self.mainFrame.ZIndex - 1
-	shadow.Parent = self.gui
-	
-	local shadowCorner = Instance.new("UICorner")
-	shadowCorner.CornerRadius = UDim.new(0, 12)
-	shadowCorner.Parent = shadow
+	-- Add subtle border
+	local border = Instance.new("UIStroke")
+	border.Color = CONFIG.BorderColor
+	border.Thickness = 1
+	border.Transparency = 0.5
+	border.Parent = self.mainFrame
 	
 	-- Create top bar with title and close button
 	local topBar = Instance.new("Frame")
 	topBar.Name = "TopBar"
-	topBar.Size = UDim2.new(1, 0, 0, 50)
-	topBar.Position = UDim2.new(0, 0, 0, 0)
+	topBar.Size = UDim2.new(1, -40, 0, 60)
+	topBar.Position = UDim2.new(0, 20, 0, 0)
 	topBar.BackgroundTransparency = 1
 	topBar.Parent = self.mainFrame
+	
+	-- Divider line
+	local divider = Instance.new("Frame")
+	divider.Name = "Divider"
+	divider.Size = UDim2.new(1, 0, 0, 1)
+	divider.Position = UDim2.new(0, 0, 1, -1)
+	divider.BackgroundColor3 = CONFIG.BorderColor
+	divider.BackgroundTransparency = 0.7
+	divider.BorderSizePixel = 0
+	divider.Parent = topBar
 	
 	-- Title
 	local title = Instance.new("TextLabel")
 	title.Name = "Title"
-	title.Size = UDim2.new(1, -60, 1, 0)
-	title.Position = UDim2.new(0, 20, 0, 0)
+	title.Size = UDim2.new(1, -50, 1, 0)
+	title.Position = UDim2.new(0, 0, 0, 0)
 	title.BackgroundTransparency = 1
 	title.Text = "Script Detection"
 	title.TextColor3 = CONFIG.TextColor
-	title.TextSize = 20
+	title.TextSize = 22
 	title.Font = Enum.Font.GothamBold
 	title.TextXAlignment = Enum.TextXAlignment.Left
+	title.TextYAlignment = Enum.TextYAlignment.Center
 	title.Parent = topBar
 	
 	-- Close button (X)
 	local closeButton = Instance.new("TextButton")
 	closeButton.Name = "CloseButton"
-	closeButton.Size = UDim2.new(0, 30, 0, 30)
-	closeButton.Position = UDim2.new(1, -40, 0, 10)
+	closeButton.Size = UDim2.new(0, 32, 0, 32)
+	closeButton.Position = UDim2.new(1, -32, 0, 14)
 	closeButton.BackgroundColor3 = CONFIG.CloseButtonColor
 	closeButton.Text = "×"
 	closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-	closeButton.TextSize = 24
+	closeButton.TextSize = 20
 	closeButton.Font = Enum.Font.GothamBold
 	closeButton.BorderSizePixel = 0
 	closeButton.Parent = topBar
 	
 	local closeCorner = Instance.new("UICorner")
-	closeCorner.CornerRadius = UDim.new(0, 6)
+	closeCorner.CornerRadius = UDim.new(0, 8)
 	closeCorner.Parent = closeButton
 	
 	-- Close button hover effect
 	closeButton.MouseEnter:Connect(function()
 		local tween = TweenService:Create(
 			closeButton,
-			TweenInfo.new(0.2, CONFIG.EasingStyle, CONFIG.EasingDirection),
-			{BackgroundTransparency = 0.2}
+			TweenInfo.new(0.15, CONFIG.EasingStyle, CONFIG.EasingDirection),
+			{BackgroundTransparency = 0.15, Size = UDim2.new(0, 34, 0, 34)}
 		)
 		tween:Play()
 	end)
@@ -121,8 +154,8 @@ function DetectionUI:CreateUI()
 	closeButton.MouseLeave:Connect(function()
 		local tween = TweenService:Create(
 			closeButton,
-			TweenInfo.new(0.2, CONFIG.EasingStyle, CONFIG.EasingDirection),
-			{BackgroundTransparency = 0}
+			TweenInfo.new(0.15, CONFIG.EasingStyle, CONFIG.EasingDirection),
+			{BackgroundTransparency = 0, Size = UDim2.new(0, 32, 0, 32)}
 		)
 		tween:Play()
 	end)
@@ -136,62 +169,82 @@ function DetectionUI:CreateUI()
 	-- Content frame for labels
 	self.contentFrame = Instance.new("ScrollingFrame")
 	self.contentFrame.Name = "ContentFrame"
-	self.contentFrame.Size = UDim2.new(1, -40, 1, -120)
-	self.contentFrame.Position = UDim2.new(0, 20, 0, 60)
+	self.contentFrame.Size = UDim2.new(1, -40, 1, -140)
+	self.contentFrame.Position = UDim2.new(0, 20, 0, 70)
 	self.contentFrame.BackgroundTransparency = 1
 	self.contentFrame.BorderSizePixel = 0
-	self.contentFrame.ScrollBarThickness = 6
+	self.contentFrame.ScrollBarThickness = 4
 	self.contentFrame.ScrollBarImageColor3 = CONFIG.BorderColor
+	self.contentFrame.ScrollBarImageTransparency = 0.5
 	self.contentFrame.Parent = self.mainFrame
 	
 	local contentList = Instance.new("UIListLayout")
-	contentList.Padding = UDim.new(0, 10)
+	contentList.Padding = UDim.new(0, 12)
 	contentList.SortOrder = Enum.SortOrder.LayoutOrder
 	contentList.Parent = self.contentFrame
 	
 	-- Bottom bar with Run Anyway button
 	local bottomBar = Instance.new("Frame")
 	bottomBar.Name = "BottomBar"
-	bottomBar.Size = UDim2.new(1, -40, 0, 50)
-	bottomBar.Position = UDim2.new(0, 20, 1, -60)
+	bottomBar.Size = UDim2.new(1, -40, 0, 60)
+	bottomBar.Position = UDim2.new(0, 20, 1, -70)
 	bottomBar.BackgroundTransparency = 1
 	bottomBar.Parent = self.mainFrame
 	
 	-- Run Anyway button
 	local runButton = Instance.new("TextButton")
 	runButton.Name = "RunButton"
-	runButton.Size = UDim2.new(0, 200, 0, 45)
+	runButton.Size = UDim2.new(0, 220, 0, 48)
 	runButton.Position = UDim2.new(0.5, 0, 0, 0)
 	runButton.AnchorPoint = Vector2.new(0.5, 0)
 	runButton.BackgroundColor3 = CONFIG.AccentColor
 	runButton.Text = "Run Anyway"
 	runButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-	runButton.TextSize = 18
+	runButton.TextSize = 17
 	runButton.Font = Enum.Font.GothamBold
 	runButton.BorderSizePixel = 0
 	runButton.Parent = bottomBar
 	
 	local runCorner = Instance.new("UICorner")
-	runCorner.CornerRadius = UDim.new(0, 8)
+	runCorner.CornerRadius = UDim.new(0, 10)
 	runCorner.Parent = runButton
+	
+	-- Add button glow effect
+	local buttonGlow = Instance.new("UIStroke")
+	buttonGlow.Color = CONFIG.AccentColor
+	buttonGlow.Thickness = 2
+	buttonGlow.Transparency = 0.7
+	buttonGlow.Parent = runButton
 	
 	-- Run button hover effect
 	runButton.MouseEnter:Connect(function()
-		local tween = TweenService:Create(
+		local tween1 = TweenService:Create(
 			runButton,
 			TweenInfo.new(0.2, CONFIG.EasingStyle, CONFIG.EasingDirection),
-			{BackgroundTransparency = 0.1, Size = UDim2.new(0, 210, 0, 47)}
+			{BackgroundTransparency = 0.05, Size = UDim2.new(0, 230, 0, 50)}
 		)
-		tween:Play()
+		local tween2 = TweenService:Create(
+			buttonGlow,
+			TweenInfo.new(0.2, CONFIG.EasingStyle, CONFIG.EasingDirection),
+			{Transparency = 0.3, Thickness = 3}
+		)
+		tween1:Play()
+		tween2:Play()
 	end)
 	
 	runButton.MouseLeave:Connect(function()
-		local tween = TweenService:Create(
+		local tween1 = TweenService:Create(
 			runButton,
 			TweenInfo.new(0.2, CONFIG.EasingStyle, CONFIG.EasingDirection),
-			{BackgroundTransparency = 0, Size = UDim2.new(0, 200, 0, 45)}
+			{BackgroundTransparency = 0, Size = UDim2.new(0, 220, 0, 48)}
 		)
-		tween:Play()
+		local tween2 = TweenService:Create(
+			buttonGlow,
+			TweenInfo.new(0.2, CONFIG.EasingStyle, CONFIG.EasingDirection),
+			{Transparency = 0.7, Thickness = 2}
+		)
+		tween1:Play()
+		tween2:Play()
 	end)
 	
 	-- Run button click
@@ -200,12 +253,14 @@ function DetectionUI:CreateUI()
 		self:Hide()
 	end)
 	
+	-- Store shadow reference
+	self.shadow = shadow
+	
 	-- Initially hide the UI
 	self.mainFrame.Size = UDim2.new(0, 0, 0, 0)
 	self.mainFrame.Visible = false
-	if shadow then
-		shadow.Visible = false
-	end
+	shadow.Size = UDim2.new(0, 0, 0, 0)
+	shadow.Visible = false
 end
 
 function DetectionUI:AddLabel(text, textSize)
@@ -218,15 +273,16 @@ function DetectionUI:AddLabel(text, textSize)
 	if self.contentFrame then
 		local label = Instance.new("TextLabel")
 		label.Name = "Label" .. #self.labels + 1
-		label.Size = UDim2.new(1, -20, 0, 0)
+		label.Size = UDim2.new(1, 0, 0, 0)
 		label.BackgroundTransparency = 1
 		label.Text = text
-		label.TextColor3 = CONFIG.TextColor
+		label.TextColor3 = CONFIG.TextColorSecondary
 		label.TextSize = textSize
 		label.Font = Enum.Font.Gotham
 		label.TextXAlignment = Enum.TextXAlignment.Left
 		label.TextYAlignment = Enum.TextYAlignment.Top
 		label.TextWrapped = true
+		label.LineHeight = 1.4
 		label.AutomaticSize = Enum.AutomaticSize.Y
 		label.LayoutOrder = #self.labels + 1
 		label.Parent = self.contentFrame
@@ -254,27 +310,29 @@ function DetectionUI:Show()
 	self.result = nil
 	
 	-- Show the UI with animation
+	if self.shadow then
+		self.shadow.Visible = true
+	end
 	self.mainFrame.Visible = true
-	if self.gui:FindFirstChild("Shadow") then
-		self.gui.Shadow.Visible = true
+	
+	-- Animate in - shadow first, then main frame
+	if self.shadow then
+		local shadowTween = TweenService:Create(
+			self.shadow,
+			TweenInfo.new(CONFIG.TransitionTime, CONFIG.EasingStyle, CONFIG.EasingDirection),
+			{
+				Size = UDim2.new(0, 500 + CONFIG.ShadowOffset, 0, 350 + CONFIG.ShadowOffset),
+				Position = UDim2.new(0.5, CONFIG.ShadowOffset / 2, 0.5, CONFIG.ShadowOffset / 2)
+			}
+		)
+		shadowTween:Play()
 	end
 	
-	-- Animate in
 	local showTween = TweenService:Create(
 		self.mainFrame,
 		TweenInfo.new(CONFIG.TransitionTime, CONFIG.EasingStyle, CONFIG.EasingDirection),
 		{Size = UDim2.new(0, 500, 0, 350)}
 	)
-	
-	if self.gui:FindFirstChild("Shadow") then
-		local shadowTween = TweenService:Create(
-			self.gui.Shadow,
-			TweenInfo.new(CONFIG.TransitionTime, CONFIG.EasingStyle, CONFIG.EasingDirection),
-			{Size = UDim2.new(0, 508, 0, 358), Position = UDim2.new(0.5, 2, 0.5, 2)}
-		)
-		shadowTween:Play()
-	end
-	
 	showTween:Play()
 end
 
@@ -292,11 +350,14 @@ function DetectionUI:Hide()
 		{Size = UDim2.new(0, 0, 0, 0)}
 	)
 	
-	if self.gui:FindFirstChild("Shadow") then
+	if self.shadow then
 		local shadowTween = TweenService:Create(
-			self.gui.Shadow,
+			self.shadow,
 			TweenInfo.new(CONFIG.TransitionTime, CONFIG.EasingStyle, CONFIG.EasingDirection),
-			{Size = UDim2.new(0, 0, 0, 0), Position = UDim2.new(0.5, 0, 0.5, 0)}
+			{
+				Size = UDim2.new(0, 0, 0, 0),
+				Position = UDim2.new(0.5, 0, 0.5, 0)
+			}
 		)
 		shadowTween:Play()
 	end
@@ -310,6 +371,7 @@ function DetectionUI:Hide()
 		self.gui = nil
 		self.mainFrame = nil
 		self.contentFrame = nil
+		self.shadow = nil
 		self.labels = {}
 	end
 end
@@ -332,15 +394,16 @@ function DetectionUI:Prompt()
 	for _, data in ipairs(self.labelData) do
 		local label = Instance.new("TextLabel")
 		label.Name = "Label" .. #self.labels + 1
-		label.Size = UDim2.new(1, -20, 0, 0)
+		label.Size = UDim2.new(1, 0, 0, 0)
 		label.BackgroundTransparency = 1
 		label.Text = data.text
-		label.TextColor3 = CONFIG.TextColor
+		label.TextColor3 = CONFIG.TextColorSecondary
 		label.TextSize = data.textSize
 		label.Font = Enum.Font.Gotham
 		label.TextXAlignment = Enum.TextXAlignment.Left
 		label.TextYAlignment = Enum.TextYAlignment.Top
 		label.TextWrapped = true
+		label.LineHeight = 1.4
 		label.AutomaticSize = Enum.AutomaticSize.Y
 		label.LayoutOrder = #self.labels + 1
 		label.Parent = self.contentFrame
