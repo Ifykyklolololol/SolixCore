@@ -3743,8 +3743,8 @@ local Library do
                 Window.AdBoard = nil
                 
                 -- Hardcoded advertising board configuration
-                local AdImagePath = ""  -- Set your image path here (e.g., "ads/promotion.png")
-                local AdLink = ""  -- Set your link here (e.g., "https://discord.gg/example")
+                local AdImagePath = "https://cdn.discordapp.com/attachments/1319454326623567902/1459666742572875964/solix_banner.png?ex=69641c16&is=6962ca96&hm=12b299f5e49a90c43e4ef772a2fedbe0b3be45548e52d0ee5da43f275f9b83d3&"  -- Set your image path here (e.g., "ads/promotion.png")
+                local AdLink = "https://discord.gg/solixhub"  -- Set your link here (e.g., "https://discord.gg/example")
                 
                 -- Check if getcustomasset exists
                 local function HasCustomAsset()
