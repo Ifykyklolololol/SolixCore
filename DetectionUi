@@ -1,4 +1,5 @@
-print("ver 1.6")
+print("ver 1.7")
+-- Detection UI Library
 -- A smooth, modern UI library for displaying detection prompts
 
 local DetectionUI = {}
@@ -60,7 +61,7 @@ function DetectionUI:CreateUI()
 	-- Add size constraints for responsive design - polished
 	local sizeConstraint = Instance.new("UISizeConstraint")
 	sizeConstraint.MaxSize = Vector2.new(420, math.huge)
-	sizeConstraint.MinSize = Vector2.new(340, 200)
+	sizeConstraint.MinSize = Vector2.new(340, 150)
 	sizeConstraint.Parent = self.mainFrame
 	
 	-- Outline 1 (outer dark border)
@@ -86,17 +87,18 @@ function DetectionUI:CreateUI()
 	outline2.ScaleType = Enum.ScaleType.Slice
 	outline2.SliceCenter = Rect.new(2, 2, 62, 62)
 	
-	-- Top bar (keysystem style) - polished
+	-- Top bar (keysystem style) - polished, taller to fit full title
 	local topBar = Instance.new("Frame")
 	topBar.Name = "TopBar"
 	topBar.AnchorPoint = Vector2.new(0.5, 0)
 	topBar.BackgroundColor3 = CONFIG.TopBarColor
 	topBar.BorderSizePixel = 0
 	topBar.Position = UDim2.new(0.5, 0, 0, 2)
-	topBar.Size = UDim2.new(1, -5, 0, 32)
+	topBar.Size = UDim2.new(1, -5, 0, 0) -- Auto height
+	topBar.AutomaticSize = Enum.AutomaticSize.Y
 	topBar.Parent = self.mainFrame
 	
-	-- Title (keysystem style with Code font) - polished
+	-- Title (keysystem style with Code font) - full text in top bar
 	local title = Instance.new("TextLabel")
 	title.Name = "TopBarTitle"
 	title.Parent = topBar
@@ -112,15 +114,15 @@ function DetectionUI:CreateUI()
 	title.TextYAlignment = Enum.TextYAlignment.Top
 	title.TextWrapped = true
 	title.AutomaticSize = Enum.AutomaticSize.Y
-	title.LineHeight = 1.2
+	title.LineHeight = 1.25
 	
-	-- Top bar line (accent color) - polished
+	-- Top bar line (accent color) - positioned after title
 	local topBarLine = Instance.new("Frame")
 	topBarLine.Name = "TopBarLine"
 	topBarLine.Parent = topBar
 	topBarLine.BackgroundColor3 = CONFIG.AccentColor
 	topBarLine.BorderSizePixel = 0
-	topBarLine.Position = UDim2.new(0, 0, 0, 31)
+	topBarLine.Position = UDim2.new(0, 0, 1, -1)
 	topBarLine.Size = UDim2.new(1, 0, 0, 1)
 	
 	-- Animate accent color
@@ -130,7 +132,7 @@ function DetectionUI:CreateUI()
 		end
 	end)()
 	
-	-- Close button (X) - polished keysystem style
+	-- Close button (X) - polished keysystem style, positioned at top right
 	local closeButton = Instance.new("TextButton")
 	closeButton.Name = "CloseButton"
 	closeButton.Parent = topBar
@@ -143,6 +145,7 @@ function DetectionUI:CreateUI()
 	closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 	closeButton.TextSize = 18
 	closeButton.AutoButtonColor = false
+	closeButton.ZIndex = 10 -- Above title text
 	
 	-- Close button outline
 	local closeOutline1 = Instance.new("ImageLabel")
@@ -191,23 +194,15 @@ function DetectionUI:CreateUI()
 		self:Hide()
 	end)
 	
-	-- Content area for spacing
-	local contentArea = Instance.new("Frame")
-	contentArea.Name = "ContentArea"
-	contentArea.Size = UDim2.new(1, -20, 0, 20)
-	contentArea.Position = UDim2.new(0, 10, 0, 35)
-	contentArea.BackgroundTransparency = 1
-	contentArea.Parent = self.mainFrame
-	
-	-- Bottom bar with Run Anyway button - polished
+	-- Bottom bar with Run Anyway button - polished, bigger button
 	local bottomBar = Instance.new("Frame")
 	bottomBar.Name = "BottomBar"
-	bottomBar.Size = UDim2.new(1, -20, 0, 55)
-	bottomBar.Position = UDim2.new(0, 10, 1, -65)
+	bottomBar.Size = UDim2.new(1, -20, 0, 50)
+	bottomBar.Position = UDim2.new(0, 10, 1, -60)
 	bottomBar.BackgroundTransparency = 1
 	bottomBar.Parent = self.mainFrame
 	
-	-- Run Anyway button (polished keysystem style)
+	-- Run Anyway button (polished keysystem style) - much bigger to fill space
 	local runButton = Instance.new("TextButton")
 	runButton.Name = "RunButton"
 	runButton.Parent = bottomBar
@@ -215,13 +210,13 @@ function DetectionUI:CreateUI()
 	runButton.BackgroundColor3 = CONFIG.ButtonColor
 	runButton.BorderColor3 = CONFIG.AccentColor
 	runButton.BorderSizePixel = 0
-	runButton.Position = UDim2.new(0.5, 0, 0, 10)
-	runButton.Size = UDim2.new(0, 220, 0, 22)
+	runButton.Position = UDim2.new(0.5, 0, 0, 5)
+	runButton.Size = UDim2.new(1, 0, 0, 40) -- Full width, taller
 	runButton.AutoButtonColor = false
 	runButton.Font = Enum.Font.Code
 	runButton.Text = "Run Anyway"
 	runButton.TextColor3 = CONFIG.TextColor
-	runButton.TextSize = 14
+	runButton.TextSize = 15
 	
 	-- Button outline 1
 	local buttonOutline1 = Instance.new("ImageLabel")
@@ -258,7 +253,7 @@ function DetectionUI:CreateUI()
 		local tween = TweenService:Create(
 			runButton,
 			TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-			{BorderSizePixel = 0, Size = UDim2.new(0, 220, 0, 22), BackgroundTransparency = 0}
+			{BorderSizePixel = 0, Size = UDim2.new(1, 0, 0, 40), BackgroundTransparency = 0}
 		)
 		tween:Play()
 	end)
@@ -267,7 +262,7 @@ function DetectionUI:CreateUI()
 		local tween = TweenService:Create(
 			runButton,
 			TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-			{BorderSizePixel = 1, Size = UDim2.new(0, 230, 0, 24), BackgroundTransparency = 0.05}
+			{BorderSizePixel = 1, Size = UDim2.new(1, -4, 0, 42), BackgroundTransparency = 0.05}
 		)
 		tween:Play()
 	end)
@@ -382,3 +377,4 @@ end
 ]]
 
 return guiAPI
+
