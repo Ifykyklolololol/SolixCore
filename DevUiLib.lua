@@ -3741,8 +3741,10 @@ local Library do
             -- Advertising Board
             do
                 Window.AdBoard = nil
-                local AdImagePath = Data.AdImagePath or Data.adImagePath
-                local AdLink = Data.AdLink or Data.adLink or ""
+                
+                -- Hardcoded advertising board configuration
+                local AdImagePath = ""  -- Set your image path here (e.g., "ads/promotion.png")
+                local AdLink = ""  -- Set your link here (e.g., "https://discord.gg/example")
                 
                 -- Check if getcustomasset exists
                 local function HasCustomAsset()
@@ -3751,14 +3753,21 @@ local Library do
                 
                 -- Create advertising board function
                 function Window:SetAdBoard(ImagePath, Link)
+                    -- Use provided values or fall back to hardcoded values
                     ImagePath = ImagePath or AdImagePath
                     Link = Link or AdLink
+                    
+                    -- Don't create ad board if both are empty strings
+                    if (ImagePath == "" or not ImagePath) and (Link == "" or not Link) then
+                        return
+                    end
                     
                     if not HasCustomAsset() then
                         return
                     end
                     
-                    if not ImagePath then
+                    -- Need image path to display the ad board
+                    if not ImagePath or ImagePath == "" then
                         return
                     end
                     
@@ -3766,6 +3775,11 @@ local Library do
                     if Window.AdBoard then
                         Window.AdBoard:Clean()
                         Window.AdBoard = nil
+                    end
+                    
+                    -- Check if MainFrame exists
+                    if not Items["MainFrame"] or not Items["MainFrame"].Instance then
+                        return
                     end
                     
                     local MainFrameSize = Items["MainFrame"].Instance.AbsoluteSize
@@ -3787,7 +3801,7 @@ local Library do
                     
                     -- Add corner radius
                     Instances:Create("UICorner", {
-                        Parent = AdBoard.Instance,
+                        Parent = Window.AdBoard.Instance,
                         Name = "\0",
                         CornerRadius = UDimNew(0, 5)
                     })
@@ -3840,9 +3854,16 @@ local Library do
                     
                     -- Update size based on image (supports all image sizes)
                     local function UpdateAdSize()
+                        if not AdImage or not AdImage.Instance or not Window.AdBoard or not Window.AdBoard.Instance then
+                            return
+                        end
+                        
                         task.wait(0.1) -- Wait for image to load
                         if AdImage.Instance.ContentSize.X > 0 and AdImage.Instance.ContentSize.Y > 0 then
                             local aspectRatio = AdImage.Instance.ContentSize.Y / AdImage.Instance.ContentSize.X
+                            if not Items["MainFrame"] or not Items["MainFrame"].Instance then
+                                return
+                            end
                             local MainFrameSize = Items["MainFrame"].Instance.AbsoluteSize
                             local maxWidth = MainFrameSize.X
                             local calculatedHeight = maxWidth * aspectRatio
@@ -3859,29 +3880,37 @@ local Library do
                         end
                     end
                     
-                    AdImage.Instance:GetPropertyChangedSignal("ContentSize"):Connect(UpdateAdSize)
-                    AdImage.Instance:GetPropertyChangedSignal("Image"):Connect(UpdateAdSize)
-                    task.spawn(UpdateAdSize)
+                    if AdImage and AdImage.Instance then
+                        AdImage.Instance:GetPropertyChangedSignal("ContentSize"):Connect(UpdateAdSize)
+                        AdImage.Instance:GetPropertyChangedSignal("Image"):Connect(UpdateAdSize)
+                        task.spawn(UpdateAdSize)
+                    end
                     
                     -- Update position function
                     local function UpdateAdPosition()
-                        if Window.AdBoard and Window.AdBoard.Instance then
-                            local MainFramePos = Items["MainFrame"].Instance.AbsolutePosition
-                            local MainFrameSize = Items["MainFrame"].Instance.AbsoluteSize
-                            Window.AdBoard.Instance.Position = UDim2New(0, MainFramePos.X + MainFrameSize.X / 2, 0, MainFramePos.Y + MainFrameSize.Y + 8)
+                        if not Window.AdBoard or not Window.AdBoard.Instance then
+                            return
                         end
+                        if not Items["MainFrame"] or not Items["MainFrame"].Instance then
+                            return
+                        end
+                        local MainFramePos = Items["MainFrame"].Instance.AbsolutePosition
+                        local MainFrameSize = Items["MainFrame"].Instance.AbsoluteSize
+                        Window.AdBoard.Instance.Position = UDim2New(0, MainFramePos.X + MainFrameSize.X / 2, 0, MainFramePos.Y + MainFrameSize.Y + 8)
                     end
                     
                     -- Update position when main frame moves or resizes
-                    Library:Connect(Items["MainFrame"].Instance:GetPropertyChangedSignal("AbsolutePosition"), UpdateAdPosition)
-                    Library:Connect(Items["MainFrame"].Instance:GetPropertyChangedSignal("AbsoluteSize"), function()
-                        if Window.AdBoard then
-                            local MainFrameSize = Items["MainFrame"].Instance.AbsoluteSize
-                            local currentHeight = Window.AdBoard.Instance.AbsoluteSize.Y
-                            Window.AdBoard.Instance.Size = UDim2New(0, MainFrameSize.X, 0, currentHeight)
-                            UpdateAdPosition()
-                        end
-                    end)
+                    if Items["MainFrame"] and Items["MainFrame"].Instance then
+                        Library:Connect(Items["MainFrame"].Instance:GetPropertyChangedSignal("AbsolutePosition"), UpdateAdPosition)
+                        Library:Connect(Items["MainFrame"].Instance:GetPropertyChangedSignal("AbsoluteSize"), function()
+                            if Window.AdBoard and Window.AdBoard.Instance and Items["MainFrame"] and Items["MainFrame"].Instance then
+                                local MainFrameSize = Items["MainFrame"].Instance.AbsoluteSize
+                                local currentHeight = Window.AdBoard.Instance.AbsoluteSize.Y
+                                Window.AdBoard.Instance.Size = UDim2New(0, MainFrameSize.X, 0, currentHeight)
+                                UpdateAdPosition()
+                            end
+                        end)
+                    end
                     
                     -- Click handler
                     AdButton:Connect("MouseButton1Down", function()
@@ -3917,15 +3946,19 @@ local Library do
                     end)
                     
                     -- Show/hide with window
-                    Library:Connect(Items["MainFrame"].Instance:GetPropertyChangedSignal("Visible"), function()
-                        if Window.AdBoard then
-                            Window.AdBoard.Instance.Visible = Items["MainFrame"].Instance.Visible
-                        end
-                    end)
+                    if Items["MainFrame"] and Items["MainFrame"].Instance then
+                        Library:Connect(Items["MainFrame"].Instance:GetPropertyChangedSignal("Visible"), function()
+                            if Window.AdBoard and Window.AdBoard.Instance and Items["MainFrame"] and Items["MainFrame"].Instance then
+                                Window.AdBoard.Instance.Visible = Items["MainFrame"].Instance.Visible
+                            end
+                        end)
+                    end
                 end
                 
-                -- Initialize ad board if data provided
-                if AdImagePath and HasCustomAsset() then
+                -- Initialize ad board only if not both are empty strings
+                -- Don't show if both AdImagePath and AdLink are empty ""
+                local bothEmpty = (AdImagePath == "" or not AdImagePath) and (AdLink == "" or not AdLink)
+                if not bothEmpty and AdImagePath and AdImagePath ~= "" and HasCustomAsset() then
                     Window:SetAdBoard(AdImagePath, AdLink)
                 end
             end
