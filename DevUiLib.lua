@@ -3787,6 +3787,11 @@ local Library do
                         return
                     end
                     
+                    -- Check if Library.Holder exists
+                    if not Library.Holder or not Library.Holder.Instance then
+                        return
+                    end
+                    
                     local MainFrameSize = Items["MainFrame"].Instance.AbsoluteSize
                     local MainFramePos = Items["MainFrame"].Instance.AbsolutePosition
                     
@@ -3887,7 +3892,7 @@ local Library do
                         end
                         
                         local MainFrameSize = Items["MainFrame"].Instance.AbsoluteSize
-                        local screenSize = Library.Holder.Instance.AbsoluteSize
+                        local screenSize = (Library.Holder and Library.Holder.Instance and Library.Holder.Instance.AbsoluteSize) or Vector2New(1920, 1080)
                         local maxWidth = MainFrameSize.X
                         
                         -- Mobile-responsive height (smaller on mobile, larger on desktop)
@@ -3926,7 +3931,7 @@ local Library do
                         end
                         local MainFramePos = Items["MainFrame"].Instance.AbsolutePosition
                         local MainFrameSize = Items["MainFrame"].Instance.AbsoluteSize
-                        local screenSize = Library.Holder.Instance.AbsoluteSize
+                        local screenSize = (Library.Holder and Library.Holder.Instance and Library.Holder.Instance.AbsoluteSize) or Vector2New(1920, 1080)
                         local spacing = IsMobile and 6 or 8
                         
                         local adX = MainFramePos.X + MainFrameSize.X / 2
