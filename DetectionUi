@@ -1,4 +1,4 @@
-print("ver 1.9")
+print("ver 2")
 
 -- Detection UI Library
 -- A smooth, modern UI library for displaying detection prompts
@@ -117,14 +117,26 @@ function DetectionUI:CreateUI()
 	title.AutomaticSize = Enum.AutomaticSize.Y
 	title.LineHeight = 1.3
 	
-	-- Top bar line (accent color) - positioned after title with spacing
+	-- Top bar line (accent color) - positioned lower with spacing from text
 	local topBarLine = Instance.new("Frame")
 	topBarLine.Name = "TopBarLine"
 	topBarLine.Parent = topBar
 	topBarLine.BackgroundColor3 = CONFIG.AccentColor
 	topBarLine.BorderSizePixel = 0
-	topBarLine.Position = UDim2.new(0, 0, 1, 0)
 	topBarLine.Size = UDim2.new(1, 0, 0, 1)
+	
+	-- Position line with spacing from title
+	local function updateLinePosition()
+		task.wait(0.05) -- Wait for layout
+		local titleBottom = title.Position.Y.Offset + title.AbsoluteSize.Y
+		topBarLine.Position = UDim2.new(0, 0, 0, titleBottom + 8) -- 8px spacing below text
+	end
+	
+	-- Update when title size changes
+	title:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateLinePosition)
+	
+	-- Initial position
+	task.spawn(updateLinePosition)
 	
 	-- Animate accent color
 	coroutine.wrap(function()
@@ -378,3 +390,4 @@ end
 ]]
 
 return guiAPI
+
