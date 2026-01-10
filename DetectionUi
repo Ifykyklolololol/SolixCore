@@ -1,4 +1,4 @@
-print("ver 1.7")
+print("ver 1.8")
 -- Detection UI Library
 -- A smooth, modern UI library for displaying detection prompts
 
@@ -98,31 +98,31 @@ function DetectionUI:CreateUI()
 	topBar.AutomaticSize = Enum.AutomaticSize.Y
 	topBar.Parent = self.mainFrame
 	
-	-- Title (keysystem style with Code font) - full text in top bar
+	-- Title (keysystem style with Code font) - full text in top bar, better padding
 	local title = Instance.new("TextLabel")
 	title.Name = "TopBarTitle"
 	title.Parent = topBar
 	title.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 	title.BackgroundTransparency = 1
-	title.Position = UDim2.new(0, 10, 0, 6)
+	title.Position = UDim2.new(0, 12, 0, 10)
 	title.Size = UDim2.new(1, -50, 0, 0)
 	title.Font = Enum.Font.Code
 	title.Text = "Game files changed! There is a risk of detection. Press proceed if you'd like to run the script anyway."
 	title.TextColor3 = CONFIG.TextColor
-	title.TextSize = 13
+	title.TextSize = 14
 	title.TextXAlignment = Enum.TextXAlignment.Left
 	title.TextYAlignment = Enum.TextYAlignment.Top
 	title.TextWrapped = true
 	title.AutomaticSize = Enum.AutomaticSize.Y
-	title.LineHeight = 1.25
+	title.LineHeight = 1.3
 	
-	-- Top bar line (accent color) - positioned after title
+	-- Top bar line (accent color) - positioned after title with spacing
 	local topBarLine = Instance.new("Frame")
 	topBarLine.Name = "TopBarLine"
 	topBarLine.Parent = topBar
 	topBarLine.BackgroundColor3 = CONFIG.AccentColor
 	topBarLine.BorderSizePixel = 0
-	topBarLine.Position = UDim2.new(0, 0, 1, -1)
+	topBarLine.Position = UDim2.new(0, 0, 1, 0)
 	topBarLine.Size = UDim2.new(1, 0, 0, 1)
 	
 	-- Animate accent color
@@ -138,8 +138,8 @@ function DetectionUI:CreateUI()
 	closeButton.Parent = topBar
 	closeButton.BackgroundColor3 = CONFIG.CloseButtonColor
 	closeButton.BorderSizePixel = 0
-	closeButton.Position = UDim2.new(1, -30, 0, 4)
-	closeButton.Size = UDim2.new(0, 26, 0, 24)
+	closeButton.Position = UDim2.new(1, -28, 0, 6)
+	closeButton.Size = UDim2.new(0, 24, 0, 22)
 	closeButton.Font = Enum.Font.Code
 	closeButton.Text = "×"
 	closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -174,7 +174,7 @@ function DetectionUI:CreateUI()
 		local tween = TweenService:Create(
 			closeButton,
 			TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-			{BackgroundTransparency = 0.15, Size = UDim2.new(0, 28, 0, 26)}
+			{BackgroundTransparency = 0.15, Size = UDim2.new(0, 26, 0, 24)}
 		)
 		tween:Play()
 	end)
@@ -183,7 +183,7 @@ function DetectionUI:CreateUI()
 		local tween = TweenService:Create(
 			closeButton,
 			TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-			{BackgroundTransparency = 0, Size = UDim2.new(0, 26, 0, 24)}
+			{BackgroundTransparency = 0, Size = UDim2.new(0, 24, 0, 22)}
 		)
 		tween:Play()
 	end)
@@ -194,15 +194,15 @@ function DetectionUI:CreateUI()
 		self:Hide()
 	end)
 	
-	-- Bottom bar with Run Anyway button - polished, bigger button
+	-- Bottom bar with Run Anyway button - polished, better spacing
 	local bottomBar = Instance.new("Frame")
 	bottomBar.Name = "BottomBar"
-	bottomBar.Size = UDim2.new(1, -20, 0, 50)
-	bottomBar.Position = UDim2.new(0, 10, 1, -60)
+	bottomBar.Size = UDim2.new(1, -20, 0, 55)
+	bottomBar.Position = UDim2.new(0, 10, 1, -65)
 	bottomBar.BackgroundTransparency = 1
 	bottomBar.Parent = self.mainFrame
 	
-	-- Run Anyway button (polished keysystem style) - much bigger to fill space
+	-- Run Anyway button (polished keysystem style) - better proportions
 	local runButton = Instance.new("TextButton")
 	runButton.Name = "RunButton"
 	runButton.Parent = bottomBar
@@ -210,8 +210,8 @@ function DetectionUI:CreateUI()
 	runButton.BackgroundColor3 = CONFIG.ButtonColor
 	runButton.BorderColor3 = CONFIG.AccentColor
 	runButton.BorderSizePixel = 0
-	runButton.Position = UDim2.new(0.5, 0, 0, 5)
-	runButton.Size = UDim2.new(1, 0, 0, 40) -- Full width, taller
+	runButton.Position = UDim2.new(0.5, 0, 0, 8)
+	runButton.Size = UDim2.new(1, 0, 0, 36) -- Full width, good height
 	runButton.AutoButtonColor = false
 	runButton.Font = Enum.Font.Code
 	runButton.Text = "Run Anyway"
@@ -253,7 +253,7 @@ function DetectionUI:CreateUI()
 		local tween = TweenService:Create(
 			runButton,
 			TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-			{BorderSizePixel = 0, Size = UDim2.new(1, 0, 0, 40), BackgroundTransparency = 0}
+			{BorderSizePixel = 0, Size = UDim2.new(1, 0, 0, 36), BackgroundTransparency = 0}
 		)
 		tween:Play()
 	end)
@@ -262,7 +262,7 @@ function DetectionUI:CreateUI()
 		local tween = TweenService:Create(
 			runButton,
 			TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-			{BorderSizePixel = 1, Size = UDim2.new(1, -4, 0, 42), BackgroundTransparency = 0.05}
+			{BorderSizePixel = 1, Size = UDim2.new(1, -4, 0, 38), BackgroundTransparency = 0.05}
 		)
 		tween:Play()
 	end)
@@ -377,4 +377,5 @@ end
 ]]
 
 return guiAPI
+
 
