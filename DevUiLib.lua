@@ -3790,14 +3790,17 @@ local Library do
                     local MainFrameSize = Items["MainFrame"].Instance.AbsoluteSize
                     local MainFramePos = Items["MainFrame"].Instance.AbsolutePosition
                     
-                    -- Create ad board container
+                    -- Mobile-responsive spacing
+                    local spacing = IsMobile and 6 or 8
+                    
+                    -- Create ad board container (mobile-friendly)
                     Window.AdBoard = Instances:Create("Frame", {
                         Parent = Library.Holder.Instance,
                         Name = "\0",
                         BorderColor3 = Library.Theme["Shadow"],
                         AnchorPoint = Vector2New(0.5, 0),
                         BackgroundTransparency = 1,
-                        Position = UDim2New(0, MainFramePos.X + MainFrameSize.X / 2, 0, MainFramePos.Y + MainFrameSize.Y + 8),
+                        Position = UDim2New(0, MainFramePos.X + MainFrameSize.X / 2, 0, MainFramePos.Y + MainFrameSize.Y + spacing),
                         Size = UDim2New(0, MainFrameSize.X, 0, 0),
                         ZIndex = 1,
                         BorderSizePixel = 0,
@@ -3859,7 +3862,7 @@ local Library do
                         ScaleType = Enum.ScaleType.Fit
                     })
                     
-                    -- Make it clickable
+                    -- Make it clickable (touch-friendly on mobile)
                     local AdButton = Instances:Create("TextButton", {
                         Parent = Window.AdBoard.Instance,
                         Name = "\0",
@@ -3868,44 +3871,52 @@ local Library do
                         Size = UDim2New(1, 0, 1, 0),
                         ZIndex = 3,
                         Text = "",
-                        BorderSizePixel = 0
+                        BorderSizePixel = 0,
+                        AutoButtonColor = false,
+                        Active = true -- Ensure it's active for touch
                     })
                     
-                    -- Update size based on image (supports all image sizes)
+                    -- Update size based on main frame width (supports all image sizes, mobile-friendly)
                     local function UpdateAdSize()
                         if not AdImage or not AdImage.Instance or not Window.AdBoard or not Window.AdBoard.Instance then
                             return
                         end
                         
-                        task.wait(0.1) -- Wait for image to load
-                        if AdImage.Instance.ContentSize.X > 0 and AdImage.Instance.ContentSize.Y > 0 then
-                            local aspectRatio = AdImage.Instance.ContentSize.Y / AdImage.Instance.ContentSize.X
-                            if not Items["MainFrame"] or not Items["MainFrame"].Instance then
-                                return
-                            end
-                            local MainFrameSize = Items["MainFrame"].Instance.AbsoluteSize
-                            local maxWidth = MainFrameSize.X
-                            local calculatedHeight = maxWidth * aspectRatio
-                            
-                            -- Limit height to reasonable size but maintain aspect ratio
-                            local finalHeight = calculatedHeight
-                            if calculatedHeight > 250 then
-                                finalHeight = 250
-                                maxWidth = finalHeight / aspectRatio
-                            end
-                            
-                            Window.AdBoard.Instance.Size = UDim2New(0, maxWidth, 0, finalHeight)
-                            AdImage.Instance.Size = UDim2New(1, -4, 1, -4)
+                        if not Items["MainFrame"] or not Items["MainFrame"].Instance then
+                            return
                         end
+                        
+                        local MainFrameSize = Items["MainFrame"].Instance.AbsoluteSize
+                        local screenSize = Library.Holder.Instance.AbsoluteSize
+                        local maxWidth = MainFrameSize.X
+                        
+                        -- Mobile-responsive height (smaller on mobile, larger on desktop)
+                        local adHeight = IsMobile and 120 or 180 -- Smaller on mobile for better fit
+                        
+                        -- Ensure it fits on screen (mobile-friendly)
+                        if IsMobile then
+                            -- Limit width to screen size with padding
+                            local maxScreenWidth = screenSize.X * 0.95
+                            if maxWidth > maxScreenWidth then
+                                maxWidth = maxScreenWidth
+                            end
+                            -- Ensure minimum width for mobile
+                            if maxWidth < 200 then
+                                maxWidth = 200
+                            end
+                        end
+                        
+                        Window.AdBoard.Instance.Size = UDim2New(0, maxWidth, 0, adHeight)
+                        AdImage.Instance.Size = UDim2New(1, -4, 1, -4)
                     end
                     
-                    if AdImage and AdImage.Instance then
-                        AdImage.Instance:GetPropertyChangedSignal("ContentSize"):Connect(UpdateAdSize)
-                        AdImage.Instance:GetPropertyChangedSignal("Image"):Connect(UpdateAdSize)
-                        task.spawn(UpdateAdSize)
-                    end
+                    -- Initial size setup
+                    task.spawn(function()
+                        task.wait(0.1) -- Wait a bit for everything to initialize
+                        UpdateAdSize()
+                    end)
                     
-                    -- Update position function
+                    -- Update position function (mobile-responsive, screen-bound aware)
                     local function UpdateAdPosition()
                         if not Window.AdBoard or not Window.AdBoard.Instance then
                             return
@@ -3915,7 +3926,21 @@ local Library do
                         end
                         local MainFramePos = Items["MainFrame"].Instance.AbsolutePosition
                         local MainFrameSize = Items["MainFrame"].Instance.AbsoluteSize
-                        Window.AdBoard.Instance.Position = UDim2New(0, MainFramePos.X + MainFrameSize.X / 2, 0, MainFramePos.Y + MainFrameSize.Y + 8)
+                        local screenSize = Library.Holder.Instance.AbsoluteSize
+                        local spacing = IsMobile and 6 or 8
+                        
+                        local adX = MainFramePos.X + MainFrameSize.X / 2
+                        local adY = MainFramePos.Y + MainFrameSize.Y + spacing
+                        
+                        -- Ensure ad board stays on screen (especially important for mobile)
+                        local adWidth = Window.AdBoard.Instance.AbsoluteSize.X
+                        if adX - adWidth / 2 < 0 then
+                            adX = adWidth / 2
+                        elseif adX + adWidth / 2 > screenSize.X then
+                            adX = screenSize.X - adWidth / 2
+                        end
+                        
+                        Window.AdBoard.Instance.Position = UDim2New(0, adX, 0, adY)
                     end
                     
                     -- Update position when main frame moves or resizes
@@ -3931,7 +3956,7 @@ local Library do
                         end)
                     end
                     
-                    -- Click handler
+                    -- Click handler (works for both mouse and touch on mobile)
                     AdButton:Connect("MouseButton1Down", function()
                         if Link and Link ~= "" then
                             if setclipboard then
