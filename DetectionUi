@@ -1,4 +1,6 @@
-print("ver 1.1")
+print("ver 1.2")
+-- A smooth, modern UI library for displaying detection prompts
+
 local DetectionUI = {}
 DetectionUI.__index = DetectionUI
 
@@ -68,15 +70,6 @@ function DetectionUI:CreateUI()
 	self.mainFrame.BorderSizePixel = 0
 	self.mainFrame.ZIndex = 2
 	self.mainFrame.Parent = self.gui
-	
-	-- Add gradient background
-	local gradient = Instance.new("UIGradient")
-	gradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, CONFIG.BackgroundColor),
-		ColorSequenceKeypoint.new(1, CONFIG.BackgroundColor2)
-	})
-	gradient.Rotation = 135
-	gradient.Parent = self.mainFrame
 	
 	-- Add corner radius
 	local corner = Instance.new("UICorner")
