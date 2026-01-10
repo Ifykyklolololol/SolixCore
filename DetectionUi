@@ -1,4 +1,4 @@
-print("ver 1.2")
+print("ver 1.3")
 -- A smooth, modern UI library for displaying detection prompts
 
 local DetectionUI = {}
@@ -27,9 +27,6 @@ function DetectionUI.new()
 	
 	self.gui = nil
 	self.mainFrame = nil
-	self.contentFrame = nil
-	self.labels = {} -- Visual label instances
-	self.labelData = {} -- Stored label data (text, textSize)
 	self.result = nil
 	self.isVisible = false
 	
@@ -44,10 +41,10 @@ function DetectionUI:CreateUI()
 	self.gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	self.gui.Parent = game:GetService("CoreGui")
 	
-	-- Add shadow effect (behind main frame)
+	-- Add shadow effect (behind main frame) - responsive
 	local shadow = Instance.new("Frame")
 	shadow.Name = "Shadow"
-	shadow.Size = UDim2.new(0, 500 + CONFIG.ShadowOffset, 0, 350 + CONFIG.ShadowOffset)
+	shadow.Size = UDim2.new(0, 500, 0, 200) -- Will be updated
 	shadow.Position = UDim2.new(0.5, CONFIG.ShadowOffset / 2, 0.5, CONFIG.ShadowOffset / 2)
 	shadow.AnchorPoint = Vector2.new(0.5, 0.5)
 	shadow.BackgroundColor3 = CONFIG.ShadowColor
@@ -56,22 +53,35 @@ function DetectionUI:CreateUI()
 	shadow.ZIndex = 1
 	shadow.Parent = self.gui
 	
+	-- Make shadow responsive with constraints
+	local shadowConstraint = Instance.new("UISizeConstraint")
+	shadowConstraint.MaxSize = Vector2.new(500, math.huge)
+	shadowConstraint.MinSize = Vector2.new(300, 180)
+	shadowConstraint.Parent = shadow
+	
 	local shadowCorner = Instance.new("UICorner")
 	shadowCorner.CornerRadius = UDim.new(0, 16)
 	shadowCorner.Parent = shadow
 	
-	-- Create main container frame
+	-- Create main container frame (responsive with scale)
 	self.mainFrame = Instance.new("Frame")
 	self.mainFrame.Name = "MainFrame"
-	self.mainFrame.Size = UDim2.new(0, 500, 0, 350)
+	self.mainFrame.Size = UDim2.new(0.85, 0, 0, 0) -- 85% of screen width, height auto
 	self.mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 	self.mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 	self.mainFrame.BackgroundColor3 = CONFIG.BackgroundColor
 	self.mainFrame.BorderSizePixel = 0
 	self.mainFrame.ZIndex = 2
+	self.mainFrame.AutomaticSize = Enum.AutomaticSize.Y
 	self.mainFrame.Parent = self.gui
 	
-	-- Add corner radius
+	-- Add size constraints for responsive design
+	local sizeConstraint = Instance.new("UISizeConstraint")
+	sizeConstraint.MaxSize = Vector2.new(500, math.huge)
+	sizeConstraint.MinSize = Vector2.new(300, 180)
+	sizeConstraint.Parent = self.mainFrame
+	
+	-- Add corner radius (responsive)
 	local corner = Instance.new("UICorner")
 	corner.CornerRadius = UDim.new(0, 16)
 	corner.Parent = self.mainFrame
@@ -83,43 +93,37 @@ function DetectionUI:CreateUI()
 	border.Transparency = 0.5
 	border.Parent = self.mainFrame
 	
-	-- Create top bar with title and close button
+	-- Create top bar with title and close button (responsive)
 	local topBar = Instance.new("Frame")
 	topBar.Name = "TopBar"
-	topBar.Size = UDim2.new(1, -40, 0, 60)
-	topBar.Position = UDim2.new(0, 20, 0, 0)
+	topBar.Size = UDim2.new(1, -30, 0, 0)
+	topBar.Position = UDim2.new(0, 15, 0, 15)
 	topBar.BackgroundTransparency = 1
+	topBar.AutomaticSize = Enum.AutomaticSize.Y
 	topBar.Parent = self.mainFrame
 	
-	-- Divider line
-	local divider = Instance.new("Frame")
-	divider.Name = "Divider"
-	divider.Size = UDim2.new(1, 0, 0, 1)
-	divider.Position = UDim2.new(0, 0, 1, -1)
-	divider.BackgroundColor3 = CONFIG.BorderColor
-	divider.BackgroundTransparency = 0.7
-	divider.BorderSizePixel = 0
-	divider.Parent = topBar
-	
-	-- Title
+	-- Title (responsive with text wrapping)
 	local title = Instance.new("TextLabel")
 	title.Name = "Title"
-	title.Size = UDim2.new(1, -50, 1, 0)
+	title.Size = UDim2.new(1, -50, 0, 0)
 	title.Position = UDim2.new(0, 0, 0, 0)
 	title.BackgroundTransparency = 1
-	title.Text = "Script Detection"
+	title.Text = "Game files changed! There is a risk of detection. Press proceed if you'd like to run the script anyway."
 	title.TextColor3 = CONFIG.TextColor
-	title.TextSize = 22
+	title.TextSize = 16 -- Will scale with TextScaled if needed
 	title.Font = Enum.Font.GothamBold
 	title.TextXAlignment = Enum.TextXAlignment.Left
-	title.TextYAlignment = Enum.TextYAlignment.Center
+	title.TextYAlignment = Enum.TextYAlignment.Top
+	title.TextWrapped = true
+	title.AutomaticSize = Enum.AutomaticSize.Y
+	title.LineHeight = 1.3
 	title.Parent = topBar
 	
-	-- Close button (X)
+	-- Close button (X) - responsive size, touch-friendly (min 36px for mobile)
 	local closeButton = Instance.new("TextButton")
 	closeButton.Name = "CloseButton"
-	closeButton.Size = UDim2.new(0, 32, 0, 32)
-	closeButton.Position = UDim2.new(1, -32, 0, 14)
+	closeButton.Size = UDim2.new(0, 0, 0, 0) -- Will be set with constraints
+	closeButton.Position = UDim2.new(1, -45, 0, 0)
 	closeButton.BackgroundColor3 = CONFIG.CloseButtonColor
 	closeButton.Text = "×"
 	closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -128,16 +132,37 @@ function DetectionUI:CreateUI()
 	closeButton.BorderSizePixel = 0
 	closeButton.Parent = topBar
 	
+	-- Make close button responsive with min size for touch
+	local closeButtonConstraint = Instance.new("UISizeConstraint")
+	closeButtonConstraint.MinSize = Vector2.new(36, 36)
+	closeButtonConstraint.MaxSize = Vector2.new(40, 40)
+	closeButtonConstraint.Parent = closeButton
+	
+	-- Set close button size relative to parent
+	closeButton.Size = UDim2.new(0, 36, 0, 36)
+	
 	local closeCorner = Instance.new("UICorner")
 	closeCorner.CornerRadius = UDim.new(0, 8)
 	closeCorner.Parent = closeButton
 	
-	-- Close button hover effect
+	-- Divider line
+	local divider = Instance.new("Frame")
+	divider.Name = "Divider"
+	divider.Size = UDim2.new(1, 0, 0, 1)
+	divider.Position = UDim2.new(0, 0, 1, 10)
+	divider.BackgroundColor3 = CONFIG.BorderColor
+	divider.BackgroundTransparency = 0.7
+	divider.BorderSizePixel = 0
+	divider.Parent = topBar
+	
+	-- Close button hover effect (responsive)
 	closeButton.MouseEnter:Connect(function()
+		local currentSize = closeButton.AbsoluteSize.X
+		local hoverSize = currentSize + 2
 		local tween = TweenService:Create(
 			closeButton,
 			TweenInfo.new(0.15, CONFIG.EasingStyle, CONFIG.EasingDirection),
-			{BackgroundTransparency = 0.15, Size = UDim2.new(0, 34, 0, 34)}
+			{BackgroundTransparency = 0.15, Size = UDim2.new(0, hoverSize, 0, hoverSize)}
 		)
 		tween:Play()
 	end)
@@ -146,7 +171,7 @@ function DetectionUI:CreateUI()
 		local tween = TweenService:Create(
 			closeButton,
 			TweenInfo.new(0.15, CONFIG.EasingStyle, CONFIG.EasingDirection),
-			{BackgroundTransparency = 0, Size = UDim2.new(0, 32, 0, 32)}
+			{BackgroundTransparency = 0, Size = UDim2.new(0, 36, 0, 36)}
 		)
 		tween:Play()
 	end)
@@ -157,35 +182,18 @@ function DetectionUI:CreateUI()
 		self:Hide()
 	end)
 	
-	-- Content frame for labels
-	self.contentFrame = Instance.new("ScrollingFrame")
-	self.contentFrame.Name = "ContentFrame"
-	self.contentFrame.Size = UDim2.new(1, -40, 1, -140)
-	self.contentFrame.Position = UDim2.new(0, 20, 0, 70)
-	self.contentFrame.BackgroundTransparency = 1
-	self.contentFrame.BorderSizePixel = 0
-	self.contentFrame.ScrollBarThickness = 4
-	self.contentFrame.ScrollBarImageColor3 = CONFIG.BorderColor
-	self.contentFrame.ScrollBarImageTransparency = 0.5
-	self.contentFrame.Parent = self.mainFrame
-	
-	local contentList = Instance.new("UIListLayout")
-	contentList.Padding = UDim.new(0, 12)
-	contentList.SortOrder = Enum.SortOrder.LayoutOrder
-	contentList.Parent = self.contentFrame
-	
-	-- Bottom bar with Run Anyway button
+	-- Bottom bar with Run Anyway button (responsive)
 	local bottomBar = Instance.new("Frame")
 	bottomBar.Name = "BottomBar"
-	bottomBar.Size = UDim2.new(1, -40, 0, 60)
-	bottomBar.Position = UDim2.new(0, 20, 1, -70)
+	bottomBar.Size = UDim2.new(1, -30, 0, 60)
+	bottomBar.Position = UDim2.new(0, 15, 1, -65)
 	bottomBar.BackgroundTransparency = 1
 	bottomBar.Parent = self.mainFrame
 	
-	-- Run Anyway button
+	-- Run Anyway button (responsive, touch-friendly - min 48px height for mobile)
 	local runButton = Instance.new("TextButton")
 	runButton.Name = "RunButton"
-	runButton.Size = UDim2.new(0, 220, 0, 48)
+	runButton.Size = UDim2.new(0, 220, 0, 48) -- Base size, will be constrained
 	runButton.Position = UDim2.new(0.5, 0, 0, 0)
 	runButton.AnchorPoint = Vector2.new(0.5, 0)
 	runButton.BackgroundColor3 = CONFIG.AccentColor
@@ -195,6 +203,12 @@ function DetectionUI:CreateUI()
 	runButton.Font = Enum.Font.GothamBold
 	runButton.BorderSizePixel = 0
 	runButton.Parent = bottomBar
+	
+	-- Make button responsive with constraints
+	local buttonConstraint = Instance.new("UISizeConstraint")
+	buttonConstraint.MinSize = Vector2.new(200, 48) -- Touch-friendly minimum
+	buttonConstraint.MaxSize = Vector2.new(280, 52)
+	buttonConstraint.Parent = runButton
 	
 	local runCorner = Instance.new("UICorner")
 	runCorner.CornerRadius = UDim.new(0, 10)
@@ -207,12 +221,14 @@ function DetectionUI:CreateUI()
 	buttonGlow.Transparency = 0.7
 	buttonGlow.Parent = runButton
 	
-	-- Run button hover effect
+	-- Run button hover effect (responsive)
 	runButton.MouseEnter:Connect(function()
+		local currentWidth = runButton.AbsoluteSize.X
+		local currentHeight = runButton.AbsoluteSize.Y
 		local tween1 = TweenService:Create(
 			runButton,
 			TweenInfo.new(0.2, CONFIG.EasingStyle, CONFIG.EasingDirection),
-			{BackgroundTransparency = 0.05, Size = UDim2.new(0, 230, 0, 50)}
+			{BackgroundTransparency = 0.05, Size = UDim2.new(0, currentWidth + 10, 0, currentHeight + 2)}
 		)
 		local tween2 = TweenService:Create(
 			buttonGlow,
@@ -247,6 +263,17 @@ function DetectionUI:CreateUI()
 	-- Store shadow reference
 	self.shadow = shadow
 	
+	-- Connection to update shadow size when main frame size changes
+	local function updateShadowSize()
+		if self.mainFrame and self.shadow then
+			local mainSize = self.mainFrame.AbsoluteSize
+			self.shadow.Size = UDim2.new(0, mainSize.X + CONFIG.ShadowOffset, 0, mainSize.Y + CONFIG.ShadowOffset)
+		end
+	end
+	
+	-- Update shadow when main frame size changes
+	self.mainFrame:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateShadowSize)
+	
 	-- Initially hide the UI
 	self.mainFrame.Size = UDim2.new(0, 0, 0, 0)
 	self.mainFrame.Visible = false
@@ -254,43 +281,6 @@ function DetectionUI:CreateUI()
 	shadow.Visible = false
 end
 
-function DetectionUI:AddLabel(text, textSize)
-	textSize = textSize or 16
-	
-	-- Store label data
-	table.insert(self.labelData, {text = text, textSize = textSize})
-	
-	-- If UI exists, create visual label immediately
-	if self.contentFrame then
-		local label = Instance.new("TextLabel")
-		label.Name = "Label" .. #self.labels + 1
-		label.Size = UDim2.new(1, 0, 0, 0)
-		label.BackgroundTransparency = 1
-		label.Text = text
-		label.TextColor3 = CONFIG.TextColorSecondary
-		label.TextSize = textSize
-		label.Font = Enum.Font.Gotham
-		label.TextXAlignment = Enum.TextXAlignment.Left
-		label.TextYAlignment = Enum.TextYAlignment.Top
-		label.TextWrapped = true
-		label.LineHeight = 1.4
-		label.AutomaticSize = Enum.AutomaticSize.Y
-		label.LayoutOrder = #self.labels + 1
-		label.Parent = self.contentFrame
-		
-		table.insert(self.labels, label)
-		
-		-- Update canvas size
-		task.wait(0.01) -- Wait for layout to update
-		if self.contentFrame.UIListLayout then
-			self.contentFrame.CanvasSize = UDim2.new(0, 0, 0, self.contentFrame.UIListLayout.AbsoluteContentSize.Y + 20)
-		end
-		
-		return label
-	end
-	
-	return nil
-end
 
 function DetectionUI:Show()
 	if not self.gui then
@@ -300,11 +290,25 @@ function DetectionUI:Show()
 	self.isVisible = true
 	self.result = nil
 	
-	-- Show the UI with animation
+	-- Show the UI
 	if self.shadow then
 		self.shadow.Visible = true
 	end
 	self.mainFrame.Visible = true
+	
+	-- Temporarily set size to calculate final dimensions
+	self.mainFrame.Size = UDim2.new(0.85, 0, 0, 0)
+	self.mainFrame.AutomaticSize = Enum.AutomaticSize.Y
+	
+	-- Wait for layout to calculate
+	task.wait(0.1)
+	
+	-- Get final sizes
+	local finalMainSize = self.mainFrame.AbsoluteSize
+	local finalShadowSize = Vector2.new(finalMainSize.X + CONFIG.ShadowOffset, finalMainSize.Y + CONFIG.ShadowOffset)
+	
+	-- Reset to 0 for animation
+	self.mainFrame.Size = UDim2.new(0, 0, 0, 0)
 	
 	-- Animate in - shadow first, then main frame
 	if self.shadow then
@@ -312,19 +316,25 @@ function DetectionUI:Show()
 			self.shadow,
 			TweenInfo.new(CONFIG.TransitionTime, CONFIG.EasingStyle, CONFIG.EasingDirection),
 			{
-				Size = UDim2.new(0, 500 + CONFIG.ShadowOffset, 0, 350 + CONFIG.ShadowOffset),
+				Size = UDim2.new(0, finalShadowSize.X, 0, finalShadowSize.Y),
 				Position = UDim2.new(0.5, CONFIG.ShadowOffset / 2, 0.5, CONFIG.ShadowOffset / 2)
 			}
 		)
 		shadowTween:Play()
 	end
 	
+	-- Animate main frame to final size
 	local showTween = TweenService:Create(
 		self.mainFrame,
 		TweenInfo.new(CONFIG.TransitionTime, CONFIG.EasingStyle, CONFIG.EasingDirection),
-		{Size = UDim2.new(0, 500, 0, 350)}
+		{Size = UDim2.new(0, finalMainSize.X, 0, finalMainSize.Y)}
 	)
 	showTween:Play()
+	showTween.Completed:Wait()
+	
+	-- Re-enable automatic size for responsive behavior
+	self.mainFrame.Size = UDim2.new(0.85, 0, 0, 0)
+	self.mainFrame.AutomaticSize = Enum.AutomaticSize.Y
 end
 
 function DetectionUI:Hide()
@@ -361,9 +371,7 @@ function DetectionUI:Hide()
 		self.gui:Destroy()
 		self.gui = nil
 		self.mainFrame = nil
-		self.contentFrame = nil
 		self.shadow = nil
-		self.labels = {}
 	end
 end
 
@@ -371,41 +379,6 @@ function DetectionUI:Prompt()
 	-- Create UI if it doesn't exist
 	if not self.gui then
 		self:CreateUI()
-	end
-	
-	-- Clear previous visual labels
-	for _, label in ipairs(self.labels) do
-		if label and label.Parent then
-			label:Destroy()
-		end
-	end
-	self.labels = {}
-	
-	-- Create visual labels from stored data
-	for _, data in ipairs(self.labelData) do
-		local label = Instance.new("TextLabel")
-		label.Name = "Label" .. #self.labels + 1
-		label.Size = UDim2.new(1, 0, 0, 0)
-		label.BackgroundTransparency = 1
-		label.Text = data.text
-		label.TextColor3 = CONFIG.TextColorSecondary
-		label.TextSize = data.textSize
-		label.Font = Enum.Font.Gotham
-		label.TextXAlignment = Enum.TextXAlignment.Left
-		label.TextYAlignment = Enum.TextYAlignment.Top
-		label.TextWrapped = true
-		label.LineHeight = 1.4
-		label.AutomaticSize = Enum.AutomaticSize.Y
-		label.LayoutOrder = #self.labels + 1
-		label.Parent = self.contentFrame
-		
-		table.insert(self.labels, label)
-	end
-	
-	-- Update canvas size
-	task.wait(0.05)
-	if self.contentFrame and self.contentFrame.UIListLayout then
-		self.contentFrame.CanvasSize = UDim2.new(0, 0, 0, self.contentFrame.UIListLayout.AbsoluteContentSize.Y + 20)
 	end
 	
 	-- Show UI
@@ -417,8 +390,6 @@ function DetectionUI:Prompt()
 	end
 	
 	local result = self.result
-	-- Clear label data after prompt (optional - remove if you want labels to persist)
-	-- self.labelData = {}
 	return result
 end
 
@@ -427,10 +398,6 @@ local guiAPI = DetectionUI.new()
 
 -- Example usage:
 --[[
--- Add labels before calling Prompt()
-guiAPI:AddLabel("Warning: This script may be unsafe.")
-guiAPI:AddLabel("Proceed with caution.")
-
 if scriptChanged then
 	if not guiAPI:Prompt() then
 		return -- don't load script
