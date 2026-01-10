@@ -3754,6 +3754,11 @@ local Library do
                 
                 -- Create advertising board function
                 function Window:SetAdBoard(ImagePath, Link)
+                    -- Safety checks first
+                    if not self then
+                        return
+                    end
+                    
                     -- Use provided values or fall back to hardcoded values
                     ImagePath = ImagePath or AdImagePath
                     Link = Link or AdLink
@@ -3777,18 +3782,30 @@ local Library do
                     end
                     
                     -- Remove existing ad board if any
-                    if Window.AdBoard then
-                        Window.AdBoard:Clean()
-                        Window.AdBoard = nil
+                    if self.AdBoard then
+                        pcall(function()
+                            if self.AdBoard.Clean then
+                                self.AdBoard:Clean()
+                            end
+                        end)
+                        self.AdBoard = nil
                     end
                     
-                    -- Check if MainFrame exists
-                    if not Items["MainFrame"] or not Items["MainFrame"].Instance then
+                    -- Check if Items table exists and has MainFrame
+                    if not Items or not Items["MainFrame"] then
+                        return
+                    end
+                    
+                    if not Items["MainFrame"].Instance then
                         return
                     end
                     
                     -- Check if Library.Holder exists
-                    if not Library.Holder or not Library.Holder.Instance then
+                    if not Library or not Library.Holder then
+                        return
+                    end
+                    
+                    if not Library.Holder.Instance then
                         return
                     end
                     
@@ -3799,7 +3816,7 @@ local Library do
                     local spacing = IsMobile and 6 or 8
                     
                     -- Create ad board container (mobile-friendly)
-                    Window.AdBoard = Instances:Create("Frame", {
+                    self.AdBoard = Instances:Create("Frame", {
                         Parent = Library.Holder.Instance,
                         Name = "\0",
                         BorderColor3 = Library.Theme["Shadow"],
@@ -3814,14 +3831,14 @@ local Library do
                     
                     -- Add corner radius
                     Instances:Create("UICorner", {
-                        Parent = Window.AdBoard.Instance,
+                        Parent = self.AdBoard.Instance,
                         Name = "\0",
                         CornerRadius = UDimNew(0, 5)
                     })
                     
                     -- Create outline
                     local Outline = Instances:Create("ImageLabel", {
-                        Parent = Window.AdBoard.Instance,
+                        Parent = self.AdBoard.Instance,
                         Name = "\0",
                         ImageColor3 = Library.Theme["Shadow"],
                         ImageTransparency = 0.3,
@@ -3854,7 +3871,7 @@ local Library do
                     
                     -- Create image label
                     local AdImage = Instances:Create("ImageLabel", {
-                        Parent = Window.AdBoard.Instance,
+                        Parent = self.AdBoard.Instance,
                         Name = "\0",
                         BorderColor3 = Library.Theme["Shadow"],
                         AnchorPoint = Vector2New(0.5, 0.5),
@@ -3869,7 +3886,7 @@ local Library do
                     
                     -- Make it clickable (touch-friendly on mobile)
                     local AdButton = Instances:Create("TextButton", {
-                        Parent = Window.AdBoard.Instance,
+                        Parent = self.AdBoard.Instance,
                         Name = "\0",
                         BorderColor3 = FromRGB(0, 0, 0),
                         BackgroundTransparency = 1,
@@ -3883,7 +3900,7 @@ local Library do
                     
                     -- Update size based on main frame width (supports all image sizes, mobile-friendly)
                     local function UpdateAdSize()
-                        if not AdImage or not AdImage.Instance or not Window.AdBoard or not Window.AdBoard.Instance then
+                        if not AdImage or not AdImage.Instance or not self.AdBoard or not self.AdBoard.Instance then
                             return
                         end
                         
@@ -3911,7 +3928,7 @@ local Library do
                             end
                         end
                         
-                        Window.AdBoard.Instance.Size = UDim2New(0, maxWidth, 0, adHeight)
+                        self.AdBoard.Instance.Size = UDim2New(0, maxWidth, 0, adHeight)
                         AdImage.Instance.Size = UDim2New(1, -4, 1, -4)
                     end
                     
@@ -3923,7 +3940,7 @@ local Library do
                     
                     -- Update position function (mobile-responsive, screen-bound aware)
                     local function UpdateAdPosition()
-                        if not Window.AdBoard or not Window.AdBoard.Instance then
+                        if not self.AdBoard or not self.AdBoard.Instance then
                             return
                         end
                         if not Items["MainFrame"] or not Items["MainFrame"].Instance then
@@ -3938,24 +3955,24 @@ local Library do
                         local adY = MainFramePos.Y + MainFrameSize.Y + spacing
                         
                         -- Ensure ad board stays on screen (especially important for mobile)
-                        local adWidth = Window.AdBoard.Instance.AbsoluteSize.X
+                        local adWidth = self.AdBoard.Instance.AbsoluteSize.X
                         if adX - adWidth / 2 < 0 then
                             adX = adWidth / 2
                         elseif adX + adWidth / 2 > screenSize.X then
                             adX = screenSize.X - adWidth / 2
                         end
                         
-                        Window.AdBoard.Instance.Position = UDim2New(0, adX, 0, adY)
+                        self.AdBoard.Instance.Position = UDim2New(0, adX, 0, adY)
                     end
                     
                     -- Update position when main frame moves or resizes
                     if Items["MainFrame"] and Items["MainFrame"].Instance then
                         Library:Connect(Items["MainFrame"].Instance:GetPropertyChangedSignal("AbsolutePosition"), UpdateAdPosition)
                         Library:Connect(Items["MainFrame"].Instance:GetPropertyChangedSignal("AbsoluteSize"), function()
-                            if Window.AdBoard and Window.AdBoard.Instance and Items["MainFrame"] and Items["MainFrame"].Instance then
+                            if self.AdBoard and self.AdBoard.Instance and Items["MainFrame"] and Items["MainFrame"].Instance then
                                 local MainFrameSize = Items["MainFrame"].Instance.AbsoluteSize
-                                local currentHeight = Window.AdBoard.Instance.AbsoluteSize.Y
-                                Window.AdBoard.Instance.Size = UDim2New(0, MainFrameSize.X, 0, currentHeight)
+                                local currentHeight = self.AdBoard.Instance.AbsoluteSize.Y
+                                self.AdBoard.Instance.Size = UDim2New(0, MainFrameSize.X, 0, currentHeight)
                                 UpdateAdPosition()
                             end
                         end)
@@ -3983,22 +4000,22 @@ local Library do
                     
                     -- Hover effect
                     AdButton:Connect("MouseEnter", function()
-                        if Window.AdBoard then
-                            Window.AdBoard:Tween(nil, {BackgroundTransparency = 0.7})
+                        if self.AdBoard then
+                            self.AdBoard:Tween(nil, {BackgroundTransparency = 0.7})
                         end
                     end)
                     
                     AdButton:Connect("MouseLeave", function()
-                        if Window.AdBoard then
-                            Window.AdBoard:Tween(nil, {BackgroundTransparency = 1})
+                        if self.AdBoard then
+                            self.AdBoard:Tween(nil, {BackgroundTransparency = 1})
                         end
                     end)
                     
                     -- Show/hide with window
                     if Items["MainFrame"] and Items["MainFrame"].Instance then
                         Library:Connect(Items["MainFrame"].Instance:GetPropertyChangedSignal("Visible"), function()
-                            if Window.AdBoard and Window.AdBoard.Instance and Items["MainFrame"] and Items["MainFrame"].Instance then
-                                Window.AdBoard.Instance.Visible = Items["MainFrame"].Instance.Visible
+                            if self.AdBoard and self.AdBoard.Instance and Items["MainFrame"] and Items["MainFrame"].Instance then
+                                self.AdBoard.Instance.Visible = Items["MainFrame"].Instance.Visible
                             end
                         end)
                     end
@@ -4006,15 +4023,21 @@ local Library do
                 
                 -- Initialize ad board only if not both are empty strings
                 -- Don't show if both AdImagePath and AdLink are empty ""
-                local bothEmpty = (AdImagePath == "" or not AdImagePath) and (AdLink == "" or not AdLink)
-                if not bothEmpty and AdImagePath and AdImagePath ~= "" then
-                    -- Check if it's a URL or local path
-                    local isUrl = (StringFind(AdImagePath, "http://") == 1) or (StringFind(AdImagePath, "https://") == 1)
-                    -- If URL, can use directly; if local path, need getcustomasset
-                    if isUrl or HasCustomAsset() then
-                        Window:SetAdBoard(AdImagePath, AdLink)
+                -- Wait for Window to be fully initialized
+                task.spawn(function()
+                    task.wait(0.5) -- Wait for Window to be fully set up
+                    local bothEmpty = (AdImagePath == "" or not AdImagePath) and (AdLink == "" or not AdLink)
+                    if not bothEmpty and AdImagePath and AdImagePath ~= "" then
+                        -- Check if it's a URL or local path
+                        local isUrl = (StringFind(AdImagePath, "http://") == 1) or (StringFind(AdImagePath, "https://") == 1)
+                        -- If URL, can use directly; if local path, need getcustomasset
+                        if isUrl or HasCustomAsset() then
+                            if Window and Window.SetAdBoard then
+                                Window:SetAdBoard(AdImagePath, AdLink)
+                            end
+                        end
                     end
-                end
+                end)
             end
             
             return setmetatable(Window, Library)
