@@ -1,6 +1,4 @@
-print("ver 1.5")
-
--- Detection UI Library
+print("ver 1.6")
 -- A smooth, modern UI library for displaying detection prompts
 
 local DetectionUI = {}
@@ -18,8 +16,8 @@ local CONFIG = {
 	CloseButtonColor = Color3.fromRGB(255, 55, 55), -- Red for X button
 	ButtonColor = Color3.fromRGB(38, 38, 38),
 	TopBarColor = Color3.fromRGB(24, 24, 24),
-	TransitionTime = 0.3,
-	EasingStyle = Enum.EasingStyle.Quad,
+	TransitionTime = 0.25,
+	EasingStyle = Enum.EasingStyle.Quart,
 	EasingDirection = Enum.EasingDirection.Out
 }
 
@@ -44,9 +42,9 @@ function DetectionUI:CreateUI()
 	
 	-- Get screen size for responsive design
 	local screenSize = self.gui.AbsoluteSize
-	local frameWidth = math.min(450, math.max(320, screenSize.X * 0.85))
+	local frameWidth = math.min(420, math.max(340, screenSize.X * 0.82))
 	
-	-- Create main container frame (keysystem style)
+	-- Create main container frame (keysystem style) - polished
 	self.mainFrame = Instance.new("Frame")
 	self.mainFrame.Name = "MainFrame"
 	self.mainFrame.Size = UDim2.new(0, frameWidth, 0, 0) -- Height auto
@@ -59,10 +57,10 @@ function DetectionUI:CreateUI()
 	self.mainFrame.AutomaticSize = Enum.AutomaticSize.Y
 	self.mainFrame.Parent = self.gui
 	
-	-- Add size constraints for responsive design
+	-- Add size constraints for responsive design - polished
 	local sizeConstraint = Instance.new("UISizeConstraint")
-	sizeConstraint.MaxSize = Vector2.new(450, math.huge)
-	sizeConstraint.MinSize = Vector2.new(320, 180)
+	sizeConstraint.MaxSize = Vector2.new(420, math.huge)
+	sizeConstraint.MinSize = Vector2.new(340, 200)
 	sizeConstraint.Parent = self.mainFrame
 	
 	-- Outline 1 (outer dark border)
@@ -88,40 +86,41 @@ function DetectionUI:CreateUI()
 	outline2.ScaleType = Enum.ScaleType.Slice
 	outline2.SliceCenter = Rect.new(2, 2, 62, 62)
 	
-	-- Top bar (keysystem style)
+	-- Top bar (keysystem style) - polished
 	local topBar = Instance.new("Frame")
 	topBar.Name = "TopBar"
 	topBar.AnchorPoint = Vector2.new(0.5, 0)
 	topBar.BackgroundColor3 = CONFIG.TopBarColor
 	topBar.BorderSizePixel = 0
 	topBar.Position = UDim2.new(0.5, 0, 0, 2)
-	topBar.Size = UDim2.new(1, -5, 0, 28)
+	topBar.Size = UDim2.new(1, -5, 0, 32)
 	topBar.Parent = self.mainFrame
 	
-	-- Title (keysystem style with Code font)
+	-- Title (keysystem style with Code font) - polished
 	local title = Instance.new("TextLabel")
 	title.Name = "TopBarTitle"
 	title.Parent = topBar
 	title.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 	title.BackgroundTransparency = 1
-	title.Position = UDim2.new(0, 7, 0, 5)
-	title.Size = UDim2.new(1, -50, 0, 16)
+	title.Position = UDim2.new(0, 10, 0, 6)
+	title.Size = UDim2.new(1, -50, 0, 0)
 	title.Font = Enum.Font.Code
 	title.Text = "Game files changed! There is a risk of detection. Press proceed if you'd like to run the script anyway."
 	title.TextColor3 = CONFIG.TextColor
-	title.TextSize = 14
+	title.TextSize = 13
 	title.TextXAlignment = Enum.TextXAlignment.Left
 	title.TextYAlignment = Enum.TextYAlignment.Top
 	title.TextWrapped = true
 	title.AutomaticSize = Enum.AutomaticSize.Y
+	title.LineHeight = 1.2
 	
-	-- Top bar line (accent color)
+	-- Top bar line (accent color) - polished
 	local topBarLine = Instance.new("Frame")
 	topBarLine.Name = "TopBarLine"
 	topBarLine.Parent = topBar
 	topBarLine.BackgroundColor3 = CONFIG.AccentColor
 	topBarLine.BorderSizePixel = 0
-	topBarLine.Position = UDim2.new(0, 0, 0, 27)
+	topBarLine.Position = UDim2.new(0, 0, 0, 31)
 	topBarLine.Size = UDim2.new(1, 0, 0, 1)
 	
 	-- Animate accent color
@@ -131,18 +130,18 @@ function DetectionUI:CreateUI()
 		end
 	end)()
 	
-	-- Close button (X) - keysystem style
+	-- Close button (X) - polished keysystem style
 	local closeButton = Instance.new("TextButton")
 	closeButton.Name = "CloseButton"
 	closeButton.Parent = topBar
 	closeButton.BackgroundColor3 = CONFIG.CloseButtonColor
 	closeButton.BorderSizePixel = 0
-	closeButton.Position = UDim2.new(1, -32, 0, 4)
-	closeButton.Size = UDim2.new(0, 24, 0, 20)
+	closeButton.Position = UDim2.new(1, -30, 0, 4)
+	closeButton.Size = UDim2.new(0, 26, 0, 24)
 	closeButton.Font = Enum.Font.Code
 	closeButton.Text = "×"
 	closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-	closeButton.TextSize = 16
+	closeButton.TextSize = 18
 	closeButton.AutoButtonColor = false
 	
 	-- Close button outline
@@ -167,13 +166,23 @@ function DetectionUI:CreateUI()
 	closeOutline2.ScaleType = Enum.ScaleType.Slice
 	closeOutline2.SliceCenter = Rect.new(2, 2, 62, 62)
 	
-	-- Close button hover effect
+	-- Close button hover effect - polished with tween
 	closeButton.MouseEnter:Connect(function()
-		closeButton.BackgroundTransparency = 0.2
+		local tween = TweenService:Create(
+			closeButton,
+			TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+			{BackgroundTransparency = 0.15, Size = UDim2.new(0, 28, 0, 26)}
+		)
+		tween:Play()
 	end)
 	
 	closeButton.MouseLeave:Connect(function()
-		closeButton.BackgroundTransparency = 0
+		local tween = TweenService:Create(
+			closeButton,
+			TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+			{BackgroundTransparency = 0, Size = UDim2.new(0, 26, 0, 24)}
+		)
+		tween:Play()
 	end)
 	
 	-- Close button click
@@ -182,15 +191,23 @@ function DetectionUI:CreateUI()
 		self:Hide()
 	end)
 	
-	-- Bottom bar with Run Anyway button
+	-- Content area for spacing
+	local contentArea = Instance.new("Frame")
+	contentArea.Name = "ContentArea"
+	contentArea.Size = UDim2.new(1, -20, 0, 20)
+	contentArea.Position = UDim2.new(0, 10, 0, 35)
+	contentArea.BackgroundTransparency = 1
+	contentArea.Parent = self.mainFrame
+	
+	-- Bottom bar with Run Anyway button - polished
 	local bottomBar = Instance.new("Frame")
 	bottomBar.Name = "BottomBar"
-	bottomBar.Size = UDim2.new(1, -20, 0, 50)
-	bottomBar.Position = UDim2.new(0, 10, 1, -60)
+	bottomBar.Size = UDim2.new(1, -20, 0, 55)
+	bottomBar.Position = UDim2.new(0, 10, 1, -65)
 	bottomBar.BackgroundTransparency = 1
 	bottomBar.Parent = self.mainFrame
 	
-	-- Run Anyway button (keysystem style)
+	-- Run Anyway button (polished keysystem style)
 	local runButton = Instance.new("TextButton")
 	runButton.Name = "RunButton"
 	runButton.Parent = bottomBar
@@ -198,8 +215,8 @@ function DetectionUI:CreateUI()
 	runButton.BackgroundColor3 = CONFIG.ButtonColor
 	runButton.BorderColor3 = CONFIG.AccentColor
 	runButton.BorderSizePixel = 0
-	runButton.Position = UDim2.new(0.5, 0, 0, 0)
-	runButton.Size = UDim2.new(0, 200, 0, 20)
+	runButton.Position = UDim2.new(0.5, 0, 0, 10)
+	runButton.Size = UDim2.new(0, 220, 0, 22)
 	runButton.AutoButtonColor = false
 	runButton.Font = Enum.Font.Code
 	runButton.Text = "Run Anyway"
@@ -236,13 +253,23 @@ function DetectionUI:CreateUI()
 		end
 	end)()
 	
-	-- Run button hover effect
+	-- Run button hover effect - polished with smooth tween
 	runButton.MouseLeave:Connect(function()
-		runButton.BorderSizePixel = 0
+		local tween = TweenService:Create(
+			runButton,
+			TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+			{BorderSizePixel = 0, Size = UDim2.new(0, 220, 0, 22), BackgroundTransparency = 0}
+		)
+		tween:Play()
 	end)
 	
 	runButton.MouseEnter:Connect(function()
-		runButton.BorderSizePixel = 1
+		local tween = TweenService:Create(
+			runButton,
+			TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+			{BorderSizePixel = 1, Size = UDim2.new(0, 230, 0, 24), BackgroundTransparency = 0.05}
+		)
+		tween:Play()
 	end)
 	
 	-- Run button click
@@ -270,25 +297,25 @@ function DetectionUI:Show()
 	
 	-- Get screen size for responsive calculation
 	local screenSize = self.gui.AbsoluteSize
-	local frameWidth = math.min(450, math.max(320, screenSize.X * 0.85))
+	local frameWidth = math.min(420, math.max(340, screenSize.X * 0.82))
 	
 	-- Temporarily set size to calculate final dimensions
 	self.mainFrame.Size = UDim2.new(0, frameWidth, 0, 0)
 	self.mainFrame.AutomaticSize = Enum.AutomaticSize.Y
 	
-	-- Wait for layout to calculate
-	task.wait(0.1)
+	-- Wait for layout to calculate properly
+	task.wait(0.12)
 	
 	-- Get final sizes
 	local finalMainSize = self.mainFrame.AbsoluteSize
 	
-	-- Reset to 0 for animation
+	-- Reset to 0 for smooth animation
 	self.mainFrame.Size = UDim2.new(0, 0, 0, 0)
 	
-	-- Animate main frame to final size
+	-- Animate main frame to final size with polished easing
 	local showTween = TweenService:Create(
 		self.mainFrame,
-		TweenInfo.new(CONFIG.TransitionTime, CONFIG.EasingStyle, CONFIG.EasingDirection),
+		TweenInfo.new(CONFIG.TransitionTime, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
 		{Size = UDim2.new(0, finalMainSize.X, 0, finalMainSize.Y)}
 	)
 	showTween:Play()
@@ -306,10 +333,10 @@ function DetectionUI:Hide()
 	
 	self.isVisible = false
 	
-	-- Animate out
+	-- Animate out with polished easing
 	local hideTween = TweenService:Create(
 		self.mainFrame,
-		TweenInfo.new(CONFIG.TransitionTime, CONFIG.EasingStyle, CONFIG.EasingDirection),
+		TweenInfo.new(CONFIG.TransitionTime, Enum.EasingStyle.Quart, Enum.EasingDirection.In),
 		{Size = UDim2.new(0, 0, 0, 0)}
 	)
 	
