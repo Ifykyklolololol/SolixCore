@@ -3762,12 +3762,16 @@ local Library do
                         return
                     end
                     
-                    if not HasCustomAsset() then
+                    -- Need image path to display the ad board
+                    if not ImagePath or ImagePath == "" then
                         return
                     end
                     
-                    -- Need image path to display the ad board
-                    if not ImagePath or ImagePath == "" then
+                    -- Check if it's a URL or local path
+                    local isUrl = (StringFind(ImagePath, "http://") == 1) or (StringFind(ImagePath, "https://") == 1)
+                    
+                    -- If it's a local path, we need getcustomasset
+                    if not isUrl and not HasCustomAsset() then
                         return
                     end
                     
@@ -3825,6 +3829,20 @@ local Library do
                         Size = UDim2New(1, 4, 1, 4)
                     }):AddToTheme({ImageColor3 = 'Shadow'})
                     
+                    -- Determine image source (URL or local path)
+                    local ImageSource = ImagePath
+                    local isUrl = (StringFind(ImagePath, "http://") == 1) or (StringFind(ImagePath, "https://") == 1)
+                    
+                    if not isUrl then
+                        -- Local path - use getcustomasset if available
+                        if HasCustomAsset() then
+                            ImageSource = getcustomasset(ImagePath)
+                        else
+                            return -- Can't load local path without getcustomasset
+                        end
+                    end
+                    -- If it's a URL, use it directly
+                    
                     -- Create image label
                     local AdImage = Instances:Create("ImageLabel", {
                         Parent = Window.AdBoard.Instance,
@@ -3836,7 +3854,7 @@ local Library do
                         Size = UDim2New(1, -4, 1, -4),
                         ZIndex = 2,
                         BorderSizePixel = 0,
-                        Image = getcustomasset(ImagePath),
+                        Image = ImageSource,
                         ScaleType = Enum.ScaleType.Fit
                     })
                     
@@ -3958,8 +3976,13 @@ local Library do
                 -- Initialize ad board only if not both are empty strings
                 -- Don't show if both AdImagePath and AdLink are empty ""
                 local bothEmpty = (AdImagePath == "" or not AdImagePath) and (AdLink == "" or not AdLink)
-                if not bothEmpty and AdImagePath and AdImagePath ~= "" and HasCustomAsset() then
-                    Window:SetAdBoard(AdImagePath, AdLink)
+                if not bothEmpty and AdImagePath and AdImagePath ~= "" then
+                    -- Check if it's a URL or local path
+                    local isUrl = (StringFind(AdImagePath, "http://") == 1) or (StringFind(AdImagePath, "https://") == 1)
+                    -- If URL, can use directly; if local path, need getcustomasset
+                    if isUrl or HasCustomAsset() then
+                        Window:SetAdBoard(AdImagePath, AdLink)
+                    end
                 end
             end
             
