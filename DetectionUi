@@ -1,4 +1,6 @@
-print("ver 1.3")
+print("ver 1.5")
+
+-- Detection UI Library
 -- A smooth, modern UI library for displaying detection prompts
 
 local DetectionUI = {}
@@ -6,20 +8,19 @@ DetectionUI.__index = DetectionUI
 
 local TweenService = game:GetService("TweenService")
 
--- UI Configuration
+-- UI Configuration (matching keysystem style)
 local CONFIG = {
-	BackgroundColor = Color3.fromRGB(25, 25, 30),
-	BackgroundColor2 = Color3.fromRGB(35, 35, 40),
-	BorderColor = Color3.fromRGB(70, 70, 80),
-	TextColor = Color3.fromRGB(240, 240, 245),
-	TextColorSecondary = Color3.fromRGB(200, 200, 210),
-	AccentColor = Color3.fromRGB(52, 211, 153), -- Modern green for Run Anyway button
-	CloseButtonColor = Color3.fromRGB(239, 68, 68), -- Modern red for X button
-	ShadowColor = Color3.fromRGB(0, 0, 0),
-	TransitionTime = 0.35,
+	BackgroundColor = Color3.fromRGB(20, 20, 20),
+	BorderColor = Color3.fromRGB(60, 60, 60),
+	TextColor = Color3.fromRGB(255, 255, 255),
+	TextColorSecondary = Color3.fromRGB(205, 205, 205),
+	AccentColor = Color3.fromRGB(128, 213, 247), -- Keysystem accent color
+	CloseButtonColor = Color3.fromRGB(255, 55, 55), -- Red for X button
+	ButtonColor = Color3.fromRGB(38, 38, 38),
+	TopBarColor = Color3.fromRGB(24, 24, 24),
+	TransitionTime = 0.3,
 	EasingStyle = Enum.EasingStyle.Quad,
-	EasingDirection = Enum.EasingDirection.Out,
-	ShadowOffset = 8
+	EasingDirection = Enum.EasingDirection.Out
 }
 
 function DetectionUI.new()
@@ -41,35 +42,18 @@ function DetectionUI:CreateUI()
 	self.gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	self.gui.Parent = game:GetService("CoreGui")
 	
-	-- Add shadow effect (behind main frame) - responsive
-	local shadow = Instance.new("Frame")
-	shadow.Name = "Shadow"
-	shadow.Size = UDim2.new(0, 500, 0, 200) -- Will be updated
-	shadow.Position = UDim2.new(0.5, CONFIG.ShadowOffset / 2, 0.5, CONFIG.ShadowOffset / 2)
-	shadow.AnchorPoint = Vector2.new(0.5, 0.5)
-	shadow.BackgroundColor3 = CONFIG.ShadowColor
-	shadow.BackgroundTransparency = 0.8
-	shadow.BorderSizePixel = 0
-	shadow.ZIndex = 1
-	shadow.Parent = self.gui
+	-- Get screen size for responsive design
+	local screenSize = self.gui.AbsoluteSize
+	local frameWidth = math.min(450, math.max(320, screenSize.X * 0.85))
 	
-	-- Make shadow responsive with constraints
-	local shadowConstraint = Instance.new("UISizeConstraint")
-	shadowConstraint.MaxSize = Vector2.new(500, math.huge)
-	shadowConstraint.MinSize = Vector2.new(300, 180)
-	shadowConstraint.Parent = shadow
-	
-	local shadowCorner = Instance.new("UICorner")
-	shadowCorner.CornerRadius = UDim.new(0, 16)
-	shadowCorner.Parent = shadow
-	
-	-- Create main container frame (responsive with scale)
+	-- Create main container frame (keysystem style)
 	self.mainFrame = Instance.new("Frame")
 	self.mainFrame.Name = "MainFrame"
-	self.mainFrame.Size = UDim2.new(0.85, 0, 0, 0) -- 85% of screen width, height auto
+	self.mainFrame.Size = UDim2.new(0, frameWidth, 0, 0) -- Height auto
 	self.mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 	self.mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 	self.mainFrame.BackgroundColor3 = CONFIG.BackgroundColor
+	self.mainFrame.BorderColor3 = CONFIG.BorderColor
 	self.mainFrame.BorderSizePixel = 0
 	self.mainFrame.ZIndex = 2
 	self.mainFrame.AutomaticSize = Enum.AutomaticSize.Y
@@ -77,103 +61,119 @@ function DetectionUI:CreateUI()
 	
 	-- Add size constraints for responsive design
 	local sizeConstraint = Instance.new("UISizeConstraint")
-	sizeConstraint.MaxSize = Vector2.new(500, math.huge)
-	sizeConstraint.MinSize = Vector2.new(300, 180)
+	sizeConstraint.MaxSize = Vector2.new(450, math.huge)
+	sizeConstraint.MinSize = Vector2.new(320, 180)
 	sizeConstraint.Parent = self.mainFrame
 	
-	-- Add corner radius (responsive)
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 16)
-	corner.Parent = self.mainFrame
+	-- Outline 1 (outer dark border)
+	local outline1 = Instance.new("ImageLabel")
+	outline1.Name = "OutlineMainFrame1"
+	outline1.Parent = self.mainFrame
+	outline1.BackgroundTransparency = 1
+	outline1.Position = UDim2.new(0, 1, 0, 1)
+	outline1.Size = UDim2.new(1, -2, 1, -2)
+	outline1.Image = "rbxassetid://2592362371"
+	outline1.ImageColor3 = CONFIG.BorderColor
+	outline1.ScaleType = Enum.ScaleType.Slice
+	outline1.SliceCenter = Rect.new(2, 2, 62, 62)
 	
-	-- Add subtle border
-	local border = Instance.new("UIStroke")
-	border.Color = CONFIG.BorderColor
-	border.Thickness = 1
-	border.Transparency = 0.5
-	border.Parent = self.mainFrame
+	-- Outline 2 (inner black border)
+	local outline2 = Instance.new("ImageLabel")
+	outline2.Name = "OutlineMainFrame2"
+	outline2.Parent = self.mainFrame
+	outline2.BackgroundTransparency = 1
+	outline2.Size = UDim2.new(1, 0, 1, 0)
+	outline2.Image = "rbxassetid://2592362371"
+	outline2.ImageColor3 = Color3.fromRGB(0, 0, 0)
+	outline2.ScaleType = Enum.ScaleType.Slice
+	outline2.SliceCenter = Rect.new(2, 2, 62, 62)
 	
-	-- Create top bar with title and close button (responsive)
+	-- Top bar (keysystem style)
 	local topBar = Instance.new("Frame")
 	topBar.Name = "TopBar"
-	topBar.Size = UDim2.new(1, -30, 0, 0)
-	topBar.Position = UDim2.new(0, 15, 0, 15)
-	topBar.BackgroundTransparency = 1
-	topBar.AutomaticSize = Enum.AutomaticSize.Y
+	topBar.AnchorPoint = Vector2.new(0.5, 0)
+	topBar.BackgroundColor3 = CONFIG.TopBarColor
+	topBar.BorderSizePixel = 0
+	topBar.Position = UDim2.new(0.5, 0, 0, 2)
+	topBar.Size = UDim2.new(1, -5, 0, 28)
 	topBar.Parent = self.mainFrame
 	
-	-- Title (responsive with text wrapping)
+	-- Title (keysystem style with Code font)
 	local title = Instance.new("TextLabel")
-	title.Name = "Title"
-	title.Size = UDim2.new(1, -50, 0, 0)
-	title.Position = UDim2.new(0, 0, 0, 0)
+	title.Name = "TopBarTitle"
+	title.Parent = topBar
+	title.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 	title.BackgroundTransparency = 1
+	title.Position = UDim2.new(0, 7, 0, 5)
+	title.Size = UDim2.new(1, -50, 0, 16)
+	title.Font = Enum.Font.Code
 	title.Text = "Game files changed! There is a risk of detection. Press proceed if you'd like to run the script anyway."
 	title.TextColor3 = CONFIG.TextColor
-	title.TextSize = 16 -- Will scale with TextScaled if needed
-	title.Font = Enum.Font.GothamBold
+	title.TextSize = 14
 	title.TextXAlignment = Enum.TextXAlignment.Left
 	title.TextYAlignment = Enum.TextYAlignment.Top
 	title.TextWrapped = true
 	title.AutomaticSize = Enum.AutomaticSize.Y
-	title.LineHeight = 1.3
-	title.Parent = topBar
 	
-	-- Close button (X) - responsive size, touch-friendly (min 36px for mobile)
+	-- Top bar line (accent color)
+	local topBarLine = Instance.new("Frame")
+	topBarLine.Name = "TopBarLine"
+	topBarLine.Parent = topBar
+	topBarLine.BackgroundColor3 = CONFIG.AccentColor
+	topBarLine.BorderSizePixel = 0
+	topBarLine.Position = UDim2.new(0, 0, 0, 27)
+	topBarLine.Size = UDim2.new(1, 0, 0, 1)
+	
+	-- Animate accent color
+	coroutine.wrap(function()
+		while task.wait() do
+			topBarLine.BackgroundColor3 = CONFIG.AccentColor
+		end
+	end)()
+	
+	-- Close button (X) - keysystem style
 	local closeButton = Instance.new("TextButton")
 	closeButton.Name = "CloseButton"
-	closeButton.Size = UDim2.new(0, 0, 0, 0) -- Will be set with constraints
-	closeButton.Position = UDim2.new(1, -45, 0, 0)
+	closeButton.Parent = topBar
 	closeButton.BackgroundColor3 = CONFIG.CloseButtonColor
+	closeButton.BorderSizePixel = 0
+	closeButton.Position = UDim2.new(1, -32, 0, 4)
+	closeButton.Size = UDim2.new(0, 24, 0, 20)
+	closeButton.Font = Enum.Font.Code
 	closeButton.Text = "×"
 	closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-	closeButton.TextSize = 20
-	closeButton.Font = Enum.Font.GothamBold
-	closeButton.BorderSizePixel = 0
-	closeButton.Parent = topBar
+	closeButton.TextSize = 16
+	closeButton.AutoButtonColor = false
 	
-	-- Make close button responsive with min size for touch
-	local closeButtonConstraint = Instance.new("UISizeConstraint")
-	closeButtonConstraint.MinSize = Vector2.new(36, 36)
-	closeButtonConstraint.MaxSize = Vector2.new(40, 40)
-	closeButtonConstraint.Parent = closeButton
+	-- Close button outline
+	local closeOutline1 = Instance.new("ImageLabel")
+	closeOutline1.Name = "CloseOutline1"
+	closeOutline1.Parent = closeButton
+	closeOutline1.BackgroundTransparency = 1
+	closeOutline1.Size = UDim2.new(1, 0, 1, 0)
+	closeOutline1.Image = "rbxassetid://2592362371"
+	closeOutline1.ImageColor3 = CONFIG.BorderColor
+	closeOutline1.ScaleType = Enum.ScaleType.Slice
+	closeOutline1.SliceCenter = Rect.new(2, 2, 62, 62)
 	
-	-- Set close button size relative to parent
-	closeButton.Size = UDim2.new(0, 36, 0, 36)
+	local closeOutline2 = Instance.new("ImageLabel")
+	closeOutline2.Name = "CloseOutline2"
+	closeOutline2.Parent = closeButton
+	closeOutline2.BackgroundTransparency = 1
+	closeOutline2.Position = UDim2.new(0, 1, 0, 1)
+	closeOutline2.Size = UDim2.new(1, -2, 1, -2)
+	closeOutline2.Image = "rbxassetid://2592362371"
+	closeOutline2.ImageColor3 = Color3.fromRGB(0, 0, 0)
+	closeOutline2.ScaleType = Enum.ScaleType.Slice
+	closeOutline2.SliceCenter = Rect.new(2, 2, 62, 62)
 	
-	local closeCorner = Instance.new("UICorner")
-	closeCorner.CornerRadius = UDim.new(0, 8)
-	closeCorner.Parent = closeButton
-	
-	-- Divider line
-	local divider = Instance.new("Frame")
-	divider.Name = "Divider"
-	divider.Size = UDim2.new(1, 0, 0, 1)
-	divider.Position = UDim2.new(0, 0, 1, 10)
-	divider.BackgroundColor3 = CONFIG.BorderColor
-	divider.BackgroundTransparency = 0.7
-	divider.BorderSizePixel = 0
-	divider.Parent = topBar
-	
-	-- Close button hover effect (responsive)
+	-- Close button hover effect
 	closeButton.MouseEnter:Connect(function()
-		local currentSize = closeButton.AbsoluteSize.X
-		local hoverSize = currentSize + 2
-		local tween = TweenService:Create(
-			closeButton,
-			TweenInfo.new(0.15, CONFIG.EasingStyle, CONFIG.EasingDirection),
-			{BackgroundTransparency = 0.15, Size = UDim2.new(0, hoverSize, 0, hoverSize)}
-		)
-		tween:Play()
+		closeButton.BackgroundTransparency = 0.2
 	end)
 	
 	closeButton.MouseLeave:Connect(function()
-		local tween = TweenService:Create(
-			closeButton,
-			TweenInfo.new(0.15, CONFIG.EasingStyle, CONFIG.EasingDirection),
-			{BackgroundTransparency = 0, Size = UDim2.new(0, 36, 0, 36)}
-		)
-		tween:Play()
+		closeButton.BackgroundTransparency = 0
 	end)
 	
 	-- Close button click
@@ -182,76 +182,67 @@ function DetectionUI:CreateUI()
 		self:Hide()
 	end)
 	
-	-- Bottom bar with Run Anyway button (responsive)
+	-- Bottom bar with Run Anyway button
 	local bottomBar = Instance.new("Frame")
 	bottomBar.Name = "BottomBar"
-	bottomBar.Size = UDim2.new(1, -30, 0, 60)
-	bottomBar.Position = UDim2.new(0, 15, 1, -65)
+	bottomBar.Size = UDim2.new(1, -20, 0, 50)
+	bottomBar.Position = UDim2.new(0, 10, 1, -60)
 	bottomBar.BackgroundTransparency = 1
 	bottomBar.Parent = self.mainFrame
 	
-	-- Run Anyway button (responsive, touch-friendly - min 48px height for mobile)
+	-- Run Anyway button (keysystem style)
 	local runButton = Instance.new("TextButton")
 	runButton.Name = "RunButton"
-	runButton.Size = UDim2.new(0, 220, 0, 48) -- Base size, will be constrained
-	runButton.Position = UDim2.new(0.5, 0, 0, 0)
-	runButton.AnchorPoint = Vector2.new(0.5, 0)
-	runButton.BackgroundColor3 = CONFIG.AccentColor
-	runButton.Text = "Run Anyway"
-	runButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-	runButton.TextSize = 17
-	runButton.Font = Enum.Font.GothamBold
-	runButton.BorderSizePixel = 0
 	runButton.Parent = bottomBar
+	runButton.AnchorPoint = Vector2.new(0.5, 0)
+	runButton.BackgroundColor3 = CONFIG.ButtonColor
+	runButton.BorderColor3 = CONFIG.AccentColor
+	runButton.BorderSizePixel = 0
+	runButton.Position = UDim2.new(0.5, 0, 0, 0)
+	runButton.Size = UDim2.new(0, 200, 0, 20)
+	runButton.AutoButtonColor = false
+	runButton.Font = Enum.Font.Code
+	runButton.Text = "Run Anyway"
+	runButton.TextColor3 = CONFIG.TextColor
+	runButton.TextSize = 14
 	
-	-- Make button responsive with constraints
-	local buttonConstraint = Instance.new("UISizeConstraint")
-	buttonConstraint.MinSize = Vector2.new(200, 48) -- Touch-friendly minimum
-	buttonConstraint.MaxSize = Vector2.new(280, 52)
-	buttonConstraint.Parent = runButton
+	-- Button outline 1
+	local buttonOutline1 = Instance.new("ImageLabel")
+	buttonOutline1.Name = "ButtonOutline1"
+	buttonOutline1.Parent = runButton
+	buttonOutline1.BackgroundTransparency = 1
+	buttonOutline1.Size = UDim2.new(1, 0, 1, 0)
+	buttonOutline1.Image = "rbxassetid://2592362371"
+	buttonOutline1.ImageColor3 = CONFIG.BorderColor
+	buttonOutline1.ScaleType = Enum.ScaleType.Slice
+	buttonOutline1.SliceCenter = Rect.new(2, 2, 62, 62)
 	
-	local runCorner = Instance.new("UICorner")
-	runCorner.CornerRadius = UDim.new(0, 10)
-	runCorner.Parent = runButton
+	-- Button outline 2
+	local buttonOutline2 = Instance.new("ImageLabel")
+	buttonOutline2.Name = "ButtonOutline2"
+	buttonOutline2.Parent = runButton
+	buttonOutline2.BackgroundTransparency = 1
+	buttonOutline2.Position = UDim2.new(0, 1, 0, 1)
+	buttonOutline2.Size = UDim2.new(1, -2, 1, -2)
+	buttonOutline2.Image = "rbxassetid://2592362371"
+	buttonOutline2.ImageColor3 = Color3.fromRGB(0, 0, 0)
+	buttonOutline2.ScaleType = Enum.ScaleType.Slice
+	buttonOutline2.SliceCenter = Rect.new(2, 2, 62, 62)
 	
-	-- Add button glow effect
-	local buttonGlow = Instance.new("UIStroke")
-	buttonGlow.Color = CONFIG.AccentColor
-	buttonGlow.Thickness = 2
-	buttonGlow.Transparency = 0.7
-	buttonGlow.Parent = runButton
+	-- Animate border color
+	coroutine.wrap(function()
+		while task.wait() do
+			runButton.BorderColor3 = CONFIG.AccentColor
+		end
+	end)()
 	
-	-- Run button hover effect (responsive)
-	runButton.MouseEnter:Connect(function()
-		local currentWidth = runButton.AbsoluteSize.X
-		local currentHeight = runButton.AbsoluteSize.Y
-		local tween1 = TweenService:Create(
-			runButton,
-			TweenInfo.new(0.2, CONFIG.EasingStyle, CONFIG.EasingDirection),
-			{BackgroundTransparency = 0.05, Size = UDim2.new(0, currentWidth + 10, 0, currentHeight + 2)}
-		)
-		local tween2 = TweenService:Create(
-			buttonGlow,
-			TweenInfo.new(0.2, CONFIG.EasingStyle, CONFIG.EasingDirection),
-			{Transparency = 0.3, Thickness = 3}
-		)
-		tween1:Play()
-		tween2:Play()
+	-- Run button hover effect
+	runButton.MouseLeave:Connect(function()
+		runButton.BorderSizePixel = 0
 	end)
 	
-	runButton.MouseLeave:Connect(function()
-		local tween1 = TweenService:Create(
-			runButton,
-			TweenInfo.new(0.2, CONFIG.EasingStyle, CONFIG.EasingDirection),
-			{BackgroundTransparency = 0, Size = UDim2.new(0, 220, 0, 48)}
-		)
-		local tween2 = TweenService:Create(
-			buttonGlow,
-			TweenInfo.new(0.2, CONFIG.EasingStyle, CONFIG.EasingDirection),
-			{Transparency = 0.7, Thickness = 2}
-		)
-		tween1:Play()
-		tween2:Play()
+	runButton.MouseEnter:Connect(function()
+		runButton.BorderSizePixel = 1
 	end)
 	
 	-- Run button click
@@ -260,25 +251,9 @@ function DetectionUI:CreateUI()
 		self:Hide()
 	end)
 	
-	-- Store shadow reference
-	self.shadow = shadow
-	
-	-- Connection to update shadow size when main frame size changes
-	local function updateShadowSize()
-		if self.mainFrame and self.shadow then
-			local mainSize = self.mainFrame.AbsoluteSize
-			self.shadow.Size = UDim2.new(0, mainSize.X + CONFIG.ShadowOffset, 0, mainSize.Y + CONFIG.ShadowOffset)
-		end
-	end
-	
-	-- Update shadow when main frame size changes
-	self.mainFrame:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateShadowSize)
-	
 	-- Initially hide the UI
 	self.mainFrame.Size = UDim2.new(0, 0, 0, 0)
 	self.mainFrame.Visible = false
-	shadow.Size = UDim2.new(0, 0, 0, 0)
-	shadow.Visible = false
 end
 
 
@@ -291,13 +266,14 @@ function DetectionUI:Show()
 	self.result = nil
 	
 	-- Show the UI
-	if self.shadow then
-		self.shadow.Visible = true
-	end
 	self.mainFrame.Visible = true
 	
+	-- Get screen size for responsive calculation
+	local screenSize = self.gui.AbsoluteSize
+	local frameWidth = math.min(450, math.max(320, screenSize.X * 0.85))
+	
 	-- Temporarily set size to calculate final dimensions
-	self.mainFrame.Size = UDim2.new(0.85, 0, 0, 0)
+	self.mainFrame.Size = UDim2.new(0, frameWidth, 0, 0)
 	self.mainFrame.AutomaticSize = Enum.AutomaticSize.Y
 	
 	-- Wait for layout to calculate
@@ -305,23 +281,9 @@ function DetectionUI:Show()
 	
 	-- Get final sizes
 	local finalMainSize = self.mainFrame.AbsoluteSize
-	local finalShadowSize = Vector2.new(finalMainSize.X + CONFIG.ShadowOffset, finalMainSize.Y + CONFIG.ShadowOffset)
 	
 	-- Reset to 0 for animation
 	self.mainFrame.Size = UDim2.new(0, 0, 0, 0)
-	
-	-- Animate in - shadow first, then main frame
-	if self.shadow then
-		local shadowTween = TweenService:Create(
-			self.shadow,
-			TweenInfo.new(CONFIG.TransitionTime, CONFIG.EasingStyle, CONFIG.EasingDirection),
-			{
-				Size = UDim2.new(0, finalShadowSize.X, 0, finalShadowSize.Y),
-				Position = UDim2.new(0.5, CONFIG.ShadowOffset / 2, 0.5, CONFIG.ShadowOffset / 2)
-			}
-		)
-		shadowTween:Play()
-	end
 	
 	-- Animate main frame to final size
 	local showTween = TweenService:Create(
@@ -333,7 +295,7 @@ function DetectionUI:Show()
 	showTween.Completed:Wait()
 	
 	-- Re-enable automatic size for responsive behavior
-	self.mainFrame.Size = UDim2.new(0.85, 0, 0, 0)
+	self.mainFrame.Size = UDim2.new(0, frameWidth, 0, 0)
 	self.mainFrame.AutomaticSize = Enum.AutomaticSize.Y
 end
 
@@ -351,18 +313,6 @@ function DetectionUI:Hide()
 		{Size = UDim2.new(0, 0, 0, 0)}
 	)
 	
-	if self.shadow then
-		local shadowTween = TweenService:Create(
-			self.shadow,
-			TweenInfo.new(CONFIG.TransitionTime, CONFIG.EasingStyle, CONFIG.EasingDirection),
-			{
-				Size = UDim2.new(0, 0, 0, 0),
-				Position = UDim2.new(0.5, 0, 0.5, 0)
-			}
-		)
-		shadowTween:Play()
-	end
-	
 	hideTween:Play()
 	hideTween.Completed:Wait()
 	
@@ -371,7 +321,6 @@ function DetectionUI:Hide()
 		self.gui:Destroy()
 		self.gui = nil
 		self.mainFrame = nil
-		self.shadow = nil
 	end
 end
 
