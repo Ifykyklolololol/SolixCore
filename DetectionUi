@@ -73,7 +73,7 @@ function DetectionUI:CreateUI()
 	
 	-- Add gradient background
 	local gradient = Instance.new("UIGradient")
-	gradient.ColorColorSequence = ColorSequence.new({
+	gradient.Color = ColorSequence.new({
 		ColorSequenceKeypoint.new(0, CONFIG.BackgroundColor),
 		ColorSequenceKeypoint.new(1, CONFIG.BackgroundColor2)
 	})
