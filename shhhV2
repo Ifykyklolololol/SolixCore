@@ -3909,52 +3909,23 @@ local Library do
             local Debounce = false
 
             function Page:Turn(Bool)
-                if Debounce then 
-                    return 
-                end
-
                 Page.Active = Bool 
-                
-                Debounce = true
-                Items["Page"].Instance.Visible = Bool 
-                Items["Page"].Instance.Parent = Bool and Page.Window.Items["Content"].Instance or Library.UnusedHolder.Instance
+                Items["Page"].Instance.Parent = Page.Active and Page.Window.Items["Content"].Instance or Library.UnusedHolder.Instance
 
                 if Page.Active then
+                    Items["Page"].Instance.Visible = true
+
+                    Items["Liner"]:Tween(nil, {BackgroundTransparency = 0, Size = UDim2New(0, 6, 1, -20)})
                     Items["Inactive"]:Tween(nil, {BackgroundTransparency = 0})
                     Items["Text"]:Tween(nil, {TextTransparency = 0, Position = UDim2New(0, 12, 0.5, 0)})
-                    Items["Liner"]:Tween(nil, {Size = UDim2New(0, 6, 1, -20), BackgroundTransparency = 0})
 
                     Library.CurrentPage = Page
                 else
+                    Items["Liner"]:Tween(nil, {BackgroundTransparency = 1, Size = UDim2New(0, 6, 0, 0)})
                     Items["Inactive"]:Tween(nil, {BackgroundTransparency = 1})
                     Items["Text"]:Tween(nil, {TextTransparency = 0.4, Position = UDim2New(0, 4, 0.5, 0)})
-                    Items["Liner"]:Tween(nil, {Size = UDim2New(0, 6, 0, 0), BackgroundTransparency = 1})
+                    Items["Page"].Instance.Visible = false
                 end
-
-                local AllInstances = Items["Page"].Instance:GetDescendants()
-                TableInsert(AllInstances, Items["Page"].Instance)
-                
-                local NewTween 
-
-                for Index, Value in AllInstances do 
-                    local TransparencyProperty = Tween:GetProperty(Value)
-
-                    if not TransparencyProperty then 
-                        continue
-                    end
-
-                    if type(TransparencyProperty) == "table" then 
-                        for _, Property in TransparencyProperty do 
-                            NewTween = Tween:FadeItem(Value, Property, Bool, Library.FadeSpeed)
-                        end
-                    else
-                        NewTween = Tween:FadeItem(Value, TransparencyProperty, Bool, Library.FadeSpeed)
-                    end
-                end
-
-                Library:Connect(NewTween.Tween.Completed, function()
-                    Debounce = false
-                end)
             end
 
             Items["Inactive"]:Connect("MouseButton1Down", function()
