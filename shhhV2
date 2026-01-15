@@ -5754,6 +5754,15 @@ local Library do
                 Items["Text"].Instance.Text = Text
             end
 
+            function Label:SetTextColor(Color)
+                if type(Color) == "table" then
+                    Color = FromRGB(Color[1], Color[2], Color[3])
+                elseif type(Color) == "string" then
+                    Color = FromHex(Color)
+                end
+                Items["Text"].Instance.TextColor3 = Color
+            end
+
             function Label:SetVisibility(Bool)
                 Items["Label"].Instance.Visible = Bool
             end
