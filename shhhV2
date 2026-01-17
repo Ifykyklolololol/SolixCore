@@ -3670,7 +3670,9 @@ local Library do
                 NewTween.Tween.Completed:Connect(function()
                     Debounce = false 
                     Items["MainFrame"].Instance.Visible = Window.IsOpen
-                    Items["Cursor"].Instance.Visible = Window.IsOpen
+                    if Items["Cursor"] then
+                        Items["Cursor"].Instance.Visible = Window.IsOpen
+                    end
                     UserInputService.MouseIconEnabled = not Window.IsOpen
                 end)
             end
