@@ -3560,7 +3560,9 @@ local Library do
                     Items["FloatingButton"]:Connect("MouseButton1Down", function(Input)
                         Window:SetOpen(not Window.IsOpen)
 
-                        Items["Image"].Instance.Visible = Window.IsOpen
+                        if Items["Image"] then
+                            Items["Image"].Instance.Visible = Window.IsOpen
+                        end
                         UserInputService.MouseIconEnabled = not Window.IsOpen
 
                         Items["OpenTitle"].Instance.Text = Window.IsOpen and "Close" or "Open"
