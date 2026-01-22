@@ -103,7 +103,7 @@ local Library do
     elseif not UserInputService.TouchEnabled and UserInputService.KeyboardEnabled and UserInputService.MouseEnabled then
         IsMobile = false
     elseif UserInputService.TouchEnabled and UserInputService.KeyboardEnabled and UserInputService.MouseEnabled then 
-        IsMobile = true
+        IsMobile = false
     end 
 
     Library = {
