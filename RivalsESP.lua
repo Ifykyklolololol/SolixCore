@@ -1,4 +1,4 @@
-print("Loaded ESP 2")
+print("V3")
 if ESP and ESP.Unload then
     ESP.Unload()
 end
@@ -273,13 +273,15 @@ getgenv().ESP = {
             OffscreenIndicators = {
                 Enabled = false,
                 Color = Color3_fromRGB(216, 126, 157),
-                Size = 12,
+                Transparency = 0,
+                Size = 14,
             },
             Snaplines = {
                 Enabled = false,
                 Position = "Bottom",
                 Color = Color3_fromRGB(255, 255, 255),
                 Transparency = 0.5,
+                Thickness = 2,
             },
             HeadDot = {
                 Enabled = false,
@@ -803,9 +805,9 @@ do -- Functions
                     }); Utility.CreateObject("UIStroke", {Parent = Objects["Weapon"], Color = Color3_fromRGB(0, 0, 0), LineJoinMode = Enum.LineJoinMode.Miter})
                 end
 
-                Objects["OffscreenArrow"] = Utility.CreateObject("TextLabel", {Parent = ESPHolder, Visible = false, BackgroundTransparency = 1, Position = UDim2_new(0, 0, 0, 0), Size = UDim2_new(0, 20, 0, 20), Text = ">", TextColor3 = Color3_fromRGB(216, 126, 157), TextSize = 16, AnchorPoint = Vector2_new(0.5, 0.5)})
-                Objects["Snapline"] = Utility.CreateObject("Frame", {Parent = ESPHolder, Visible = false, BackgroundColor3 = Color3_fromRGB(255, 255, 255), BackgroundTransparency = 0.5, BorderSizePixel = 0, Size = UDim2_new(0, 1, 0, 100), AnchorPoint = Vector2_new(0.5, 1), Position = UDim2_new(0.5, 0, 1, 0)})
-                Objects["HeadDot"] = Utility.CreateObject("Frame", {Parent = ESPHolder, Visible = false, BackgroundColor3 = Color3_fromRGB(216, 126, 157), BorderSizePixel = 0, Size = UDim2_new(0, 6, 0, 6), AnchorPoint = Vector2_new(0.5, 0.5), Position = UDim2_new(0, 0, 0, 0)})
+                Objects["OffscreenArrow"] = Utility.CreateObject("TextLabel", {Parent = ESPHolder, Visible = false, BackgroundTransparency = 1, Position = UDim2_new(0, 0, 0, 0), Size = UDim2_new(0, 24, 0, 24), Text = ">", TextColor3 = Color3_fromRGB(216, 126, 157), TextSize = 14, AnchorPoint = Vector2_new(0.5, 0.5), ZIndex = 100})
+                Objects["Snapline"] = Utility.CreateObject("Frame", {Parent = ESPHolder, Visible = false, BackgroundColor3 = Color3_fromRGB(255, 255, 255), BackgroundTransparency = 0.5, BorderSizePixel = 0, Size = UDim2_new(0, 2, 0, 100), AnchorPoint = Vector2_new(0.5, 1), Position = UDim2_new(0.5, 0, 1, 0), ZIndex = 99})
+                Objects["HeadDot"] = Utility.CreateObject("Frame", {Parent = ESPHolder, Visible = false, BackgroundColor3 = Color3_fromRGB(216, 126, 157), BorderSizePixel = 0, Size = UDim2_new(0, 6, 0, 6), AnchorPoint = Vector2_new(0.5, 0.5), Position = UDim2_new(0, 0, 0, 0), ZIndex = 98})
                 Utility.CreateObject("UICorner", {Parent = Objects["HeadDot"], CornerRadius = UDim_new(1, 0)})
 
                 ESP.Targets[Type][Target] = TargetInfo
@@ -871,51 +873,59 @@ do -- Functions
                 local BodyParts = if ESPSettings.BoundingBox.IncludeAccessories then CharacterObjects.Descendants else CharacterObjects.Children
                 local BoxWidth, BoxHeight, BoxPositionX, BoxPositionY, OnScreen = Utility.CalculateBox(ESPSettings, Target, CharacterObjects.HumanoidRootPart, (if IsBasePart then {Target} else BodyParts))
                 if not OnScreen then
-                    if ESPSettings.OffscreenIndicators and ESPSettings.OffscreenIndicators.Enabled then
-                        local rootPos = CharacterObjects.HumanoidRootPart.Position
-                        local screenPos, onSc = WorldToViewportPoint(Camera, rootPos)
-                        local vw, vh = Viewport.X, Viewport.Y
-                        local margin = ESPSettings.OffscreenIndicators.Size or 12
+                    local vw = Camera.ViewportSize.X
+                    local vh = Camera.ViewportSize.Y
+                    local rootPos = CharacterObjects.HumanoidRootPart.Position
+                    local screenPos = WorldToViewportPoint(Camera, rootPos)
+                    if type(screenPos) ~= "userdata" then
+                        screenPos = Vector3_new(0, 0, 0)
+                    end
+                    local margin = 24
+
+                    local offscreenCfg = ESPSettings.OffscreenIndicators
+                    if offscreenCfg and offscreenCfg.Enabled then
                         local x = math_clamp(screenPos.X, margin, vw - margin)
                         local y = math_clamp(screenPos.Y, margin, vh - margin)
                         local arrow = Objects["OffscreenArrow"]
                         arrow.Visible = true
-                        arrow.Position = UDim2_new(0, x, 0, y)
-                        arrow.TextColor3 = ESPSettings.OffscreenIndicators.Color or Color3_fromRGB(216, 126, 157)
-                        arrow.TextSize = ESPSettings.OffscreenIndicators.Size or 12
+                        arrow.Position = UDim2_new(0, math_floor(x), 0, math_floor(y))
+                        arrow.TextColor3 = offscreenCfg.Color or Color3_fromRGB(216, 126, 157)
+                        arrow.TextTransparency = offscreenCfg.Transparency or 0
+                        arrow.TextSize = offscreenCfg.Size or 14
+                        arrow.Size = UDim2_new(0, (offscreenCfg.Size or 14) + 10, 0, (offscreenCfg.Size or 14) + 10)
                         local angle = math_deg(math.atan2(y - vh * 0.5, x - vw * 0.5))
                         arrow.Rotation = angle + 90
                     else
                         if Objects["OffscreenArrow"] then Objects["OffscreenArrow"].Visible = false end
                     end
-                    if ESPSettings.Snaplines and ESPSettings.Snaplines.Enabled then
-                        local rootPos = CharacterObjects.HumanoidRootPart.Position
-                        local screenPos = WorldToViewportPoint(Camera, rootPos)
-                        local vw, vh = Viewport.X, Viewport.Y
-                        local margin = 20
+
+                    local snaplineCfg = ESPSettings.Snaplines
+                    if snaplineCfg and snaplineCfg.Enabled then
                         local ex = math_clamp(screenPos.X, margin, vw - margin)
                         local ey = math_clamp(screenPos.Y, margin, vh - margin)
-                        local posType = ESPSettings.Snaplines.Position or "Bottom"
+                        local posType = snaplineCfg.Position or "Bottom"
                         local sx, sy
                         if posType == "Top" then
                             sx, sy = vw * 0.5, 0
                         elseif posType == "Middle" then
                             sx, sy = vw * 0.5, vh * 0.5
                         elseif posType == "From barrel" then
-                            local barrelScreen = WorldToViewportPoint(Camera, Camera.CFrame.Position)
-                            sx, sy = barrelScreen.X, barrelScreen.Y
+                            local barrelPos = WorldToViewportPoint(Camera, Camera.CFrame.Position)
+                            sx = type(barrelPos) == "userdata" and barrelPos.X or (vw * 0.5)
+                            sy = type(barrelPos) == "userdata" and barrelPos.Y or (vh * 0.5)
                         else
                             sx, sy = vw * 0.5, vh
                         end
                         local dx, dy = ex - sx, ey - sy
                         local len = math.sqrt(dx * dx + dy * dy)
+                        local thickness = math_max(1, snaplineCfg.Thickness or 2)
                         local line = Objects["Snapline"]
                         line.Visible = true
-                        line.Position = UDim2_new(0, sx, 0, sy)
-                        line.Size = UDim2_new(0, 2, 0, math_max(1, len))
-                        line.Rotation = -math_deg(math.atan2(dx, dy))
-                        line.BackgroundColor3 = ESPSettings.Snaplines.Color or Color3_fromRGB(255, 255, 255)
-                        line.BackgroundTransparency = ESPSettings.Snaplines.Transparency or 0.5
+                        line.Position = UDim2_new(0, math_floor(sx), 0, math_floor(sy))
+                        line.Size = UDim2_new(0, thickness, 0, math_max(2, math_floor(len)))
+                        line.Rotation = math_deg(math.atan2(-dx, dy))
+                        line.BackgroundColor3 = snaplineCfg.Color or Color3_fromRGB(255, 255, 255)
+                        line.BackgroundTransparency = snaplineCfg.Transparency or 0.5
                     else
                         if Objects["Snapline"] then Objects["Snapline"].Visible = false end
                     end
@@ -1198,17 +1208,19 @@ do -- Functions
                     end
                 end
 
-                if ESPSettings.Snaplines and ESPSettings.Snaplines.Enabled then
-                    local vw, vh = Viewport.X, Viewport.Y
-                    local posType = ESPSettings.Snaplines.Position or "Bottom"
+                local snaplineCfgOn = ESPSettings.Snaplines
+                if snaplineCfgOn and snaplineCfgOn.Enabled then
+                    local vw, vh = Camera.ViewportSize.X, Camera.ViewportSize.Y
+                    local posType = snaplineCfgOn.Position or "Bottom"
                     local sx, sy
                     if posType == "Top" then
                         sx, sy = vw * 0.5, 0
                     elseif posType == "Middle" then
                         sx, sy = vw * 0.5, vh * 0.5
                     elseif posType == "From barrel" then
-                        local barrelScreen = WorldToViewportPoint(Camera, Camera.CFrame.Position)
-                        sx, sy = barrelScreen.X, barrelScreen.Y
+                        local barrelPos = WorldToViewportPoint(Camera, Camera.CFrame.Position)
+                        sx = type(barrelPos) == "userdata" and barrelPos.X or (vw * 0.5)
+                        sy = type(barrelPos) == "userdata" and barrelPos.Y or (vh * 0.5)
                     else
                         sx, sy = vw * 0.5, vh
                     end
@@ -1216,13 +1228,14 @@ do -- Functions
                     local ey = BoxPositionY
                     local dx, dy = ex - sx, ey - sy
                     local len = math.sqrt(dx * dx + dy * dy)
+                    local thickness = math_max(1, snaplineCfgOn.Thickness or 2)
                     local line = Objects["Snapline"]
                     line.Visible = true
-                    line.Position = UDim2_new(0, sx, 0, sy)
-                    line.Size = UDim2_new(0, 2, 0, math_max(1, len))
-                    line.Rotation = -math_deg(math.atan2(dx, dy))
-                    line.BackgroundColor3 = ESPSettings.Snaplines.Color or Color3_fromRGB(255, 255, 255)
-                    line.BackgroundTransparency = ESPSettings.Snaplines.Transparency or 0.5
+                    line.Position = UDim2_new(0, math_floor(sx), 0, math_floor(sy))
+                    line.Size = UDim2_new(0, thickness, 0, math_max(2, math_floor(len)))
+                    line.Rotation = math_deg(math.atan2(-dx, dy))
+                    line.BackgroundColor3 = snaplineCfgOn.Color or Color3_fromRGB(255, 255, 255)
+                    line.BackgroundTransparency = snaplineCfgOn.Transparency or 0.5
                 else
                     if Objects["Snapline"] then Objects["Snapline"].Visible = false end
                 end
@@ -1231,12 +1244,16 @@ do -- Functions
                     local head = CharacterObjects.Character:FindFirstChild("Head") or CharacterObjects.Character:FindFirstChild("HitboxHead")
                     if head then
                         local headScreen = WorldToViewportPoint(Camera, head.Position)
-                        local dot = Objects["HeadDot"]
-                        dot.Visible = true
-                        dot.Position = UDim2_new(0, headScreen.X, 0, headScreen.Y)
-                        dot.BackgroundColor3 = ESPSettings.HeadDot.Color or Color3_fromRGB(216, 126, 157)
-                        local sz = ESPSettings.HeadDot.Size or 4
-                        dot.Size = UDim2_new(0, sz, 0, sz)
+                        if type(headScreen) == "userdata" and headScreen.X then
+                            local dot = Objects["HeadDot"]
+                            dot.Visible = true
+                            dot.Position = UDim2_new(0, math_floor(headScreen.X), 0, math_floor(headScreen.Y))
+                            dot.BackgroundColor3 = ESPSettings.HeadDot.Color or Color3_fromRGB(216, 126, 157)
+                            local sz = ESPSettings.HeadDot.Size or 6
+                            dot.Size = UDim2_new(0, sz, 0, sz)
+                        else
+                            if Objects["HeadDot"] then Objects["HeadDot"].Visible = false end
+                        end
                     else
                         if Objects["HeadDot"] then Objects["HeadDot"].Visible = false end
                     end
