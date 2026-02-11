@@ -1,3 +1,4 @@
+Print("Loaded ESP")
 if ESP and ESP.Unload then
     ESP.Unload()
 end
