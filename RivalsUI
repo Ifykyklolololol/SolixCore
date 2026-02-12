@@ -1020,35 +1020,44 @@ local Library do
         return HttpService:JSONEncode(Config)
     end
 
-    Library.LoadConfig = function(self, Config)
+    Library.LoadConfig = function(self, Config, OnDone)
         local Decoded = HttpService:JSONDecode(Config)
 
-        local Success, Result = Library:SafeCall(function()
-            for Index, Value in Decoded do 
-                if Index == "_FloatingButtonPosition" then
-                    if IsMobile and Library.FloatingButton and Library.FloatingButton.Instance then
-                        Library.FloatingButton.Instance.Position = UDim2New(Value.X.Scale, Value.X.Offset, Value.Y.Scale, Value.Y.Offset)
+        local function DoLoad()
+            return Library:SafeCall(function()
+                for Index, Value in Decoded do 
+                    if Index == "_FloatingButtonPosition" then
+                        if IsMobile and Library.FloatingButton and Library.FloatingButton.Instance then
+                            Library.FloatingButton.Instance.Position = UDim2New(Value.X.Scale, Value.X.Offset, Value.Y.Scale, Value.Y.Offset)
+                        end
+                        continue
                     end
-                    continue
+
+                    local SetFunction = Library.SetFlags[Index]
+
+                    if not SetFunction then
+                        continue
+                    end
+
+                    if type(Value) == "table" and Value.Key then 
+                        SetFunction(Value)
+                    elseif type(Value) == "table" and Value.Color then
+                        SetFunction(Value.Color, Value.Alpha)
+                    else
+                        SetFunction(Value)
+                    end
                 end
+            end)
+        end
 
-                local SetFunction = Library.SetFlags[Index]
-
-                if not SetFunction then
-                    continue
-                end
-
-                if type(Value) == "table" and Value.Key then 
-                    SetFunction(Value)
-                elseif type(Value) == "table" and Value.Color then
-                    SetFunction(Value.Color, Value.Alpha)
-                else
-                    SetFunction(Value)
-                end
-            end
-        end)
-
-        return Success, Result
+        if type(OnDone) == "function" then
+            task.defer(function()
+                local Success, Result = DoLoad()
+                OnDone(Success, Result)
+            end)
+            return
+        end
+        return DoLoad()
     end
 
     Library.RefreshConfigsList = function(self, Element)
@@ -1213,23 +1222,23 @@ local Library do
             return 
         end
 
-        local Success, Error = Library:LoadConfig(ConfigContent)
-
-        if Success then 
-            Library:Notification({
-                Name = "Success",
-                Description = "Succesfully autoloaded config",
-                Color = Color3.fromRGB(0, 255, 0),
-                Duration = 5
-            })
-        else
-            Library:Notification({
-                Name = "Error",
-                Description = "Failed to load config: \n" .. (Error or "Unknown error"),
-                Color = Color3.fromRGB(255, 0, 0),
-                Duration = 5
-            })
-        end
+        Library:LoadConfig(ConfigContent, function(Success, Error)
+            if Success then 
+                Library:Notification({
+                    Name = "Success",
+                    Description = "Succesfully autoloaded config",
+                    Color = Color3.fromRGB(0, 255, 0),
+                    Duration = 5
+                })
+            else
+                Library:Notification({
+                    Name = "Error",
+                    Description = "Failed to load config: \n" .. (Error or "Unknown error"),
+                    Color = Color3.fromRGB(255, 0, 0),
+                    Duration = 5
+                })
+            end
+        end)
     end
 
     do 
@@ -6093,23 +6102,23 @@ local Library do
                     if ConfigSelected then 
                         if isfile(Library:GetFolder().. ConfigSelected .. ".json") then
                             local ConfigContent = readfile(Library:GetFolder().. ConfigSelected .. ".json")
-                            local Success, Error = Library:LoadConfig(ConfigContent)
-                            
-                            if Success then 
-                                Library:Notification({
-                                    Name = "Success",
-                                    Description = "Succesfully loaded config: ".. ConfigSelected,
-                                    Color = Color3.fromRGB(0, 255, 0),
-                                    Duration = 5
-                                })
-                            else
-                                Library:Notification({
-                                    Name = "Error",
-                                    Description = "Failed to load config: ".. (ConfigSelected or "Unknown") .. "\n" .. (Error or "Unknown error"),
-                                    Color = Color3.fromRGB(255, 0, 0),
-                                    Duration = 5
-                                })
-                            end
+                            Library:LoadConfig(ConfigContent, function(Success, Error)
+                                if Success then 
+                                    Library:Notification({
+                                        Name = "Success",
+                                        Description = "Succesfully loaded config: ".. ConfigSelected,
+                                        Color = Color3.fromRGB(0, 255, 0),
+                                        Duration = 5
+                                    })
+                                else
+                                    Library:Notification({
+                                        Name = "Error",
+                                        Description = "Failed to load config: ".. (ConfigSelected or "Unknown") .. "\n" .. (Error or "Unknown error"),
+                                        Color = Color3.fromRGB(255, 0, 0),
+                                        Duration = 5
+                                    })
+                                end
+                            end)
                         else
                             Library:Notification({
                                 Name = "Error",
@@ -6203,23 +6212,23 @@ local Library do
                     })
                 end):Add("Import Pasted", function()
                     if PastedConfig and PastedConfig ~= "" then
-                        local Success, Error = Library:LoadConfig(PastedConfig)
-                        
-                        if Success then
-                            Library:Notification({
-                                Name = "Success",
-                                Description = "Succesfully imported config",
-                                Color = Color3.fromRGB(0, 255, 0),
-                                Duration = 5
-                            })
-                        else
-                            Library:Notification({
-                                Name = "Error",
-                                Description = "Failed to import config: ".. tostring(Error),
-                                Color = Color3.fromRGB(255, 0, 0),
-                                Duration = 5
-                            })
-                        end
+                        Library:LoadConfig(PastedConfig, function(Success, Error)
+                            if Success then
+                                Library:Notification({
+                                    Name = "Success",
+                                    Description = "Succesfully imported config",
+                                    Color = Color3.fromRGB(0, 255, 0),
+                                    Duration = 5
+                                })
+                            else
+                                Library:Notification({
+                                    Name = "Error",
+                                    Description = "Failed to import config: ".. tostring(Error),
+                                    Color = Color3.fromRGB(255, 0, 0),
+                                    Duration = 5
+                                })
+                            end
+                        end)
                     else
                         Library:Notification({
                             Name = "Error",
