@@ -1,4 +1,4 @@
-print("YO2")
+print("Yo 3")
 if not LPH_OBFUSCATED then
     LPH_JIT_MAX = function(...) return ... end
     LPH_NO_VIRTUALIZE = function(f) return f end
@@ -1052,12 +1052,9 @@ local Library do
         end
 
         if type(OnDone) == "function" then
-            local conn
-            conn = RunService.Heartbeat:Connect(function()
-                if conn then conn:Disconnect() conn = nil end
-                local Success, Result = DoLoad()
-                OnDone(Success, Result)
-            end)
+            local g = getgenv()
+            g.PendingConfigLoad = g.PendingConfigLoad or {}
+            table.insert(g.PendingConfigLoad, { Config = Config, OnDone = OnDone })
             return
         end
         return DoLoad()
