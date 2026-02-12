@@ -1,4 +1,4 @@
-print("Yo 4")
+print("Yo 5")
 if not LPH_OBFUSCATED then
     LPH_JIT_MAX = function(...) return ... end
     LPH_NO_VIRTUALIZE = function(f) return f end
@@ -1052,8 +1052,8 @@ local Library do
         end
 
         if type(OnDone) == "function" then
-            self.PendingConfigLoad = self.PendingConfigLoad or {}
-            table.insert(self.PendingConfigLoad, { Config = Config, OnDone = OnDone })
+            local Success, Result = DoLoad()
+            OnDone(Success, Result)
             return
         end
         return DoLoad()
