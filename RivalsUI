@@ -1,4 +1,4 @@
-print("Yo 7")
+print("Yo 8")
 if not LPH_OBFUSCATED then
     LPH_JIT_MAX = function(...) return ... end
     LPH_NO_VIRTUALIZE = function(f) return f end
@@ -3972,31 +3972,36 @@ local Library do
 
                 local AllInstances = Items["Page"].Instance:GetDescendants()
                 TableInsert(AllInstances, Items["Page"].Instance)
-                
-                local NewTween 
 
-                for Index, Value in AllInstances do 
-                    local TransparencyProperty = Tween:GetProperty(Value)
-
-                    if not TransparencyProperty then 
-                        continue
-                    end
-
-                    if type(TransparencyProperty) == "table" then 
-                        for _, Property in TransparencyProperty do 
-                            NewTween = Tween:FadeItem(Value, Property, Bool, Library.FadeSpeed)
-                        end
-                    else
-                        NewTween = Tween:FadeItem(Value, TransparencyProperty, Bool, Library.FadeSpeed)
-                    end
+                Page._TransparencyCache = Page._TransparencyCache or {}
+                local cache = Page._TransparencyCache
+                local function defaultVisible(Property)
+                    return (Property == "BackgroundTransparency" or Property == "ScrollBarImageTransparency") and 1 or 0
                 end
 
-                if NewTween and NewTween.Tween then
-                    Library:Connect(NewTween.Tween.Completed, function()
-                        Debounce = false
-                    end)
+                if Bool then
+                    for Index, Value in AllInstances do 
+                        local TransparencyProperty = Tween:GetProperty(Value)
+                        if not TransparencyProperty then continue end
+                        local props = type(TransparencyProperty) == "table" and TransparencyProperty or { TransparencyProperty }
+                        for _, Property in props do 
+                            cache[Value] = cache[Value] or {}
+                            Value[Property] = (cache[Value][Property] ~= nil) and cache[Value][Property] or defaultVisible(Property)
+                        end
+                    end
+                    task.defer(function() Debounce = false end)
                 else
-                    Debounce = false
+                    for Index, Value in AllInstances do 
+                        local TransparencyProperty = Tween:GetProperty(Value)
+                        if not TransparencyProperty then continue end
+                        local props = type(TransparencyProperty) == "table" and TransparencyProperty or { TransparencyProperty }
+                        for _, Property in props do 
+                            cache[Value] = cache[Value] or {}
+                            cache[Value][Property] = Value[Property]
+                            Value[Property] = 1
+                        end
+                    end
+                    task.defer(function() Debounce = false end)
                 end
             end
 
