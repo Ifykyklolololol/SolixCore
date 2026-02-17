@@ -1,4 +1,4 @@
-print("Yo 8")
+print("Yo 9")
 if not LPH_OBFUSCATED then
     LPH_JIT_MAX = function(...) return ... end
     LPH_NO_VIRTUALIZE = function(f) return f end
@@ -3975,9 +3975,6 @@ local Library do
 
                 Page._TransparencyCache = Page._TransparencyCache or {}
                 local cache = Page._TransparencyCache
-                local function defaultVisible(Property)
-                    return (Property == "BackgroundTransparency" or Property == "ScrollBarImageTransparency") and 1 or 0
-                end
 
                 if Bool then
                     for Index, Value in AllInstances do 
@@ -3986,7 +3983,11 @@ local Library do
                         local props = type(TransparencyProperty) == "table" and TransparencyProperty or { TransparencyProperty }
                         for _, Property in props do 
                             cache[Value] = cache[Value] or {}
-                            Value[Property] = (cache[Value][Property] ~= nil) and cache[Value][Property] or defaultVisible(Property)
+                            if cache[Value][Property] ~= nil then
+                                Value[Property] = cache[Value][Property]
+                            else
+                                cache[Value][Property] = Value[Property]
+                            end
                         end
                     end
                     task.defer(function() Debounce = false end)
