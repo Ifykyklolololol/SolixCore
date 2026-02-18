@@ -162,7 +162,6 @@ local Library do
         Font = nil
     }
 
-    Library.IsMobile = IsMobile
     Library.__index = Library
     Library.Sections.__index = Library.Sections
     Library.Pages.__index = Library.Pages
@@ -700,8 +699,8 @@ local Library do
                     h = Minimum.Y
                 end
             
-                self.Instance.Position = UDim2FromOffset(x, y)
-                self.Instance.Size = UDim2FromOffset(w, h)
+                self:Tween(TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2FromOffset(x, y)})
+                self:Tween(TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2FromOffset(w, h)})
             end)
         end
 
@@ -785,17 +784,13 @@ local Library do
             end
 
             Library:Connect(Gui.MouseEnter, function()
-                MouseLocation = UserInputService:GetMouseLocation()
                 Items["Tooltip"].Instance.Position = UDim2New(0, MouseLocation.X, 0, MouseLocation.Y - 42)
                 Items["Tooltip"]:Tween(nil, {BackgroundTransparency = 0})
                 Items["Text"]:Tween(nil, {TextTransparency = 0})
 
-                local tooltipFrameCount = 0
                 RenderStepped = RunService.RenderStepped:Connect(function()
-                    tooltipFrameCount = tooltipFrameCount + 1
-                    if tooltipFrameCount % 2 == 0 then return end
                     MouseLocation = UserInputService:GetMouseLocation()
-                    Items["Tooltip"].Instance.Position = UDim2New(0, MouseLocation.X, 0, MouseLocation.Y - 42)
+                    Items["Tooltip"]:Tween(nil, {Position = UDim2New(0, MouseLocation.X, 0, MouseLocation.Y - 42)})
                 end)
             end)
 
@@ -808,32 +803,6 @@ local Library do
                     RenderStepped = nil
                 end
             end)
-
-            if IsMobile then
-                Library:Connect(Gui.InputBegan, function(Input)
-                    if Input.UserInputType ~= Enum.UserInputType.Touch then return end
-                    MouseLocation = UserInputService:GetMouseLocation()
-                    Items["Tooltip"].Instance.Position = UDim2New(0, MouseLocation.X, 0, MouseLocation.Y - 42)
-                    Items["Tooltip"]:Tween(nil, {BackgroundTransparency = 0})
-                    Items["Text"]:Tween(nil, {TextTransparency = 0})
-                    local tooltipFrameCount = 0
-                    RenderStepped = RunService.RenderStepped:Connect(function()
-                        tooltipFrameCount = tooltipFrameCount + 1
-                        if tooltipFrameCount % 2 == 0 then return end
-                        MouseLocation = UserInputService:GetMouseLocation()
-                        Items["Tooltip"].Instance.Position = UDim2New(0, MouseLocation.X, 0, MouseLocation.Y - 42)
-                    end)
-                end)
-                Library:Connect(UserInputService.InputEnded, function(Input)
-                    if Input.UserInputType ~= Enum.UserInputType.Touch then return end
-                    Items["Tooltip"]:Tween(nil, {BackgroundTransparency = 1})
-                    Items["Text"]:Tween(nil, {TextTransparency = 1})
-                    if RenderStepped then
-                        RenderStepped:Disconnect()
-                        RenderStepped = nil
-                    end
-                end)
-            end
         end
     end
 
@@ -1210,7 +1179,8 @@ local Library do
 
     Library.IsMouseOverFrame = function(self, Frame)
         Frame = Frame.Instance
-        local MousePosition = UserInputService:GetMouseLocation()
+
+        local MousePosition = Vector2New(Mouse.X, Mouse.Y)
 
         return MousePosition.X >= Frame.AbsolutePosition.X and MousePosition.X <= Frame.AbsolutePosition.X + Frame.AbsoluteSize.X 
         and MousePosition.Y >= Frame.AbsolutePosition.Y and MousePosition.Y <= Frame.AbsolutePosition.Y + Frame.AbsoluteSize.Y
@@ -3595,8 +3565,7 @@ local Library do
                         CornerRadius = UDimNew(1, 0)
                     }) 
     
-                    Items["FloatingButton"]:Connect("InputBegan", function(Input)
-                        if Input.UserInputType ~= Enum.UserInputType.MouseButton1 and Input.UserInputType ~= Enum.UserInputType.Touch then return end
+                    Items["FloatingButton"]:Connect("MouseButton1Down", function(Input)
                         Window:SetOpen(not Window.IsOpen)
 
                         Items["Image"].Instance.Visible = Window.IsOpen
@@ -3975,7 +3944,6 @@ local Library do
                 
                 local NewTween 
 
-                local tabFadeSpeed = 0.08
                 for Index, Value in AllInstances do 
                     local TransparencyProperty = Tween:GetProperty(Value)
 
@@ -3985,24 +3953,19 @@ local Library do
 
                     if type(TransparencyProperty) == "table" then 
                         for _, Property in TransparencyProperty do 
-                            NewTween = Tween:FadeItem(Value, Property, Bool, tabFadeSpeed)
+                            NewTween = Tween:FadeItem(Value, Property, Bool, Library.FadeSpeed)
                         end
                     else
-                        NewTween = Tween:FadeItem(Value, TransparencyProperty, Bool, tabFadeSpeed)
+                        NewTween = Tween:FadeItem(Value, TransparencyProperty, Bool, Library.FadeSpeed)
                     end
                 end
 
-                if NewTween and NewTween.Tween then
-                    Library:Connect(NewTween.Tween.Completed, function()
-                        Debounce = false
-                    end)
-                else
+                Library:Connect(NewTween.Tween.Completed, function()
                     Debounce = false
-                end
+                end)
             end
 
-            Items["Inactive"]:Connect("InputBegan", function(Input)
-                if Input.UserInputType ~= Enum.UserInputType.MouseButton1 and Input.UserInputType ~= Enum.UserInputType.Touch then return end
+            Items["Inactive"]:Connect("MouseButton1Down", function()
                 for Index, Value in Page.Window.Pages do 
                     if Value == Page and Page.Active then
                         return
