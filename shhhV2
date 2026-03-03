@@ -1,5 +1,4 @@
-print("Test")
-
+print("Test2")
 if not LPH_OBFUSCATED then
     LPH_JIT_MAX = function(...) return ... end
     LPH_NO_VIRTUALIZE = function(f) return f end
@@ -6169,17 +6168,15 @@ local Library do
                 end)
 
                 ConfigsSection:Button():Add("Set Autoload", function()
-                    if ConfigSelected and isfile(Library:GetFolder().. ConfigSelected .. ".json") then
-                        local ConfigContent = readfile(Library:GetFolder().. ConfigSelected .. ".json")
-                        writefile(Library.Folders.Directory .. "/autoload.json", ConfigContent)
-
-                        Library:Notification({
-                            Name = "Success",
-                            Description = "Succesfully set autoload to: ".. ConfigSelected,
-                            Color = Color3.fromRGB(0, 255, 0),
-                            Duration = 5
-                        })
-                    end
+                    pcall(function()
+                        writefile(Library.Folders.Directory .. "/autoload.json", Library:GetConfig())
+                    end)
+                    Library:Notification({
+                        Name = "Success",
+                        Description = "Autoload set to current config",
+                        Color = Color3.fromRGB(0, 255, 0),
+                        Duration = 5
+                    })
                 end):Add("Remove Autoload", function()
                     writefile(Library.Folders.Directory .. "/autoload.json", "")
 
