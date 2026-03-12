@@ -1,4 +1,4 @@
-print("Test6")
+print("Test7")
 if not LPH_OBFUSCATED then
     LPH_JIT_MAX = function(...) return ... end
     LPH_NO_VIRTUALIZE = function(f) return f end
@@ -847,13 +847,13 @@ local Library do
         ResetOnSpawn = false
     })
 
-    -- Viewport-based UIScale: window size as % of screen (50% PC, 70% mobile)
+    -- Viewport-based UIScale: PC = original size (scale 1), mobile = % of screen (70%)
     local ViewportSize = function()
         local Camera = workspace.CurrentCamera
         return (Camera and Camera.ViewportSize) or Vector2New(1920, 1080)
     end
     Library.UIScaleDesignSize = Vector2New(600, 420)
-    Library.UIScaleScreenPercent = 0.5
+    Library.UIScaleScreenPercent = 0.7
     Library.UIScaleObject = Instances:Create("UIScale", {
         Parent = Library.Holder.Instance,
         Name = "UIScale",
@@ -874,12 +874,22 @@ local Library do
         self.UIScaleNum = Scale
     end
 
-    Library:SetScaleFromScreenPercent(0.5)
+    if IsMobile then
+        Library:SetScaleFromScreenPercent(0.7)
+    else
+        Library.UIScaleObject.Instance.Scale = 1
+        Library.UIScaleNum = 1
+    end
     task.defer(function()
         local Camera = workspace.CurrentCamera
         if Camera then
             Library:Connect(Camera:GetPropertyChangedSignal("ViewportSize"), function()
-                Library:SetScaleFromScreenPercent(Library.UIScaleScreenPercent)
+                if IsMobile then
+                    Library:SetScaleFromScreenPercent(Library.UIScaleScreenPercent)
+                else
+                    Library.UIScaleObject.Instance.Scale = 1
+                    Library.UIScaleNum = 1
+                end
             end)
         end
     end)
@@ -900,8 +910,17 @@ local Library do
         ResetOnSpawn = false
     })
 
+    -- Notifications: on PC use separate ScreenGui (no UIScale) for original size; on mobile use Holder so they scale with UI
+    Library.NotifGui = Instances:Create("ScreenGui", {
+        Parent = gethui(),
+        Name = "\0",
+        ZIndexBehavior = Enum.ZIndexBehavior.Global,
+        DisplayOrder = 2,
+        ResetOnSpawn = false
+    })
+
     Library.NotifHolder = Instances:Create("Frame", {
-        Parent = Library.Holder.Instance,
+        Parent = IsMobile and Library.Holder.Instance or Library.NotifGui.Instance,
         Name = "\0",
         BorderColor3 = FromRGB(0, 0, 0),
         AnchorPoint = Vector2New(1, 0),
@@ -940,6 +959,10 @@ local Library do
 
         if self.Holder then 
             self.Holder:Clean()
+        end
+
+        if self.NotifGui then
+            self.NotifGui:Clean()
         end
 
         Library = nil 
@@ -3311,8 +3334,13 @@ local Library do
                     BackgroundColor3 = Library.Theme["Background"]
                 }):AddToTheme({BackgroundColor3 = 'Background'})
 
-                -- Window size as % of viewport: 70% on mobile, 50% on PC
-                Library:SetScaleFromScreenPercent(IsMobile and 0.7 or 0.5)
+                -- PC = original size (scale 1), mobile = 70% of viewport
+                if IsMobile then
+                    Library:SetScaleFromScreenPercent(0.7)
+                else
+                    Library.UIScaleObject.Instance.Scale = 1
+                    Library.UIScaleNum = 1
+                end
 
                 -- Center main frame in design space so it appears centered on viewport (UIScale offsets 0.5,0.5)
                 do
