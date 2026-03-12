@@ -1,4 +1,4 @@
-print("Test7")
+print("Test2")
 if not LPH_OBFUSCATED then
     LPH_JIT_MAX = function(...) return ... end
     LPH_NO_VIRTUALIZE = function(f) return f end
@@ -852,7 +852,7 @@ local Library do
         local Camera = workspace.CurrentCamera
         return (Camera and Camera.ViewportSize) or Vector2New(1920, 1080)
     end
-    Library.UIScaleDesignSize = Vector2New(600, 420)
+    Library.UIScaleDesignSize = Vector2New(770, 526)
     Library.UIScaleScreenPercent = 0.7
     Library.UIScaleObject = Instances:Create("UIScale", {
         Parent = Library.Holder.Instance,
@@ -3328,7 +3328,7 @@ local Library do
                     AnchorPoint = Vector2New(0.5, 0.5),
                     BackgroundTransparency = 0.30000001192092896,
                     Position = UDim2New(0.5, 0, 0.5, 0),
-                    Size = UDim2New(0, 600, 0, 420),
+                    Size = UDim2New(0, 770, 0, 526),
                     ZIndex = 2,
                     BorderSizePixel = 0,
                     BackgroundColor3 = Library.Theme["Background"]
