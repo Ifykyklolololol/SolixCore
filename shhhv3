@@ -1,4 +1,4 @@
-print("Test3")
+print("Test2")
 if not LPH_OBFUSCATED then
     LPH_JIT_MAX = function(...) return ... end
     LPH_NO_VIRTUALIZE = function(f) return f end
@@ -853,7 +853,7 @@ local Library do
         return (Camera and Camera.ViewportSize) or Vector2New(1920, 1080)
     end
     Library.UIScaleDesignSize = Vector2New(770, 526)
-    Library.UIScaleScreenPercent = 2 / 3
+    Library.UIScaleScreenPercent = 2.3 / 3
     Library.UIScaleObject = Instances:Create("UIScale", {
         Parent = Library.Holder.Instance,
         Name = "UIScale",
@@ -875,7 +875,7 @@ local Library do
     end
 
     if IsMobile then
-        Library:SetScaleFromScreenPercent(2 / 3)
+        Library:SetScaleFromScreenPercent(2.3 / 3)
     else
         Library.UIScaleObject.Instance.Scale = 1
         Library.UIScaleNum = 1
@@ -3334,9 +3334,9 @@ local Library do
                     BackgroundColor3 = Library.Theme["Background"]
                 }):AddToTheme({BackgroundColor3 = 'Background'})
 
-                -- PC = original size (scale 1), mobile = 2/3 of viewport
+                -- PC = original size (scale 1), mobile = 2.3/3 of viewport
                 if IsMobile then
-                    Library:SetScaleFromScreenPercent(2 / 3)
+                    Library:SetScaleFromScreenPercent(2.3 / 3)
                 else
                     Library.UIScaleObject.Instance.Scale = 1
                     Library.UIScaleNum = 1
