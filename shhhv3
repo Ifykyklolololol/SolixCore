@@ -1,4 +1,4 @@
-print("Test2")
+print("Test5")
 if not LPH_OBFUSCATED then
     LPH_JIT_MAX = function(...) return ... end
     LPH_NO_VIRTUALIZE = function(f) return f end
@@ -1804,7 +1804,8 @@ local Library do
                     RenderStepped = RunService.RenderStepped:Connect(function()
                         local Scale = Library.UIScaleNum or 1
                         local dropOx = Items["RealDropdown"].Instance.AbsolutePosition.X
-                        local dropOy = Items["RealDropdown"].Instance.AbsolutePosition.Y + Items["RealDropdown"].Instance.AbsoluteSize.Y + 5
+                        local btnTop = Items["RealDropdown"].Instance.AbsolutePosition.Y
+                        local btnBottom = btnTop + Items["RealDropdown"].Instance.AbsoluteSize.Y
                         local dropW = Items["RealDropdown"].Instance.AbsoluteSize.X
                         local dropH = Dropdown.MaxSize
                         local win = Colorpicker.Items["ColorpickerWindow"].Instance
@@ -1812,11 +1813,19 @@ local Library do
                         local cw, ch = win.AbsoluteSize.X, win.AbsoluteSize.Y
                         local pad = 8
                         local left = math.max(dropOx, cx + pad)
-                        local top = dropOy
                         local right = math.min(dropOx + dropW, cx + cw - pad)
-                        local bottom = math.min(dropOy + dropH, cy + ch - pad)
                         local outW = right - left
-                        local outH = bottom - top
+                        local spaceBelow = (cy + ch - pad) - (btnBottom + 5)
+                        local top, outH
+                        if spaceBelow >= dropH then
+                            top = btnBottom + 5
+                            local bottom = math.min(top + dropH, cy + ch - pad)
+                            outH = bottom - top
+                        else
+                            local listBottom = btnTop - 5
+                            top = math.max(listBottom - dropH, cy + pad)
+                            outH = listBottom - top
+                        end
                         Items["OptionHolder"].Instance.Position = UDim2New(0, left / Scale, 0, top / Scale)
                         Items["OptionHolder"].Instance.Size = UDim2New(0, outW / Scale, 0, outH / Scale)
                     end)
@@ -5412,7 +5421,8 @@ local Library do
                     RenderStepped = RunService.RenderStepped:Connect(function()
                         local Scale = Library.UIScaleNum or 1
                         local dropOx = Items["RealDropdown"].Instance.AbsolutePosition.X
-                        local dropOy = Items["RealDropdown"].Instance.AbsolutePosition.Y + Items["RealDropdown"].Instance.AbsoluteSize.Y + 5
+                        local btnTop = Items["RealDropdown"].Instance.AbsolutePosition.Y
+                        local btnBottom = btnTop + Items["RealDropdown"].Instance.AbsoluteSize.Y
                         local dropW = Items["RealDropdown"].Instance.AbsoluteSize.X
                         local dropH = Dropdown.MaxSize
                         local mf = Dropdown.Window.Items["MainFrame"].Instance
@@ -5420,11 +5430,19 @@ local Library do
                         local mfW, mfH = mf.AbsoluteSize.X, mf.AbsoluteSize.Y
                         local pad = 8
                         local left = math.max(dropOx, mfX + pad)
-                        local top = dropOy
                         local right = math.min(dropOx + dropW, mfX + mfW - pad)
-                        local bottom = math.min(dropOy + dropH, mfY + mfH - pad)
                         local outW = right - left
-                        local outH = bottom - top
+                        local spaceBelow = (mfY + mfH - pad) - (btnBottom + 5)
+                        local top, outH
+                        if spaceBelow >= dropH then
+                            top = btnBottom + 5
+                            local bottom = math.min(top + dropH, mfY + mfH - pad)
+                            outH = bottom - top
+                        else
+                            local listBottom = btnTop - 5
+                            top = math.max(listBottom - dropH, mfY + pad)
+                            outH = listBottom - top
+                        end
                         Items["OptionHolder"].Instance.Position = UDim2New(0, left / Scale, 0, top / Scale)
                         Items["OptionHolder"].Instance.Size = UDim2New(0, outW / Scale, 0, outH / Scale)
                     end)
