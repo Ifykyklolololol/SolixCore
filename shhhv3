@@ -1,4 +1,4 @@
-print("Test5")
+print("Test7")
 if not LPH_OBFUSCATED then
     LPH_JIT_MAX = function(...) return ... end
     LPH_NO_VIRTUALIZE = function(f) return f end
@@ -1802,7 +1802,8 @@ local Library do
                     Items["OptionHolder"].Instance.Parent = Library.Holder.Instance
                     
                     RenderStepped = RunService.RenderStepped:Connect(function()
-                        local Scale = Library.UIScaleNum or 1
+                        if not Library then return end
+                        local Scale = (Library.UIScaleNum) or 1
                         local dropOx = Items["RealDropdown"].Instance.AbsolutePosition.X
                         local btnTop = Items["RealDropdown"].Instance.AbsolutePosition.Y
                         local btnBottom = btnTop + Items["RealDropdown"].Instance.AbsoluteSize.Y
@@ -5419,7 +5420,8 @@ local Library do
                     Items["OptionHolder"].Instance.Parent = Library.Holder.Instance
                     
                     RenderStepped = RunService.RenderStepped:Connect(function()
-                        local Scale = Library.UIScaleNum or 1
+                        if not Library then return end
+                        local Scale = (Library.UIScaleNum) or 1
                         local dropOx = Items["RealDropdown"].Instance.AbsolutePosition.X
                         local btnTop = Items["RealDropdown"].Instance.AbsolutePosition.Y
                         local btnBottom = btnTop + Items["RealDropdown"].Instance.AbsoluteSize.Y
