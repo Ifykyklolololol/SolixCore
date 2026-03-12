@@ -1,4 +1,4 @@
-print("Test4")
+print("Test5")
 if not LPH_OBFUSCATED then
     LPH_JIT_MAX = function(...) return ... end
     LPH_NO_VIRTUALIZE = function(f) return f end
@@ -735,6 +735,7 @@ local Library do
 
             local MouseLocation = UserInputService:GetMouseLocation()
             local RenderStepped
+            local Scale = Library.UIScaleNum or 1
 
             local Items = { } do
                 Items["Tooltip"] = Instances:Create("Frame", {
@@ -742,7 +743,7 @@ local Library do
                     Name = "\0",
                     BackgroundColor3 = Library.Theme["Background"],
                     BorderSizePixel = 0,
-                    Position = UDim2New(0, MouseLocation.X, 0, MouseLocation.Y - 22),
+                    Position = UDim2New(0, MouseLocation.X / Scale, 0, (MouseLocation.Y - 22) / Scale),
                     Size = UDim2New(0, 0, 0, 0),
                     BackgroundTransparency = 1,
                     Visible = true,
@@ -786,13 +787,14 @@ local Library do
             end
 
             Library:Connect(Gui.MouseEnter, function()
-                Items["Tooltip"].Instance.Position = UDim2New(0, MouseLocation.X, 0, MouseLocation.Y - 42)
+                Items["Tooltip"].Instance.Position = UDim2New(0, MouseLocation.X / Scale, 0, (MouseLocation.Y - 42) / Scale)
                 Items["Tooltip"]:Tween(nil, {BackgroundTransparency = 0})
                 Items["Text"]:Tween(nil, {TextTransparency = 0})
 
                 RenderStepped = RunService.RenderStepped:Connect(function()
                     MouseLocation = UserInputService:GetMouseLocation()
-                    Items["Tooltip"]:Tween(nil, {Position = UDim2New(0, MouseLocation.X, 0, MouseLocation.Y - 42)})
+                    local S = Library.UIScaleNum or 1
+                    Items["Tooltip"]:Tween(nil, {Position = UDim2New(0, MouseLocation.X / S, 0, (MouseLocation.Y - 42) / S)})
                 end)
             end)
 
@@ -1610,6 +1612,7 @@ local Library do
                 Callback = function() end,
                 Flag = Colorpicker.Flag .. "Animation_",
                 Options = { },
+                MaxSize = 280,
             }
 
             Items["AnimationsDropdown"] = Instances:Create("Frame", {
@@ -1797,7 +1800,7 @@ local Library do
                             Items["OptionHolder"].Instance.Position = UDim2New(0, Items["RealDropdown"].Instance.AbsolutePosition.X, 0, Items["RealDropdown"].Instance.AbsolutePosition.Y + Items["RealDropdown"].Instance.AbsoluteSize.Y + 5)
                         end
                         
-                        Items["OptionHolder"].Instance.Size = UDim2New(0, Items["RealDropdown"].Instance.AbsoluteSize.X, 0, 65)
+                        Items["OptionHolder"].Instance.Size = UDim2New(0, Items["RealDropdown"].Instance.AbsoluteSize.X, 0, Dropdown.MaxSize)
                     end)
 
                     for Index, Value in Library.OpenFrames do 
@@ -3316,6 +3319,13 @@ local Library do
                 -- Window size as % of viewport: 70% on mobile, 50% on PC
                 Library:SetScaleFromScreenPercent(IsMobile and 0.7 or 0.5)
 
+                -- Center main frame in design space so it appears centered on viewport (UIScale offsets 0.5,0.5)
+                do
+                    local Vps = (workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize) or Vector2New(1920, 1080)
+                    local Scale = Library.UIScaleNum or 1
+                    Items["MainFrame"].Instance.Position = UDim2New(0, Vps.X / (2 * Scale), 0, Vps.Y / (2 * Scale))
+                end
+
                 Items["MainFrame"]:MakeDraggable()
                 Items["MainFrame"]:MakeResizeable(Vector2New(Items["MainFrame"].Instance.AbsoluteSize.X, Items["MainFrame"].Instance.AbsoluteSize.Y))
                 
@@ -3631,8 +3641,9 @@ local Library do
                         if Window.IsOpen then
                             UserInputService.MouseIconEnabled = false
                             Items["Cursor"].Instance.Visible = true
-                            local MouseLocation = UserInputService:GetMouseLocation() 
-                            Items["Cursor"].Instance.Position = UDim2New(0, MouseLocation.X - 1, 0, MouseLocation.Y - 56)           
+                            local MouseLocation = UserInputService:GetMouseLocation()
+                            local Scale = Library.UIScaleNum or 1
+                            Items["Cursor"].Instance.Position = UDim2New(0, (MouseLocation.X - 1) / Scale, 0, (MouseLocation.Y - 56) / Scale)           
                         end
                     end))
                 end
@@ -3641,6 +3652,8 @@ local Library do
             end
 
             local IsMinimized = false
+            local ExpandCount = 0
+            local ContentUnlocked = not (Data.Minimized or Data.minimized)
             local OldSize = Items["MainFrame"].Instance.AbsoluteSize
         
             function Window:Minimize(Bool)
@@ -3657,10 +3670,14 @@ local Library do
                     Items["Pages"].Instance.Visible = false
                     Items["Content"].Instance.Visible = false
                 else
+                    ExpandCount = ExpandCount + 1
+                    if ExpandCount >= 2 then
+                        ContentUnlocked = true
+                    end
                     Items["MainFrame"]:Tween(nil, {Size = UDim2New(0, OldSize.X, 0, OldSize.Y)})
 
-                    Items["Pages"].Instance.Visible = true
-                    Items["Content"].Instance.Visible = true
+                    Items["Pages"].Instance.Visible = ContentUnlocked
+                    Items["Content"].Instance.Visible = ContentUnlocked
                 end
             end
 
@@ -3674,8 +3691,8 @@ local Library do
                 local CenterPosition = Items["MainFrame"].Instance.AbsolutePosition
                 task.wait()
                 Items["MainFrame"].Instance.AnchorPoint = Vector2New(0, 0)
-
-                Items["MainFrame"].Instance.Position = UDim2New(0, CenterPosition.X, 0, CenterPosition.Y)
+                local Scale = Library.UIScaleNum or 1
+                Items["MainFrame"].Instance.Position = UDim2New(0, CenterPosition.X / Scale, 0, CenterPosition.Y / Scale)
             end
 
             function Window:SetTransparency()
@@ -3792,6 +3809,12 @@ local Library do
 
             Window:SetCenter()
             task.wait()
+            if Data.Minimized or Data.minimized then
+                IsMinimized = true
+                Items["MainFrame"].Instance.Size = UDim2New(0, 285, 0, 35)
+                Items["Pages"].Instance.Visible = false
+                Items["Content"].Instance.Visible = false
+            end
             Window:SetOpen(true)
             return setmetatable(Window, Library)
         end
@@ -5080,7 +5103,7 @@ local Library do
                 Description = Data.Description or Data.Description or "Dropdown description",
                 Flag = Data.Flag or Data.flag or Library:NextFlag(),
                 Items = Data.Items or Data.items or { "One", "Two", "Three" },
-                MaxSize = Data.MaxSize or Data.maxsize or 145,
+                MaxSize = Data.MaxSize or Data.maxsize or 280,
                 Tooltip = Data.Tooltip or Data.tooltip or nil,
                 Default = Data.Default or Data.default or nil,
                 Callback = Data.Callback or Data.callback or function() end,
