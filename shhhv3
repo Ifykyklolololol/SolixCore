@@ -1,4 +1,4 @@
-print("Test3")
+print("Test4")
 if not LPH_OBFUSCATED then
     LPH_JIT_MAX = function(...) return ... end
     LPH_NO_VIRTUALIZE = function(f) return f end
@@ -845,12 +845,13 @@ local Library do
         ResetOnSpawn = false
     })
 
-    -- Viewport-based UIScale for mobile/desktop: design height 450px, clamp 300-2000
+    -- Viewport-based UIScale: window size as % of screen (50% PC, 70% mobile)
     local ViewportSize = function()
         local Camera = workspace.CurrentCamera
         return (Camera and Camera.ViewportSize) or Vector2New(1920, 1080)
     end
-    Library.UIScaleDesignHeight = 450
+    Library.UIScaleDesignSize = Vector2New(600, 420)
+    Library.UIScaleScreenPercent = 0.5
     Library.UIScaleObject = Instances:Create("UIScale", {
         Parent = Library.Holder.Instance,
         Name = "UIScale",
@@ -858,21 +859,25 @@ local Library do
     })
     Library.UIScaleNum = 1
 
-    function Library:SetScale(DesignHeight)
-        DesignHeight = MathClamp(DesignHeight, 300, 2000)
-        self.UIScaleDesignHeight = DesignHeight
+    function Library:SetScaleFromScreenPercent(Percent)
+        Percent = MathClamp(Percent, 0.2, 1)
+        self.UIScaleScreenPercent = Percent
         local Vps = ViewportSize()
-        local Scale = Vps.Y / DesignHeight
+        local W, H = self.UIScaleDesignSize.X, self.UIScaleDesignSize.Y
+        local ScaleH = (Vps.Y * Percent) / H
+        local ScaleW = (Vps.X * Percent) / W
+        local Scale = math.min(ScaleH, ScaleW)
+        Scale = MathClamp(Scale, 0.25, 2)
         self.UIScaleObject.Instance.Scale = Scale
         self.UIScaleNum = Scale
     end
 
-    Library:SetScale(Library.UIScaleDesignHeight)
+    Library:SetScaleFromScreenPercent(0.5)
     task.defer(function()
         local Camera = workspace.CurrentCamera
         if Camera then
             Library:Connect(Camera:GetPropertyChangedSignal("ViewportSize"), function()
-                Library:SetScale(Library.UIScaleDesignHeight)
+                Library:SetScaleFromScreenPercent(Library.UIScaleScreenPercent)
             end)
         end
     end)
@@ -3302,16 +3307,14 @@ local Library do
                     AnchorPoint = Vector2New(0.5, 0.5),
                     BackgroundTransparency = 0.30000001192092896,
                     Position = UDim2New(0.5, 0, 0.5, 0),
-                    Size = UDim2New(0, 770, 0, 526),
+                    Size = UDim2New(0, 600, 0, 420),
                     ZIndex = 2,
                     BorderSizePixel = 0,
                     BackgroundColor3 = Library.Theme["Background"]
                 }):AddToTheme({BackgroundColor3 = 'Background'})
 
-                -- Viewport-based scale is set on Holder; optional: use different design height on mobile
-                if IsMobile then
-                    Library:SetScale(380)
-                end
+                -- Window size as % of viewport: 70% on mobile, 50% on PC
+                Library:SetScaleFromScreenPercent(IsMobile and 0.7 or 0.5)
 
                 Items["MainFrame"]:MakeDraggable()
                 Items["MainFrame"]:MakeResizeable(Vector2New(Items["MainFrame"].Instance.AbsoluteSize.X, Items["MainFrame"].Instance.AbsoluteSize.Y))
