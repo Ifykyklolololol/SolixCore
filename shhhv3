@@ -3210,11 +3210,11 @@ local Library do
                     Parent = Items["Notification"].Instance,
                     Name = "\0",
                     FontFace = Library.Font,
-                    TextWrapped = false,
+                    TextWrapped = true,
                     TextColor3 = Library.Theme["Text"],
                     TextTransparency = 0.4000000059604645,
                     Text = Data.Description,
-                    Size = UDim2New(0, 115, 0, 15),
+                    Size = UDim2New(0, 280, 0, 0),
                     Position = UDim2New(0, 0, 0, 20),
                     BorderSizePixel = 0,
                     BorderColor3 = FromRGB(0, 0, 0),
@@ -3256,14 +3256,15 @@ local Library do
                 })                
             end
 
-            local XSize = Items["Title"].Instance.TextBounds.X + 18
-            local YSize = Items["Description"].Instance.TextBounds.Y + Items["Title"].Instance.TextBounds.Y + 40
+            task.wait()
+            local titleW = Items["Title"].Instance.TextBounds.X
+            local titleH = Items["Title"].Instance.TextBounds.Y
+            local descW = math.min(Items["Description"].Instance.TextBounds.X, 280)
+            local descH = Items["Description"].Instance.TextBounds.Y
+            local XSize = math.max(titleW, descW) + 18
+            local YSize = titleH + descH + 40
 
             Items["Duration"].Instance.Position = UDim2New(0, 0, 0, YSize - 25)
-
-            if Items["Description"].Instance.TextBounds.X > XSize then 
-                XSize = Items["Description"].Instance.TextBounds.X + 18
-            end
 
             Items["Notification"].Instance.Size = UDim2New(0, 0, 0, YSize)
 
