@@ -1,4 +1,4 @@
-print("Test4")
+print("Test6")
 if not LPH_OBFUSCATED then
     LPH_JIT_MAX = function(...) return ... end
     LPH_NO_VIRTUALIZE = function(f) return f end
@@ -3255,7 +3255,15 @@ local Library do
 
             task.wait()
             local TextService = game:GetService("TextService")
-            local descWrapSize = TextService:GetTextSize(Data.Description or "", 14, Library.Font, Vector2.new(280, 10000))
+            local descText = Data.Description or ""
+            local frameSize = Vector2.new(280, 10000)
+            local descWrapSize
+            local ok = pcall(function()
+                descWrapSize = TextService:GetTextSize(descText, 14, Library.Font, frameSize)
+            end)
+            if not ok or not descWrapSize then
+                descWrapSize = TextService:GetTextSize(descText, 14, Enum.Font.SourceSans, frameSize)
+            end
             local descH = math.ceil(descWrapSize.Y)
             local titleW = Items["Title"].Instance.TextBounds.X
             local titleH = Items["Title"].Instance.TextBounds.Y
