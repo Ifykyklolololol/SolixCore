@@ -1,4 +1,4 @@
-print("Test7")
+print("Test2")
 if not LPH_OBFUSCATED then
     LPH_JIT_MAX = function(...) return ... end
     LPH_NO_VIRTUALIZE = function(f) return f end
@@ -910,17 +910,8 @@ local Library do
         ResetOnSpawn = false
     })
 
-    -- Notifications: on PC use separate ScreenGui (no UIScale) for original size; on mobile use Holder so they scale with UI
-    Library.NotifGui = Instances:Create("ScreenGui", {
-        Parent = gethui(),
-        Name = "\0",
-        ZIndexBehavior = Enum.ZIndexBehavior.Global,
-        DisplayOrder = 2,
-        ResetOnSpawn = false
-    })
-
     Library.NotifHolder = Instances:Create("Frame", {
-        Parent = IsMobile and Library.Holder.Instance or Library.NotifGui.Instance,
+        Parent = Library.Holder.Instance,
         Name = "\0",
         BorderColor3 = FromRGB(0, 0, 0),
         AnchorPoint = Vector2New(1, 0),
@@ -959,10 +950,6 @@ local Library do
 
         if self.Holder then 
             self.Holder:Clean()
-        end
-
-        if self.NotifGui then
-            self.NotifGui:Clean()
         end
 
         Library = nil 
