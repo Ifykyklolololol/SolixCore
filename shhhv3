@@ -1,4 +1,4 @@
-print("Test2")
+print("Test3")
 if not LPH_OBFUSCATED then
     LPH_JIT_MAX = function(...) return ... end
     LPH_NO_VIRTUALIZE = function(f) return f end
@@ -3254,14 +3254,17 @@ local Library do
             end
 
             task.wait()
+            task.wait() -- extra frame so TextWrapped description layout is ready
             local titleW = Items["Title"].Instance.TextBounds.X
             local titleH = Items["Title"].Instance.TextBounds.Y
             local descW = math.min(Items["Description"].Instance.TextBounds.X, 280)
             local descH = Items["Description"].Instance.TextBounds.Y
             local XSize = math.max(titleW, descW) + 18
-            local YSize = titleH + descH + 40
-
-            Items["Duration"].Instance.Position = UDim2New(0, 0, 0, YSize - 25)
+            local barGap = 10
+            local barHeight = 5
+            local bottomPadding = 16
+            local YSize = 20 + descH + barGap + barHeight + bottomPadding
+            Items["Duration"].Instance.Position = UDim2New(0, 0, 0, 20 + descH + barGap)
 
             Items["Notification"].Instance.Size = UDim2New(0, 0, 0, YSize)
 
