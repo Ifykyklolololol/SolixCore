@@ -1,4 +1,4 @@
-print("Test3")
+print("Test4")
 if not LPH_OBFUSCATED then
     LPH_JIT_MAX = function(...) return ... end
     LPH_NO_VIRTUALIZE = function(f) return f end
@@ -3254,11 +3254,12 @@ local Library do
             end
 
             task.wait()
-            task.wait() -- extra frame so TextWrapped description layout is ready
+            local TextService = game:GetService("TextService")
+            local descWrapSize = TextService:GetTextSize(Data.Description or "", 14, Library.Font, Vector2.new(280, 10000))
+            local descH = math.ceil(descWrapSize.Y)
             local titleW = Items["Title"].Instance.TextBounds.X
             local titleH = Items["Title"].Instance.TextBounds.Y
-            local descW = math.min(Items["Description"].Instance.TextBounds.X, 280)
-            local descH = Items["Description"].Instance.TextBounds.Y
+            local descW = math.min(descWrapSize.X, 280)
             local XSize = math.max(titleW, descW) + 18
             local barGap = 10
             local barHeight = 5
