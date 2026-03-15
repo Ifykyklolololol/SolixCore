@@ -1,4 +1,4 @@
-print("Test5")
+print("Test7")
 if not LPH_OBFUSCATED then
     LPH_JIT_MAX = function(...) return ... end
     LPH_NO_VIRTUALIZE = function(f) return f end
@@ -938,7 +938,7 @@ local Library do
     Instances:Create("UIListLayout", {
         Parent = Library.NotifHolder.Instance,
         Name = "\0",
-        Padding = UDimNew(0, 12),
+        Padding = UDimNew(0, 20),
         SortOrder = Enum.SortOrder.LayoutOrder,
         HorizontalAlignment = Enum.HorizontalAlignment.Right
     })
@@ -3174,6 +3174,7 @@ local Library do
         end
 
         Library.Notification = function(self, Data)
+            task.wait(0)
             Library.NotifLayoutOrder = (Library.NotifLayoutOrder or 0) + 1
             local notifOrder = Library.NotifLayoutOrder
             local Items = { } do
@@ -3281,13 +3282,13 @@ local Library do
             if not ok or not descWrapSize then
                 descWrapSize = TextService:GetTextSize(descText, 14, Enum.Font.SourceSans, frameSize)
             end
-            local descH = math.ceil(descWrapSize.Y)
+            local descH = math.max(math.ceil(descWrapSize.Y), 14)
             local titleW = Items["Title"].Instance.TextBounds.X
             local descW = math.min(math.ceil(descWrapSize.X), maxDescWidth)
             local contentW = math.max(titleW, descW)
             local XSize = contentW + 16
             Items["Description"].Instance.Size = UDim2New(0, contentW, 0, 0)
-            local barGap = 10
+            local barGap = 12
             local barHeight = 5
             local bottomPadding = 16
             local YSize = 20 + descH + barGap + barHeight + bottomPadding
