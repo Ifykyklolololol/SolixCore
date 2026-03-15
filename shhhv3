@@ -1,4 +1,4 @@
-print("Test7")
+print("Test2")
 if not LPH_OBFUSCATED then
     LPH_JIT_MAX = function(...) return ... end
     LPH_NO_VIRTUALIZE = function(f) return f end
@@ -3288,7 +3288,7 @@ local Library do
             local contentW = math.max(titleW, descW)
             local XSize = contentW + 16
             Items["Description"].Instance.Size = UDim2New(0, contentW, 0, 0)
-            local barGap = 12
+            local barGap = 24
             local barHeight = 5
             local bottomPadding = 16
             local YSize = 20 + descH + barGap + barHeight + bottomPadding
