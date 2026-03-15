@@ -1,4 +1,4 @@
-print("Test4")
+print("Test2")
 if not LPH_OBFUSCATED then
     LPH_JIT_MAX = function(...) return ... end
     LPH_NO_VIRTUALIZE = function(f) return f end
@@ -933,13 +933,15 @@ local Library do
         BorderSizePixel = 0,
         AutomaticSize = Enum.AutomaticSize.X
     })
-    
+    Library.NotifLayoutOrder = 0
+
     Instances:Create("UIListLayout", {
         Parent = Library.NotifHolder.Instance,
         Name = "\0",
         Padding = UDimNew(0, 12),
         SortOrder = Enum.SortOrder.LayoutOrder,
-        HorizontalAlignment = Enum.HorizontalAlignment.Right
+        HorizontalAlignment = Enum.HorizontalAlignment.Right,
+        VerticalAlignment = Enum.VerticalAlignment.Bottom
     })
     
     Instances:Create("UIPadding", {
@@ -3173,10 +3175,13 @@ local Library do
         end
 
         Library.Notification = function(self, Data)
+            Library.NotifLayoutOrder = (Library.NotifLayoutOrder or 0) + 1
+            local notifOrder = Library.NotifLayoutOrder
             local Items = { } do
                 Items["Notification"] = Instances:Create("Frame", {
                     Parent = Library.NotifHolder.Instance,
                     Name = "\0",
+                    LayoutOrder = notifOrder,
                     BackgroundTransparency = 0.30000001192092896,
                     BorderColor3 = FromRGB(0, 0, 0),
                     ClipsDescendants = true,
