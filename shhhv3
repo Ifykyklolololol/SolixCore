@@ -3288,7 +3288,7 @@ local Library do
             local contentW = math.max(titleW, descW)
             local XSize = contentW + 16
             Items["Description"].Instance.Size = UDim2New(0, contentW, 0, 0)
-            local barGap = 24
+            local barGap = 36
             local barHeight = 5
             local bottomPadding = 16
             local YSize = 20 + descH + barGap + barHeight + bottomPadding
