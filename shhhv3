@@ -1,4 +1,4 @@
-print("Test2")
+print("Test3")
 if not LPH_OBFUSCATED then
     LPH_JIT_MAX = function(...) return ... end
     LPH_NO_VIRTUALIZE = function(f) return f end
@@ -7,6 +7,19 @@ if not LPH_OBFUSCATED then
 else
     print = function() end
     warn = function() end
+end
+
+-- Used by line 329+; must be defined before "local Library do" block
+local FOLDERS_CFG = {
+    Directory = "solixhub",
+    Configs = "solixhub/Configs",
+    Assets = "solixhub/Assets",
+    Themes = "solixhub/Themes"
+}
+local function GetFolders()
+    local L = getgenv().Library
+    if L and (L["Folders"] or L.Folders) then return L["Folders"] or L.Folders end
+    return FOLDERS_CFG
 end
 
 local Library = getgenv().Library
@@ -38,12 +51,8 @@ for _, folder in Folders do
     end
 end
 
-Library.Folders = {
-    Directory = "solixhub",
-    Configs = "solixhub/Configs",
-    Assets = "solixhub/Assets",
-    Themes = "solixhub/Themes"
-}
+Library["Folders"] = FOLDERS_CFG
+Library.Folders = FOLDERS_CFG
 
 local Library do 
     local UserInputService = game:GetService("UserInputService")
@@ -165,6 +174,9 @@ local Library do
     Library.__index = Library
     Library.Sections.__index = Library.Sections
     Library.Pages.__index = Library.Pages
+
+    Library["Folders"] = FOLDERS_CFG
+    Library.Folders = FOLDERS_CFG
 
     local Keys = {
         ["Unknown"]           = "Unknown",
@@ -316,21 +328,21 @@ local Library do
     Library.Theme = TableClone(Themes["Preset"])
     Library.Themes = Themes
 
-    -- Folders
-    for Index, Value in Library.Folders do 
+    local LibFolders = GetFolders()
+    for Index, Value in LibFolders do 
         if not isfolder(Value) then
             makefolder(Value)
         end
     end
 
-    if not isfile(Library.Folders.Directory .. "/autoload.json") then 
-        writefile(Library.Folders.Directory .. "/autoload.json", "")
+    if not isfile(LibFolders.Directory .. "/autoload.json") then 
+        writefile(LibFolders.Directory .. "/autoload.json", "")
     end
 
     local GameName = tostring(game.GameId)
 
-    if not isfolder(Library.Folders.Configs .. "/" .. GameName) then
-        makefolder(Library.Folders.Configs .. "/" .. GameName)
+    if not isfolder(LibFolders.Configs .. "/" .. GameName) then
+        makefolder(LibFolders.Configs .. "/" .. GameName)
     end
 
     -- Tweening
@@ -829,8 +841,8 @@ local Library do
                 }
             }
 
-            writefile(`{Library.Folders.Assets}/{Name}.font`, HttpService:JSONEncode(Data))
-            return Font.new(getcustomasset(`{Library.Folders.Assets}/{Name}.font`))
+            writefile(`{GetFolders().Assets}/{Name}.font`, HttpService:JSONEncode(Data))
+            return Font.new(getcustomasset(`{GetFolders().Assets}/{Name}.font`))
         end
 
         Library.Font = CustomFont:New("InterSemiBold", 400, "Regular", {
@@ -1177,7 +1189,7 @@ local Library do
         local List = { }
         local ReturnList = { }
 
-        List = listfiles(Library.Folders.Themes)
+        List = listfiles(GetFolders().Themes)
 
         for Index = 1, #List do 
             local File = List[Index]
@@ -1256,11 +1268,11 @@ local Library do
     end
 
     Library.GetFolder = function(self)
-        return Library.Folders.Configs .. "/" .. GameName .. "/"
+        return GetFolders().Configs .. "/" .. GameName .. "/"
     end 
 
     Library.GetFolderTheme = function(self)
-        return Library.Folders.Themes .. "/"
+        return GetFolders().Themes .. "/"
     end
 
     Library.SaveAutoloadIfEnabled = function(self)
@@ -6678,5 +6690,7 @@ local Library do
     end
 end
 
+
 getgenv().Library = Library
 return Library
+
