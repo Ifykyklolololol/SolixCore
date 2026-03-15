@@ -1,4 +1,4 @@
-print("Test3")
+print("Test4")
 if not LPH_OBFUSCATED then
     LPH_JIT_MAX = function(...) return ... end
     LPH_NO_VIRTUALIZE = function(f) return f end
@@ -3223,7 +3223,7 @@ local Library do
                     TextColor3 = Library.Theme["Text"],
                     TextTransparency = 0.4000000059604645,
                     Text = Data.Description,
-                    Size = UDim2New(0, 280, 0, 0),
+                    Size = UDim2New(0, 0, 0, 0),
                     Position = UDim2New(0, 0, 0, 20),
                     BorderSizePixel = 0,
                     BorderColor3 = FromRGB(0, 0, 0),
@@ -3268,7 +3268,8 @@ local Library do
             task.wait()
             local TextService = game:GetService("TextService")
             local descText = Data.Description or ""
-            local frameSize = Vector2.new(280, 10000)
+            local maxDescWidth = 450
+            local frameSize = Vector2.new(maxDescWidth, 10000)
             local descWrapSize
             local ok = pcall(function()
                 descWrapSize = TextService:GetTextSize(descText, 14, Library.Font, frameSize)
@@ -3278,9 +3279,10 @@ local Library do
             end
             local descH = math.ceil(descWrapSize.Y)
             local titleW = Items["Title"].Instance.TextBounds.X
-            local titleH = Items["Title"].Instance.TextBounds.Y
-            local descW = math.min(descWrapSize.X, 280)
-            local XSize = math.max(titleW, descW) + 18
+            local descW = math.min(math.ceil(descWrapSize.X), maxDescWidth)
+            local contentW = math.max(titleW, descW)
+            local XSize = contentW + 16
+            Items["Description"].Instance.Size = UDim2New(0, contentW, 0, 0)
             local barGap = 10
             local barHeight = 5
             local bottomPadding = 16
